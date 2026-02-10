@@ -1,0 +1,11 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-student",
+      "description": "A student organizing their day with a digital schedule",
+      "imageUrl": "https://picsum.photos/seed/classtrack1/1200/800",
+      "imageHint": "student schedule"
+    }
+  ]
+}
