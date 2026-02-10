@@ -1,0 +1,38 @@
+
+{
+  "entities": {
+    "Class": {
+      "title": "Class",
+      "description": "Dərs cədvəli məlumatları",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Dərsin adı" },
+        "day": { "type": "number", "description": "Həftənin günü (0-6)" },
+        "startTime": { "type": "string", "description": "Başlama vaxtı" },
+        "endTime": { "type": "string", "description": "Bitmə vaxtı" },
+        "room": { "type": "string", "description": "Otaq nömrəsi" },
+        "subgroup": { "type": "string", "enum": ["yuxari", "asagi", "hamisi"], "description": "Altqrup növü" }
+      },
+      "required": ["name", "day", "startTime", "endTime", "room", "subgroup"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "İstifadəçi seçimləri",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "subgroup": { "type": "string", "enum": ["yuxari", "asagi"] }
+      },
+      "required": ["name", "subgroup"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/classes/{classId}": {
+      "schema": "#/backend/entities/Class",
+      "description": "Mərkəzi dərs cədvəli"
+    }
+  }
+}

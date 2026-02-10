@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ClassSession, ClassDay, DAYS_OF_WEEK } from '@/lib/types';
+import { ClassSession, ClassDay, DAYS_OF_WEEK, SubgroupType } from '@/lib/types';
 
 interface ClassDialogProps {
   open: boolean;
@@ -23,6 +23,7 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
     startTime: '09:00',
     endTime: '10:00',
     room: '',
+    subgroup: 'hamisi',
   });
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
         startTime: '09:00',
         endTime: '10:00',
         room: '',
+        subgroup: 'hamisi',
       });
     }
   }, [editingSession, open]);
@@ -52,17 +54,17 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{editingSession ? 'Edit Class' : 'Add New Class'}</DialogTitle>
+          <DialogTitle>{editingSession ? 'Dərsi Redaktə Et' : 'Yeni Dərs Əlavə Et'}</DialogTitle>
           <DialogDescription>
-            Enter the details of your class session here.
+            Dərs haqqında məlumatları daxil edin. Bu məlumat hər kəsə görünəcək.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Class Name</Label>
+            <Label htmlFor="name">Dərsin Adı</Label>
             <Input
               id="name"
-              placeholder="e.g. Advanced Calculus"
+              placeholder="Məsələn: Alqoritmlər"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -70,13 +72,13 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="day">Day</Label>
+              <Label htmlFor="day">Gün</Label>
               <Select
                 value={formData.day?.toString()}
                 onValueChange={(v) => setFormData({ ...formData, day: parseInt(v) as ClassDay })}
               >
                 <SelectTrigger id="day">
-                  <SelectValue placeholder="Select day" />
+                  <SelectValue placeholder="Seçin" />
                 </SelectTrigger>
                 <SelectContent>
                   {DAYS_OF_WEEK.map((day, idx) => (
@@ -86,19 +88,35 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="room">Room</Label>
-              <Input
-                id="room"
-                placeholder="e.g. Room 302"
-                value={formData.room}
-                onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                required
-              />
+              <Label htmlFor="subgroup">Altqrup</Label>
+              <Select
+                value={formData.subgroup}
+                onValueChange={(v) => setFormData({ ...formData, subgroup: v as SubgroupType })}
+              >
+                <SelectTrigger id="subgroup">
+                  <SelectValue placeholder="Altqrup" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hamisi">Hamısı</SelectItem>
+                  <SelectItem value="yuxari">Yuxarı</SelectItem>
+                  <SelectItem value="asagi">Aşağı</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <Label htmlFor="room">Otaq / Kabinet</Label>
+            <Input
+              id="room"
+              placeholder="Məsələn: Otaq 204"
+              value={formData.room}
+              onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="start">Start Time</Label>
+              <Label htmlFor="start">Başlama Vaxtı</Label>
               <Input
                 id="start"
                 type="time"
@@ -108,7 +126,7 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="end">End Time</Label>
+              <Label htmlFor="end">Bitmə Vaxtı</Label>
               <Input
                 id="end"
                 type="time"
@@ -119,7 +137,7 @@ export const ClassDialog = ({ open, onOpenChange, onSave, editingSession }: Clas
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full mt-4">Save Class</Button>
+            <Button type="submit" className="w-full mt-4">Dərsi Yadda Saxla</Button>
           </DialogFooter>
         </form>
       </DialogContent>

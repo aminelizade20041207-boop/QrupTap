@@ -1,22 +1,28 @@
 
-export type ClassDay = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 is Sunday, 1 is Monday...
+export type ClassDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type SubgroupType = 'yuxari' | 'asagi' | 'hamisi';
 
 export interface ClassSession {
   id: string;
   name: string;
-  startTime: string; // HH:mm format
-  endTime: string;   // HH:mm format
+  startTime: string; 
+  endTime: string;   
   day: ClassDay;
   room: string;
-  color?: string;
+  subgroup: SubgroupType;
 }
 
 export const DAYS_OF_WEEK = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
+  'Bazar',
+  'Bazar ertəsi',
+  'Çərşənbə axşamı',
+  'Çərşənbə',
+  'Cümə axşamı',
+  'Cümə',
+  'Şənbə',
 ] as const;
+
+export interface UserProfile {
+  name: string;
+  subgroup: 'yuxari' | 'asagi';
+}
