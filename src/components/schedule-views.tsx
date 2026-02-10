@@ -5,8 +5,7 @@ import React from 'react';
 import { ClassSession, DAYS_OF_WEEK } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User as UserIcon, BookOpen, Users, MapPin } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Clock, User as UserIcon, BookOpen } from 'lucide-react';
 
 interface ViewProps {
   classes: ClassSession[];
@@ -72,29 +71,29 @@ export const DailyView = ({ classes }: ViewProps) => {
 
 export const WeeklyView = ({ classes }: ViewProps) => {
   return (
-    <ScrollArea className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 min-w-[800px] md:min-w-0">
-        {[1, 2, 3, 4, 5].map((idx) => {
-          const dayName = DAYS_OF_WEEK[idx];
-          const dayClasses = classes
-            .filter(c => Number(c.day) === idx)
-            .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {[1, 2, 3, 4, 5].map((idx) => {
+        const dayName = DAYS_OF_WEEK[idx];
+        const dayClasses = classes
+          .filter(c => Number(c.day) === idx)
+          .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-          return (
-            <div key={dayName} className="space-y-3">
-              <div className="text-center pb-2 border-b-2 border-primary/10">
-                <span className="text-xs font-bold uppercase tracking-widest text-primary">{dayName}</span>
-              </div>
+        return (
+          <div key={dayName} className="space-y-4">
+            <div className="text-center pb-2 border-b-2 border-primary/20 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+              <span className="text-sm font-bold uppercase tracking-widest text-primary">{dayName}</span>
+            </div>
+            <div className="space-y-3">
               {dayClasses.length > 0 ? (
                 dayClasses.map((c) => (
                   <Card 
                     key={c.id} 
-                    className={`bg-white border-primary/10 hover:border-primary transition-all shadow-sm ${c.week !== 'hamisi' ? 'border-dashed' : ''}`}
+                    className={`bg-card border-primary/10 hover:border-primary transition-all shadow-sm ${c.week !== 'hamisi' ? 'border-dashed' : ''}`}
                   >
                     <CardContent className="p-3 space-y-2">
-                      <p className="font-bold text-xs text-foreground line-clamp-2 min-h-[2.5rem]">{c.name}</p>
-                      <div className="flex flex-col text-[10px] text-muted-foreground gap-1.5">
-                        <span className="flex items-center gap-1 font-semibold text-primary/80">
+                      <p className="font-bold text-sm text-foreground leading-snug">{c.name}</p>
+                      <div className="flex flex-col text-xs text-muted-foreground gap-1.5">
+                        <span className="flex items-center gap-1 font-semibold text-primary">
                           <Clock className="h-3 w-3" /> {c.startTime}
                         </span>
                         {c.teacher && (
@@ -103,7 +102,7 @@ export const WeeklyView = ({ classes }: ViewProps) => {
                           </span>
                         )}
                         {c.week !== 'hamisi' && (
-                          <span className="inline-block px-1 py-0.5 rounded bg-primary/5 text-primary text-[8px] font-bold w-fit">
+                          <span className="inline-block px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold w-fit">
                             {c.week.toUpperCase()} HƏFTƏ
                           </span>
                         )}
@@ -112,12 +111,14 @@ export const WeeklyView = ({ classes }: ViewProps) => {
                   </Card>
                 ))
               ) : (
-                <div className="text-[10px] text-center text-muted-foreground py-4 opacity-40">Dərs yoxdur</div>
+                <div className="text-xs text-center text-muted-foreground py-4 opacity-40 border rounded-lg border-dashed">
+                  Dərs yoxdur
+                </div>
               )}
             </div>
-          );
-        })}
-      </div>
-    </ScrollArea>
+          </div>
+        );
+      })}
+    </div>
   );
 };
