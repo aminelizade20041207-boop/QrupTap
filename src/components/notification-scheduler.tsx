@@ -2,8 +2,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getClasses } from '@/lib/storage';
-import { ClassSession } from '@/lib/types';
+import { FIXED_SCHEDULE } from '@/lib/schedule-data';
+import { ClassSession, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const NotificationScheduler = () => {
@@ -19,11 +19,23 @@ export const NotificationScheduler = () => {
     }
 
     const checkInterval = setInterval(() => {
+      const savedProfile = localStorage.getItem('it24_profile');
+      if (!savedProfile) return;
+      
+      const profile: UserProfile = JSON.parse(savedProfile);
       const now = new Date();
       const currentDay = now.getDay();
-      const currentHours = now.getHours();
-      const currentMinutes = now.getMinutes();
-      const classes = getClasses();
+      
+      // Calculate current week (ust/alt)
+      const startDate = new Date('2025-02-16');
+      const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const weekIndex = Math.floor(diffInDays / 7);
+      const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
+
+      const classes = FIXED_SCHEDULE.filter(c => 
+        (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+        (c.week === 'hamisi' || c.week === currentWeek)
+      );
 
       classes.forEach((c) => {
         if (Number(c.day) !== currentDay) return;
@@ -34,22 +46,27 @@ export const NotificationScheduler = () => {
 
         const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
 
-        // Notify exactly 5 minutes before (using a small range to ensure it triggers once)
-        if (diffMinutes > 4.5 && diffMinutes < 5.5) {
+        // Notify exactly 5-6 minutes before
+        if (diffMinutes > 4.8 && diffMinutes < 5.2) {
           showNotification(c);
         }
       });
-    }, 30000); // Check every 30 seconds
+    }, 45000); // Check every 45 seconds
 
     return () => clearInterval(checkInterval);
   }, []);
 
   const showNotification = (c: ClassSession) => {
-    const title = `Upcoming: ${c.name}`;
-    const body = `Class starts in 5 minutes in Room ${c.room}`;
+    const title = `Dərs başlayır: ${c.name}`;
+    const body = `Dərs 5 dəqiqəyə başlayacaq. Müəllim: ${c.teacher || 'Qeyd edilməyib'}`;
 
     if (permission === 'granted') {
-      new Notification(title, { body, icon: '/favicon.ico' });
+      try {
+        new Notification(title, { body });
+      } catch (e) {
+        // Fallback for some mobile browsers
+        toast({ title, description: body });
+      }
     } else {
       toast({
         title,

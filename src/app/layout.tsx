@@ -1,12 +1,26 @@
 
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase';
+import { NotificationScheduler } from '@/components/notification-scheduler';
 
 export const metadata: Metadata = {
   title: 'İT24 - Dərs Cədvəli',
   description: 'İT24 qrupu üçün mərkəzi dərs cədvəli və xatırlatmalar.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'İT24',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#4A90E2',
 };
 
 export default function RootLayout({
@@ -23,6 +37,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
+          <NotificationScheduler />
           {children}
         </FirebaseClientProvider>
         <Toaster />
