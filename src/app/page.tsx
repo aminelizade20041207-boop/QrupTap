@@ -23,7 +23,8 @@ export default function Home() {
       setProfile(JSON.parse(savedProfile));
     }
 
-    // Week calculation logic
+    // Week calculation logic: 16 Feb 2025 is the start (Sunday, start of week)
+    // Actually Feb 16 is a Sunday. Let's assume the semester week starts then.
     const startDate = new Date('2025-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -47,10 +48,8 @@ export default function Home() {
   );
 
   const resetProfile = () => {
-    if (confirm('Profil məlumatlarını sıfırlamaq istəyirsiniz?')) {
-      localStorage.removeItem('it24_profile');
-      setProfile(null);
-    }
+    localStorage.removeItem('it24_profile');
+    setProfile(null);
   };
 
   return (
@@ -65,7 +64,12 @@ export default function Home() {
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <User className="h-4 w-4" />
               <span>Salam, <b>{profile.name}</b> ({profile.subgroup === 'yuxari' ? 'Yuxarı' : 'Aşağı'} altqrup)</span>
-              <button onClick={resetProfile} className="text-primary hover:underline ml-2">Dəyişdir</button>
+              <button 
+                onClick={resetProfile} 
+                className="text-primary hover:underline ml-2 font-medium"
+              >
+                Dəyişdir
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
@@ -122,7 +126,7 @@ export default function Home() {
         </Tabs>
 
         <footer className="pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} İT24 - Mərkəzi Cədvəl Sistemi</p>
+          <p>© {new Date().getFullYear()} İT24 - Əlizadə Akşin</p>
           <p className="text-[10px] mt-1 opacity-50">16 fevral 2025-ci il tarixindən etibarən hesablanır</p>
         </footer>
       </div>

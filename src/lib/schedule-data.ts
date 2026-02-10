@@ -158,4 +158,5 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     subgroup: 'asagi',
     week: 'alt'
   }
+  // 5-ci gün (Cümə) - Heç bir dərs yoxdur
 ];
