@@ -99,7 +99,7 @@ export const WeeklyView = ({ classes }: ViewProps) => {
                         </span>
                         {c.teacher && (
                           <span className="flex items-center gap-1">
-                            <UserIcon className="h-3 w-3" /> {c.teacher.split(' ').pop()}
+                            <UserIcon className="h-3 w-3" /> {c.teacher.split(' ')[0]}
                           </span>
                         )}
                         {c.week !== 'hamisi' && (

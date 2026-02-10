@@ -2,9 +2,10 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
-  // 1-ci gün (Bazar ertəsi - 1)
+  // --- AŞAĞI ALTQRUP ---
+  // 1-ci gün (Bazar ertəsi)
   {
-    id: '1-1',
+    id: 'asagi-1-1',
     name: 'Əməliyyat sistemləri (Labaratoriya)',
     teacher: 'Elnur Xəlilov',
     day: 1,
@@ -14,7 +15,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi'
   },
   {
-    id: '1-2',
+    id: 'asagi-1-2',
     name: 'Kompüter Şəbəkələri (Labaratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 1,
@@ -24,7 +25,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi'
   },
   {
-    id: '1-3',
+    id: 'asagi-1-3',
     name: 'Verilənlər bazası sistemləri (Mühazirə)',
     teacher: 'Rəsmiyyə Əmiraslanova',
     day: 1,
@@ -33,9 +34,9 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     subgroup: 'asagi',
     week: 'hamisi'
   },
-  // 2-ci gün (Çərşənbə axşamı - 2)
+  // 2-ci gün
   {
-    id: '2-1',
+    id: 'asagi-2-1',
     name: 'Diskret riyaziyyat (Mühazirə)',
     teacher: 'Lalə Rzayeva',
     day: 2,
@@ -45,7 +46,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi'
   },
   {
-    id: '2-2',
+    id: 'asagi-2-2',
     name: 'Kompüter Şəbəkələri (Mühazirə)',
     teacher: 'Ceyhun Əlizadə',
     day: 2,
@@ -55,7 +56,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi'
   },
   {
-    id: '2-3-ust',
+    id: 'asagi-2-3-ust',
     name: 'Obyekt yönümlü proqramlaşdırma (Laboratoriya)',
     teacher: 'Məleykə Heydərova',
     day: 2,
@@ -65,7 +66,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'ust'
   },
   {
-    id: '2-3-alt',
+    id: 'asagi-2-3-alt',
     name: 'Verilənlər bazası sistemləri (Laboratoriya)',
     teacher: 'Rəsmiyyə Əmiraslanova',
     day: 2,
@@ -74,9 +75,9 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     subgroup: 'asagi',
     week: 'alt'
   },
-  // 3-cü gün (Çərşənbə - 3)
+  // 3-cü gün
   {
-    id: '3-1',
+    id: 'asagi-3-1',
     name: 'Əməliyyat sistemləri (Mühazirə)',
     teacher: 'Elnur Xəlilov',
     day: 3,
@@ -86,7 +87,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi'
   },
   {
-    id: '3-2',
+    id: 'asagi-3-2',
     name: 'Obyekt-yönümlü proqramlaşdırma (Mühazirə)',
     teacher: 'Validə Nuriyeva',
     day: 3,
@@ -95,10 +96,9 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     subgroup: 'asagi',
     week: 'hamisi'
   },
-  // 4-cü gün (Cümə axşamı - 4)
-  // Üst həftə
+  // 4-cü gün
   {
-    id: '4-1-ust',
+    id: 'asagi-4-1-ust',
     name: 'Kompüter Şəbəkələri (Mühazirə)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
@@ -108,7 +108,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'ust'
   },
   {
-    id: '4-2-ust',
+    id: 'asagi-4-2-ust',
     name: 'Obyekt-yönümlü proqramlaşdırma (Məşğələ)',
     teacher: 'Validə Nuriyeva',
     day: 4,
@@ -118,7 +118,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'ust'
   },
   {
-    id: '4-3-ust',
+    id: 'asagi-4-3-ust',
     name: 'Verilənlər bazası sistemləri (Məşğələ)',
     teacher: 'Rəsmiyyə Əmiraslanova',
     day: 4,
@@ -127,9 +127,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     subgroup: 'asagi',
     week: 'ust'
   },
-  // Alt həftə
   {
-    id: '4-1-alt',
+    id: 'asagi-4-1-alt',
     name: 'Verilənlər bazası sistemləri (Mühazirə)',
     teacher: 'Rəsmiyyə Əmiraslanova',
     day: 4,
@@ -139,7 +138,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'alt'
   },
   {
-    id: '4-2-alt',
+    id: 'asagi-4-2-alt',
     name: 'Diskret riyaziyyat (Məşğələ)',
     teacher: 'Lalə Rzayeva',
     day: 4,
@@ -149,7 +148,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'alt'
   },
   {
-    id: '4-3-alt',
+    id: 'asagi-4-3-alt',
     name: 'Kompüter Şəbəkələri (Labaratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
@@ -157,6 +156,161 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     endTime: '18:25',
     subgroup: 'asagi',
     week: 'alt'
+  },
+
+  // --- YUXARI ALTQRUP ---
+  // 1-ci gün (Bazar ertəsi)
+  {
+    id: 'yuxari-1-1',
+    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    teacher: 'Ceyhun Əlizadə',
+    day: 1,
+    startTime: '12:30',
+    endTime: '13:50',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  {
+    id: 'yuxari-1-2',
+    name: 'Əməliyyat sistemləri (Labaratoriya)',
+    teacher: 'Elnur Xəlilov',
+    day: 1,
+    startTime: '14:05',
+    endTime: '15:25',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  {
+    id: 'yuxari-1-3',
+    name: 'Verilənlər bazası sistemləri (Mühazirə)',
+    teacher: 'Rəsmiyyə Əmiraslanova',
+    day: 1,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  // 2-ci gün
+  {
+    id: 'yuxari-2-1',
+    name: 'Diskret riyaziyyat (Mühazirə)',
+    teacher: 'Lalə Rzayeva',
+    day: 2,
+    startTime: '12:30',
+    endTime: '13:50',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  {
+    id: 'yuxari-2-2',
+    name: 'Kompüter Şəbəkələri (Mühazirə)',
+    teacher: 'Ceyhun Əlizadə',
+    day: 2,
+    startTime: '14:05',
+    endTime: '15:25',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  {
+    id: 'yuxari-2-3-ust',
+    name: 'Verilənlər bazası sistemləri (Laboratoriya)',
+    teacher: 'Rəsmiyyə Əmiraslanova',
+    day: 2,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'ust'
+  },
+  {
+    id: 'yuxari-2-3-alt',
+    name: 'Obyekt yönümlü proqramlaşdırma (Laboratoriya)',
+    teacher: 'Validə Nuriyeva',
+    day: 2,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'alt'
+  },
+  // 3-cü gün
+  {
+    id: 'yuxari-3-1',
+    name: 'Əməliyyat sistemləri (Mühazirə)',
+    teacher: 'Elnur Xəlilov',
+    day: 3,
+    startTime: '14:05',
+    endTime: '15:25',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  {
+    id: 'yuxari-3-2',
+    name: 'Obyekt-yönümlü proqramlaşdırma (Mühazirə)',
+    teacher: 'Validə Nuriyeva',
+    day: 3,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'hamisi'
+  },
+  // 4-cü gün
+  {
+    id: 'yuxari-4-1-ust',
+    name: 'Kompüter Şəbəkələri (Mühazirə)',
+    teacher: 'Ceyhun Əlizadə',
+    day: 4,
+    startTime: '14:05',
+    endTime: '15:25',
+    subgroup: 'yuxari',
+    week: 'ust'
+  },
+  {
+    id: 'yuxari-4-2-ust',
+    name: 'Obyekt-yönümlü proqramlaşdırma (Məşğələ)',
+    teacher: 'Validə Nuriyeva',
+    day: 4,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'ust'
+  },
+  {
+    id: 'yuxari-4-3-ust',
+    name: 'Verilənlər bazası sistemləri (Məşğələ)',
+    teacher: 'Rəsmiyyə Əmiraslanova',
+    day: 4,
+    startTime: '17:05',
+    endTime: '18:25',
+    subgroup: 'yuxari',
+    week: 'ust'
+  },
+  {
+    id: 'yuxari-4-1-alt',
+    name: 'Verilənlər bazası sistemləri (Mühazirə)',
+    teacher: 'Rəsmiyyə Əmiraslanova',
+    day: 4,
+    startTime: '14:05',
+    endTime: '15:25',
+    subgroup: 'yuxari',
+    week: 'alt'
+  },
+  {
+    id: 'yuxari-4-2-alt',
+    name: 'Diskret riyaziyyat (Məşğələ)',
+    teacher: 'Lalə Rzayeva',
+    day: 4,
+    startTime: '15:35',
+    endTime: '16:55',
+    subgroup: 'yuxari',
+    week: 'alt'
+  },
+  {
+    id: 'yuxari-4-3-alt',
+    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    teacher: 'Ceyhun Əlizadə',
+    day: 4,
+    startTime: '17:05',
+    endTime: '18:25',
+    subgroup: 'yuxari',
+    week: 'alt'
   }
-  // 5-ci gün (Cümə) - Heç bir dərs yoxdur
 ];
