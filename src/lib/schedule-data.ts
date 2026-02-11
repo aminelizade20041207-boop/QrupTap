@@ -12,7 +12,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '12:30',
     endTime: '13:50',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '309'
   },
   {
     id: 'asagi-1-2',
@@ -22,7 +23,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '309'
   },
   {
     id: 'asagi-1-3',
@@ -32,7 +34,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '305'
   },
   // 2-ci gün
   {
@@ -43,7 +46,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '12:30',
     endTime: '13:50',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   {
     id: 'asagi-2-2',
@@ -53,7 +57,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '305'
   },
   {
     id: 'asagi-2-3-ust',
@@ -63,7 +68,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'ust'
+    week: 'ust',
+    room: '313'
   },
   {
     id: 'asagi-2-3-alt',
@@ -73,7 +79,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'alt'
+    week: 'alt',
+    room: '313'
   },
   // 3-cü gün
   {
@@ -84,7 +91,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   {
     id: 'asagi-3-2',
@@ -94,7 +102,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   // 4-cü gün
   {
@@ -105,7 +114,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'asagi',
-    week: 'ust'
+    week: 'ust',
+    room: '306'
   },
   {
     id: 'asagi-4-2-ust',
@@ -115,7 +125,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'ust'
+    week: 'ust',
+    room: '305'
   },
   {
     id: 'asagi-4-3-ust',
@@ -125,7 +136,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '17:05',
     endTime: '18:25',
     subgroup: 'asagi',
-    week: 'ust'
+    week: 'ust',
+    room: '305'
   },
   {
     id: 'asagi-4-1-alt',
@@ -135,7 +147,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'asagi',
-    week: 'alt'
+    week: 'alt',
+    room: '306'
   },
   {
     id: 'asagi-4-2-alt',
@@ -145,7 +158,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'asagi',
-    week: 'alt'
+    week: 'alt',
+    room: '305'
   },
   {
     id: 'asagi-4-3-alt',
@@ -155,7 +169,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '17:05',
     endTime: '18:25',
     subgroup: 'asagi',
-    week: 'alt'
+    week: 'alt',
+    room: '305'
   },
 
   // --- YUXARI ALTQRUP ---
@@ -168,7 +183,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '12:30',
     endTime: '13:50',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '308'
   },
   {
     id: 'yuxari-1-2',
@@ -178,7 +194,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '308'
   },
   {
     id: 'yuxari-1-3',
@@ -188,7 +205,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '305'
   },
   // 2-ci gün
   {
@@ -199,7 +217,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '12:30',
     endTime: '13:50',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   {
     id: 'yuxari-2-2',
@@ -209,7 +228,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '305'
   },
   {
     id: 'yuxari-2-3-ust',
@@ -219,7 +239,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'ust'
+    week: 'ust',
+    room: '311'
   },
   {
     id: 'yuxari-2-3-alt',
@@ -229,7 +250,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'alt'
+    week: 'alt',
+    room: '311'
   },
   // 3-cü gün
   {
@@ -240,7 +262,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   {
     id: 'yuxari-3-2',
@@ -250,7 +273,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'hamisi'
+    week: 'hamisi',
+    room: '306'
   },
   // 4-cü gün
   {
@@ -261,7 +285,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'yuxari',
-    week: 'ust'
+    week: 'ust',
+    room: '306'
   },
   {
     id: 'yuxari-4-2-ust',
@@ -271,7 +296,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'ust'
+    week: 'ust',
+    room: '305'
   },
   {
     id: 'yuxari-4-3-ust',
@@ -281,7 +307,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '17:05',
     endTime: '18:25',
     subgroup: 'yuxari',
-    week: 'ust'
+    week: 'ust',
+    room: '305'
   },
   {
     id: 'yuxari-4-1-alt',
@@ -291,7 +318,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '14:05',
     endTime: '15:25',
     subgroup: 'yuxari',
-    week: 'alt'
+    week: 'alt',
+    room: '306'
   },
   {
     id: 'yuxari-4-2-alt',
@@ -301,7 +329,8 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '15:35',
     endTime: '16:55',
     subgroup: 'yuxari',
-    week: 'alt'
+    week: 'alt',
+    room: '305'
   },
   {
     id: 'yuxari-4-3-alt',
@@ -311,6 +340,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     startTime: '17:05',
     endTime: '18:25',
     subgroup: 'yuxari',
-    week: 'alt'
+    week: 'alt',
+    room: '305'
   }
 ];

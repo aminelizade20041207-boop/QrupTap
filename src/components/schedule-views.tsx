@@ -5,7 +5,7 @@ import React from 'react';
 import { ClassSession, DAYS_OF_WEEK } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User as UserIcon, BookOpen } from 'lucide-react';
+import { Clock, User as UserIcon, BookOpen, MapPin } from 'lucide-react';
 
 interface ViewProps {
   classes: ClassSession[];
@@ -34,11 +34,18 @@ export const DailyView = ({ classes }: ViewProps) => {
                 <div className="flex-1 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="font-bold text-xl leading-tight text-foreground">{c.name}</h4>
-                    {c.week !== 'hamisi' && (
-                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                        {c.week === 'ust' ? 'ÜST' : 'ALT'}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {c.room && (
+                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                          <MapPin className="h-3 w-3 mr-1" /> {c.room}
+                        </Badge>
+                      )}
+                      {c.week !== 'hamisi' && (
+                        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                          {c.week === 'ust' ? 'ÜST' : 'ALT'}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -93,9 +100,16 @@ export const WeeklyView = ({ classes }: ViewProps) => {
                     <CardContent className="p-3 space-y-2">
                       <p className="font-bold text-sm text-foreground leading-snug">{c.name}</p>
                       <div className="flex flex-col text-xs text-muted-foreground gap-1.5">
-                        <span className="flex items-center gap-1 font-semibold text-primary">
-                          <Clock className="h-3 w-3" /> {c.startTime}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1 font-semibold text-primary">
+                            <Clock className="h-3 w-3" /> {c.startTime}
+                          </span>
+                          {c.room && (
+                            <span className="flex items-center gap-1 font-bold text-accent">
+                              <MapPin className="h-3 w-3" /> {c.room}
+                            </span>
+                          )}
+                        </div>
                         {c.teacher && (
                           <span className="flex items-center gap-1">
                             <UserIcon className="h-3 w-3" /> {c.teacher.split(' ')[0]}
