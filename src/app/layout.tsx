@@ -15,11 +15,8 @@ export const metadata: Metadata = {
     title: 'İT24',
   },
   icons: {
-    icon: 'https://picsum.photos/seed/it-coding/192/192',
-    apple: 'https://picsum.photos/seed/it-coding/192/192',
-  },
-  formatDetection: {
-    telephone: false,
+    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    apple: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
   },
 };
 

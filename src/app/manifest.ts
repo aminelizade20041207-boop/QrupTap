@@ -14,13 +14,13 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: '/',
     icons: [
       {
-        src: 'https://picsum.photos/seed/it-coding/192/192',
+        src: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: 'https://picsum.photos/seed/it-coding/512/512',
+        src: 'https://placehold.co/512x512/4A90E2/ffffff?text=IT24',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',

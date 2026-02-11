@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 
@@ -31,7 +31,6 @@ export const GradeCalculator = () => {
   const hasSeminars = !isOS;
   
   const maxLabs = isCN ? 8 : (isOS ? 8 : 5);
-  const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
   useEffect(() => {
@@ -58,7 +57,7 @@ export const GradeCalculator = () => {
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
-    // 2. Kollokvium və Seminar balları
+    // 2. Kollokvium və Seminar balları (Natamam girişlər dəstəklənir)
     const allGrades = [
       ...(hasColls ? colloquiums : []),
       ...(hasSeminars ? seminars : [])
@@ -70,8 +69,6 @@ export const GradeCalculator = () => {
     }
 
     // 3. Laboratoriya balları
-    // Qeyd: Əməliyyat sistemlərində laboratoriya var (30 bal), amma yuxarıda hasLabs şərti fərqli idi.
-    // Şərtə uyğun düzəliş: OS-də lab var.
     const effectiveMaxLabs = isOS ? 8 : (isCN ? 8 : (isDiscrete ? 0 : 5));
     if (effectiveMaxLabs > 0) {
       const labScore = (completedLabs / effectiveMaxLabs) * (isOS ? 30 : 15);
@@ -81,22 +78,28 @@ export const GradeCalculator = () => {
     setResult(parseFloat(total.toFixed(2)));
   };
 
+  const getResultMessage = (res: number) => {
+    if (res >= 34) return { text: "Əla! İmtahana tam hazırsan.", color: "bg-green-500", icon: <CheckCircle2 className="h-5 w-5" /> };
+    if (res >= 25) return { text: "Yaxşı! Giriş balın çatırdı.", color: "bg-primary", icon: <CheckCircle2 className="h-5 w-5" /> };
+    return { text: "Kafi deyil! Daha çox çalışmalısan.", color: "bg-destructive", icon: <AlertCircle className="h-5 w-5" /> };
+  };
+
   return (
     <Card className="shadow-lg border-primary/10">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calculator className="h-6 w-6 text-primary" />
+        <CardTitle className="flex items-center gap-2 text-primary">
+          <Calculator className="h-6 w-6" />
           Giriş Balı Hesablayıcı
         </CardTitle>
         <CardDescription>
-          Qiymətlərinizi daxil edərək imtahana giriş balınızı öyrənin.
+          Qiymətlərinizi daxil edin. Natamam xanalar hesablamaya təsir etmir.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="subject">Fənn Seçin</Label>
           <Select onValueChange={setSelectedSubject} value={selectedSubject}>
-            <SelectTrigger>
+            <SelectTrigger id="subject" className="h-12">
               <SelectValue placeholder="Dərsi seçin" />
             </SelectTrigger>
             <SelectContent>
@@ -114,27 +117,27 @@ export const GradeCalculator = () => {
                 <Label>Davamiyyət (Max 10)</Label>
                 <Input 
                   type="number" 
-                  max="10"
-                  placeholder="Məs: 10"
+                  placeholder="Xal daxil et..."
                   value={attendance} 
                   onChange={(e) => setAttendance(e.target.value)} 
+                  className="h-11"
                 />
               </div>
               <div className="space-y-2">
                 <Label>Sərbəst İş (Max 10)</Label>
                 <Input 
                   type="number" 
-                  max="10"
-                  placeholder="Məs: 10"
+                  placeholder="Xal daxil et..."
                   value={independentWork} 
                   onChange={(e) => setIndependentWork(e.target.value)} 
+                  className="h-11"
                 />
               </div>
             </div>
 
             {hasColls && (
               <div className="space-y-3">
-                <Label>Kollokvium Qiymətləri</Label>
+                <Label>Kollokvium Qiymətləri (Natamam ola bilər)</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {colloquiums.map((val, idx) => (
                     <Input 
@@ -147,6 +150,7 @@ export const GradeCalculator = () => {
                         c[idx] = e.target.value;
                         setColloquiums(c);
                       }} 
+                      className="h-11"
                     />
                   ))}
                 </div>
@@ -172,7 +176,7 @@ export const GradeCalculator = () => {
                         placeholder={`Sem ${idx + 1}`} 
                         value={sem} 
                         onChange={(e) => updateSeminar(idx, e.target.value)}
-                        className="pr-8"
+                        className="pr-8 h-11"
                       />
                       <button 
                         onClick={() => removeSeminar(idx)}
@@ -190,7 +194,7 @@ export const GradeCalculator = () => {
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
-                  <Badge variant="outline" className="font-bold text-primary">
+                  <Badge variant="outline" className="font-bold text-primary bg-white">
                     {completedLabs} / {isOS ? 8 : (isCN ? 8 : 5)}
                   </Badge>
                 </div>
@@ -199,9 +203,9 @@ export const GradeCalculator = () => {
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1 === completedLabs ? idx : idx + 1)}
-                      className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center ${
+                      className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold ${
                         idx < completedLabs 
-                          ? 'bg-primary border-primary text-white shadow-inner' 
+                          ? 'bg-primary border-primary text-white shadow-md scale-105' 
                           : 'bg-white border-muted-foreground/20 hover:border-primary/50'
                       }`}
                     >
@@ -210,23 +214,22 @@ export const GradeCalculator = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2">
-                  * {selectedSubject} üçün laboratoriya balı: hər verilmiş laboratoriya üzrə bölünməklə cəmi <b>{isOS ? 30 : 15} bal</b>.
+                  * {selectedSubject} üçün cəmi <b>{isOS ? 30 : 15} bal</b> verilmiş laboratoriyalara bölünür.
                 </p>
               </div>
             )}
 
-            <Button onClick={calculateGrade} className="w-full text-lg h-12 gap-2 mt-4 shadow-md">
-              <Calculator className="h-5 w-5" /> Hesabla
+            <Button onClick={calculateGrade} className="w-full text-lg h-14 gap-2 mt-4 shadow-lg font-bold">
+              <Calculator className="h-6 w-6" /> Hesabla
             </Button>
 
             {result !== null && (
-              <div className="mt-6 p-6 bg-primary text-white rounded-2xl text-center animate-in zoom-in-95 duration-300 shadow-xl">
-                <p className="text-sm font-medium opacity-90 mb-1">Sizin Giriş Balınız</p>
-                <h2 className="text-5xl font-bold">{result}</h2>
-                <div className="mt-4 flex justify-center gap-2">
-                  <Badge variant="secondary" className="bg-white/20 text-white border-none">
-                    {result >= 25 ? 'Əla! İmtahana hazırsan.' : 'Daha çox çalışmalısan!'}
-                  </Badge>
+              <div className={`mt-6 p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center animate-in zoom-in-95 duration-300 shadow-xl`}>
+                <p className="text-sm font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
+                <h2 className="text-6xl font-black mb-3">{result}</h2>
+                <div className="flex justify-center items-center gap-2 bg-white/20 py-2 px-4 rounded-full w-fit mx-auto">
+                  {getResultMessage(result).icon}
+                  <span className="font-bold text-sm">{getResultMessage(result).text}</span>
                 </div>
               </div>
             )}
@@ -234,9 +237,9 @@ export const GradeCalculator = () => {
         )}
 
         {!selectedSubject && (
-          <div className="py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
-            <Calculator className="h-12 w-12 mx-auto mb-2 opacity-20" />
-            <p>Zəhmət olmasa yuxarıdan bir fənn seçin.</p>
+          <div className="py-16 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+            <Calculator className="h-16 w-16 mx-auto mb-4 opacity-10" />
+            <p className="text-lg font-medium">Başlamaq üçün bir fənn seçin</p>
           </div>
         )}
       </CardContent>

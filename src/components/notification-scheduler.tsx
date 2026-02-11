@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
-import { ClassSession, UserProfile } from '@/lib/types';
+import { UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const NotificationScheduler = () => {
@@ -23,7 +23,6 @@ export const NotificationScheduler = () => {
       const weekIndex = Math.floor(diffInDays / 7);
       const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
-      // Bugünün dərsləri
       const dailyClasses = FIXED_SCHEDULE
         .filter(c => 
           (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
@@ -38,32 +37,29 @@ export const NotificationScheduler = () => {
         classTime.setHours(startHours, startMinutes, 0, 0);
 
         if (index === 0) {
-          // Günün İLK dərsi: 20 dəqiqə qalmış
           const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
           if (diffMinutes > 19.5 && diffMinutes < 20.5) {
             showNotification(`Günün İlk Dərsi: ${c.name}`, `Dərs 20 dəqiqəyə başlayacaq. Otaq: ${c.room || '?'}`);
           }
         } else {
-          // Digər dərslər: Əvvəlki dərsin bitdiyi an
           const prevClass = dailyClasses[index - 1];
           const [endHours, endMinutes] = prevClass.endTime.split(':').map(Number);
           const prevEndTime = new Date(now);
           prevEndTime.setHours(endHours, endMinutes, 0, 0);
 
           const diffSeconds = (now.getTime() - prevEndTime.getTime()) / 1000;
-          // Əgər əvvəlki dərs indicə (son 30 saniyədə) bitibsə
           if (diffSeconds >= 0 && diffSeconds < 31) {
-            showNotification(`Növbəti Dərs: ${c.name}`, `Əvvəlki dərs bitdi. Yeni dərs otağı: ${c.room || '?'}`);
+            showNotification(`Növbəti Dərs: ${c.name}`, `Tənəffüs başladı. Yeni dərs otağı: ${c.room || '?'}`);
           }
         }
       });
-    }, 30000); // Hər 30 saniyədən bir yoxla
+    }, 30000);
 
     return () => clearInterval(checkInterval);
   }, [toast]);
 
   const showNotification = async (title: string, body: string) => {
-    const iconUrl = 'https://picsum.photos/seed/it-coding/192/192';
+    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24';
     
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       if ('serviceWorker' in navigator) {
