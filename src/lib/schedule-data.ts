@@ -5,7 +5,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   // --- AŞAĞI ALTQRUP ---
   {
     id: 'asagi-1-1',
-    name: 'Əməliyyat sistemləri (Labaratoriya)',
+    name: 'Əməliyyat sistemləri (Laboratoriya)',
     teacher: 'Elnur Xəlilov',
     day: 1,
     startTime: '12:30',
@@ -16,7 +16,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'asagi-1-2',
-    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    name: 'Kompüter Şəbəkələri (Laboratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 1,
     startTime: '14:05',
@@ -60,7 +60,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'asagi-2-3-ust',
-    name: 'Obyekt yönümlü proqramlaşdırma (Laboratoriya)',
+    name: 'Obyekt-yönümlü proqramlaşdırma (Laboratoriya)',
     teacher: 'Məleykə Heydərova',
     day: 2,
     startTime: '15:35',
@@ -159,7 +159,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'asagi-4-3-alt',
-    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    name: 'Kompüter Şəbəkələri (Laboratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
     startTime: '17:05',
@@ -172,7 +172,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   // --- YUXARI ALTQRUP ---
   {
     id: 'yuxari-1-1',
-    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    name: 'Kompüter Şəbəkələri (Laboratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 1,
     startTime: '12:30',
@@ -183,7 +183,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'yuxari-1-2',
-    name: 'Əməliyyat sistemləri (Labaratoriya)',
+    name: 'Əməliyyat sistemləri (Laboratoriya)',
     teacher: 'Elnur Xəlilov',
     day: 1,
     startTime: '14:05',
@@ -238,7 +238,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'yuxari-2-3-alt',
-    name: 'Obyekt yönümlü proqramlaşdırma (Laboratoriya)',
+    name: 'Obyekt-yönümlü proqramlaşdırma (Laboratoriya)',
     teacher: 'Validə Nuriyeva',
     day: 2,
     startTime: '15:35',
@@ -326,7 +326,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'yuxari-4-3-alt',
-    name: 'Kompüter Şəbəkələri (Labaratoriya)',
+    name: 'Kompüter Şəbəkələri (Laboratoriya)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
     startTime: '17:05',

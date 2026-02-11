@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, Info, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle2 } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 
@@ -21,18 +22,18 @@ export const GradeCalculator = () => {
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
-  const isOS = selectedSubject.toLowerCase().includes('əməliyyat sistemləri');
-  const isDiscrete = selectedSubject.toLowerCase().includes('diskret riyaziyyat');
-  const isCN = selectedSubject.toLowerCase().includes('kompüter şəbəkələri');
+  const isOS = selectedSubject.toLowerCase().includes('əməliyyat');
+  const isDiscrete = selectedSubject.toLowerCase().includes('diskret');
+  const isCN = selectedSubject.toLowerCase().includes('şəbəkə');
 
-  const hasLabs = !isDiscrete && !isOS; // İstifadəçi dedi: OS və Diskret-də lab yoxdur
-  const hasColls = !isOS; // OS-də kollokvium yoxdur
+  const hasLabs = !isDiscrete; 
+  const hasColls = !isOS;
+  const hasSeminars = !isOS;
   
   const maxLabs = (isOS || isCN) ? 8 : 5;
   const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
-  // Fənn dəyişəndə datanı sıfırla
   useEffect(() => {
     setResult(null);
     setCompletedLabs(0);
@@ -58,7 +59,7 @@ export const GradeCalculator = () => {
     // 2. Kollokvium və Seminar balları
     const allGrades = [
       ...(hasColls ? colloquiums : []),
-      ...seminars
+      ...(hasSeminars ? seminars : [])
     ].map(Number).filter(n => !isNaN(n) && n > 0);
 
     if (allGrades.length > 0) {
@@ -66,7 +67,7 @@ export const GradeCalculator = () => {
       total += avg * multiplier;
     }
 
-    // 3. Laboratoriya balları (Qiymət yoxdur, sadəcə sayına görə)
+    // 3. Laboratoriya balları
     if (hasLabs) {
       const labScore = (completedLabs / maxLabs) * labTotalPoints;
       total += labScore;
@@ -145,36 +146,38 @@ export const GradeCalculator = () => {
               </div>
             )}
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  Seminar Qiymətləri
-                  <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">{seminars.length}</span>
-                </Label>
-                <Button variant="outline" size="sm" onClick={addSeminar} className="h-8 gap-1">
-                  <Plus className="h-4 w-4" /> Əlavə et
-                </Button>
+            {hasSeminars && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    Seminar Qiymətləri
+                    <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">{seminars.length}</span>
+                  </Label>
+                  <Button variant="outline" size="sm" onClick={addSeminar} className="h-8 gap-1">
+                    <Plus className="h-4 w-4" /> Əlavə et
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {seminars.map((sem, idx) => (
+                    <div key={idx} className="relative group">
+                      <Input 
+                        type="number" 
+                        placeholder={`Sem ${idx + 1}`} 
+                        value={sem} 
+                        onChange={(e) => updateSeminar(idx, e.target.value)}
+                        className="pr-8"
+                      />
+                      <button 
+                        onClick={() => removeSeminar(idx)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {seminars.map((sem, idx) => (
-                  <div key={idx} className="relative group">
-                    <Input 
-                      type="number" 
-                      placeholder={`Sem ${idx + 1}`} 
-                      value={sem} 
-                      onChange={(e) => updateSeminar(idx, e.target.value)}
-                      className="pr-8"
-                    />
-                    <button 
-                      onClick={() => removeSeminar(idx)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
             {hasLabs && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
@@ -200,7 +203,7 @@ export const GradeCalculator = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2">
-                  * Laboratoriyalar üçün qiymət daxil edilmir, sadəcə sayına görə ballar (cəmi {labTotalPoints} bal) hesablanır.
+                  * Laboratoriyalar üçün qiymət daxil edilmir, sayına görə ballar (OS üçün max 30, digərləri 15 bal) hesablanır.
                 </p>
               </div>
             )}
