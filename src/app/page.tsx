@@ -77,17 +77,28 @@ export default function Home() {
       return;
     }
 
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      registration.showNotification('İT24 Bildiriş Testi', {
-        body: 'Təbriklər! Sistem bildirişləri artıq telefonun yuxarı hissəsində görünür.',
-        icon: 'https://picsum.photos/seed/it24-icon/192/192',
-        vibrate: [200, 100, 200]
-      });
-    } else {
-      new Notification('İT24 Bildiriş Testi', { body: 'Təbriklər! Bildiriş sistemi işləyir.' });
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration) {
+          await registration.showNotification('İT24 Bildiriş Testi', {
+            body: 'Təbriklər! Sistem bildirişləri artıq telefonun yuxarı hissəsində görünür.',
+            icon: 'https://picsum.photos/seed/it24-icon/192/192',
+            badge: 'https://picsum.photos/seed/it24-icon/192/192',
+            vibrate: [200, 100, 200],
+            tag: 'test-notification'
+          });
+          toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
+        } else {
+          throw new Error('Service Worker tapılmadı');
+        }
+      } else {
+        new Notification('İT24 Bildiriş Testi', { body: 'Təbriklər! Bildiriş sistemi işləyir.' });
+        toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
+      }
+    } catch (err) {
+      toast({ variant: "destructive", title: "Xəta", description: "Bildiriş göndərilə bilmədi. Səhifəni yeniləyib bir daha cəhd edin." });
     }
-    toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
   };
 
   return (

@@ -2,19 +2,6 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
-  // --- TEST BİLDİRİŞİ (Saat 14:10-da bildiriş gəlməsi üçün dərsi 14:15-ə qoyuruq) ---
-  ...[0, 1, 2, 3, 4, 5, 6].map(day => ({
-    id: `test-notification-${day}`,
-    name: 'TEST: Bildiriş Yoxlaması',
-    teacher: 'Sistem',
-    day: day as any,
-    startTime: '14:15',
-    endTime: '15:30',
-    subgroup: 'hamisi',
-    week: 'hamisi',
-    room: 'TEST'
-  })),
-
   // --- AŞAĞI ALTQRUP ---
   {
     id: 'asagi-1-1',
