@@ -53,11 +53,9 @@ export const GradeCalculator = () => {
   const calculateGrade = () => {
     let total = 0;
 
-    // 1. Davamiyyət və Sərbəst iş (max 20)
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
-    // 2. Kollokvium və Seminar balları (Natamam girişlər dəstəklənir)
     const allGrades = [
       ...(hasColls ? colloquiums : []),
       ...(hasSeminars ? seminars : [])
@@ -68,7 +66,6 @@ export const GradeCalculator = () => {
       total += avg * multiplier;
     }
 
-    // 3. Laboratoriya balları
     const effectiveMaxLabs = isOS ? 8 : (isCN ? 8 : (isDiscrete ? 0 : 5));
     if (effectiveMaxLabs > 0) {
       const labScore = (completedLabs / effectiveMaxLabs) * (isOS ? 30 : 15);
@@ -79,9 +76,9 @@ export const GradeCalculator = () => {
   };
 
   const getResultMessage = (res: number) => {
-    if (res >= 34) return { text: "Əla! İmtahana tam hazırsan.", color: "bg-green-500", icon: <CheckCircle2 className="h-5 w-5" /> };
-    if (res >= 25) return { text: "Yaxşı! Giriş balın çatırdı.", color: "bg-primary", icon: <CheckCircle2 className="h-5 w-5" /> };
-    return { text: "Kafi deyil! Daha çox çalışmalısan.", color: "bg-destructive", icon: <AlertCircle className="h-5 w-5" /> };
+    if (res >= 34) return { text: "Əla! İmtahana hazırsan.", color: "bg-green-500", icon: <CheckCircle2 className="h-5 w-5" /> };
+    if (res >= 25) return { text: "İmtahana icazə verilir.", color: "bg-primary", icon: <CheckCircle2 className="h-5 w-5" /> };
+    return { text: "Kafi deyil!", color: "bg-destructive", icon: <AlertCircle className="h-5 w-5" /> };
   };
 
   return (
@@ -92,7 +89,7 @@ export const GradeCalculator = () => {
           Giriş Balı Hesablayıcı
         </CardTitle>
         <CardDescription>
-          Qiymətlərinizi daxil edin. Natamam xanalar hesablamaya təsir etmir.
+          Qiymətlərinizi daxil edin.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -116,8 +113,8 @@ export const GradeCalculator = () => {
               <div className="space-y-2">
                 <Label>Davamiyyət (Max 10)</Label>
                 <Input 
-                  type="number" 
-                  placeholder="Xal daxil et..."
+                  type="text" 
+                  placeholder="Məs: 10"
                   value={attendance} 
                   onChange={(e) => setAttendance(e.target.value)} 
                   className="h-11"
@@ -126,8 +123,8 @@ export const GradeCalculator = () => {
               <div className="space-y-2">
                 <Label>Sərbəst İş (Max 10)</Label>
                 <Input 
-                  type="number" 
-                  placeholder="Xal daxil et..."
+                  type="text" 
+                  placeholder="Məs: 10"
                   value={independentWork} 
                   onChange={(e) => setIndependentWork(e.target.value)} 
                   className="h-11"
@@ -137,13 +134,13 @@ export const GradeCalculator = () => {
 
             {hasColls && (
               <div className="space-y-3">
-                <Label>Kollokvium Qiymətləri (Natamam ola bilər)</Label>
+                <Label>Kollokvium Qiymətləri</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {colloquiums.map((val, idx) => (
                     <Input 
                       key={idx}
                       type="number" 
-                      placeholder={`Koll ${idx + 1}`} 
+                      placeholder={`Məs: 10`} 
                       value={val} 
                       onChange={(e) => {
                         const c = [...colloquiums];
@@ -162,7 +159,6 @@ export const GradeCalculator = () => {
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2">
                     Seminar Qiymətləri
-                    <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">{seminars.length}</span>
                   </Label>
                   <Button variant="outline" size="sm" onClick={addSeminar} className="h-8 gap-1">
                     <Plus className="h-4 w-4" /> Əlavə et
@@ -173,7 +169,7 @@ export const GradeCalculator = () => {
                     <div key={idx} className="relative group">
                       <Input 
                         type="number" 
-                        placeholder={`Sem ${idx + 1}`} 
+                        placeholder={`Məs: 10`} 
                         value={sem} 
                         onChange={(e) => updateSeminar(idx, e.target.value)}
                         className="pr-8 h-11"
@@ -239,7 +235,7 @@ export const GradeCalculator = () => {
         {!selectedSubject && (
           <div className="py-16 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
             <Calculator className="h-16 w-16 mx-auto mb-4 opacity-10" />
-            <p className="text-lg font-medium">Başlamaq üçün bir fənn seçin</p>
+            <p className="text-lg font-medium">Zəhmət olmasa dərsi seçin</p>
           </div>
         )}
       </CardContent>
