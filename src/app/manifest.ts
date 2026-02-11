@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    id: 'com.it24.app',
+    id: 'com.it24.app.v1',
     name: 'İT24 Dərs Cədvəli',
     short_name: 'İT24',
     description: 'İT24 qrupu üçün mərkəzi dərs cədvəli, giriş balı hesablayıcı və xatırlatmalar.',
@@ -20,25 +20,25 @@ export default function manifest(): MetadataRoute.Manifest {
     prefer_related_applications: false,
     icons: [
       {
-        src: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24.png',
+        src: 'https://placehold.co/192x192.png?text=IT24',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24.png',
+        src: 'https://placehold.co/192x192.png?text=IT24',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: 'https://placehold.co/512x512/4A90E2/ffffff?text=IT24.png',
+        src: 'https://placehold.co/512x512.png?text=IT24',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: 'https://placehold.co/512x512/4A90E2/ffffff?text=IT24.png',
+        src: 'https://placehold.co/512x512.png?text=IT24',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable',
