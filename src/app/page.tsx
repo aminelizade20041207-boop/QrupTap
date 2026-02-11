@@ -31,7 +31,6 @@ export default function Home() {
       setNotifPermission(Notification.permission);
     }
 
-    // Reference start date for 2026 spring semester
     const startDate = new Date('2026-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -78,7 +77,7 @@ export default function Home() {
       return;
     }
 
-    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24';
+    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24.png';
 
     try {
       if ('serviceWorker' in navigator) {
@@ -88,7 +87,8 @@ export default function Home() {
           icon: iconUrl,
           badge: iconUrl,
           vibrate: [200, 100, 200],
-          tag: 'test-notification'
+          tag: 'test-notification',
+          renotify: true
         });
         toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
       } else {
