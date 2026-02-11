@@ -52,7 +52,6 @@ export const GradeCalculator = () => {
 
   const calculateGrade = () => {
     let total = 0;
-
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
@@ -71,7 +70,6 @@ export const GradeCalculator = () => {
       const labScore = (completedLabs / effectiveMaxLabs) * (isOS ? 30 : 15);
       total += labScore;
     }
-
     setResult(parseFloat(total.toFixed(2)));
   };
 
@@ -191,11 +189,11 @@ export const GradeCalculator = () => {
                 <div className="flex items-center justify-between mb-2">
                   <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
                   <Badge variant="outline" className="font-bold text-primary bg-white">
-                    {completedLabs} / {isOS ? 8 : (isCN ? 8 : 5)}
+                    {completedLabs} / {maxLabs}
                   </Badge>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {Array.from({ length: isOS ? 8 : (isCN ? 8 : 5) }).map((_, idx) => (
+                  {Array.from({ length: maxLabs }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1 === completedLabs ? idx : idx + 1)}
