@@ -182,7 +182,7 @@ export const GradeCalculator = () => {
             {hasLabs && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="font-bold">Keçilmiş Laboratoriya Sayı</Label>
+                  <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
                   <Badge variant="outline" className="font-bold text-primary">
                     {completedLabs} / {maxLabs}
                   </Badge>
@@ -203,7 +203,7 @@ export const GradeCalculator = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2">
-                  * Laboratoriyalar üçün qiymət daxil edilmir, sayına görə ballar (OS üçün max 30, digərləri 15 bal) hesablanır.
+                  * {selectedSubject} üçün laboratoriya balı: hər verilmiş laboratoriya üzrə bölünməklə cəmi <b>{labTotalPoints} bal</b>.
                 </p>
               </div>
             )}
