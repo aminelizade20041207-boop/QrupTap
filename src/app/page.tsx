@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,11 +6,11 @@ import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2 } fr
 import { UserProfile, WeekType } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { GradeCalculator } from '@/components/grade-calculator';
 
 export default function Home() {
   const { toast } = useToast();
@@ -176,21 +175,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="calculator" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <Card className="border-dashed border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-primary" />
-                  Giriş Balı Hesablama
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-20 text-center text-muted-foreground">
-                <div className="bg-primary/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calculator className="h-8 w-8 text-primary opacity-40" />
-                </div>
-                <p className="text-lg font-medium text-foreground">Bu bölmə üzərində iş gedir.</p>
-                <p className="text-sm">Tezliklə burada imtahana giriş balınızı rahatlıqla hesablaya biləcəksiniz.</p>
-              </CardContent>
-            </Card>
+            <GradeCalculator />
           </TabsContent>
         </Tabs>
 
