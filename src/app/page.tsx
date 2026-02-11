@@ -3,15 +3,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Info } from 'lucide-react';
+import { LayoutGrid, Bell, Calculator, User, Info, Smartphone } from 'lucide-react';
 import { UserProfile, WeekType } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
+  const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
   const [isClient, setIsClient] = useState(false);
@@ -23,8 +26,6 @@ export default function Home() {
       setProfile(JSON.parse(savedProfile));
     }
 
-    // Week calculation logic: 16 Feb 2025 is the start (Sunday, start of week)
-    // Actually Feb 16 is a Sunday. Let's assume the semester week starts then.
     const startDate = new Date('2025-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -41,7 +42,6 @@ export default function Home() {
     }} />;
   }
 
-  // Filter classes based on user's subgroup and current week
   const filteredClasses = FIXED_SCHEDULE.filter(c => 
     (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
     (c.week === 'hamisi' || c.week === currentWeek)
@@ -50,6 +50,31 @@ export default function Home() {
   const resetProfile = () => {
     localStorage.removeItem('it24_profile');
     setProfile(null);
+  };
+
+  const triggerTestNotification = () => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification('İT24 Bildiriş Testi', {
+            body: 'Təbriklər! Bildiriş sistemi işləyir.',
+          });
+          toast({ title: "Test Bildirişi", description: "Bildiriş göndərildi!" });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Bildiriş İcazəsi",
+            description: "Zəhmət olmasa bildirişlərə icazə verin.",
+          });
+        }
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Xəta",
+        description: "Bu cihaz bildirişləri dəstəkləmir.",
+      });
+    }
   };
 
   return (
@@ -72,13 +97,23 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
-            <Info className="h-5 w-5 text-primary" />
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Cari Həftə</span>
-              <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="w-fit font-bold">
-                {currentWeek === 'ust' ? 'ÜST HƏFTƏ' : 'ALT HƏFTƏ'}
-              </Badge>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={triggerTestNotification}
+              className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+            >
+              <Smartphone className="h-4 w-4" /> Test Bildirişi
+            </Button>
+            <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
+              <Info className="h-5 w-5 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Cari Həftə</span>
+                <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="w-fit font-bold">
+                  {currentWeek === 'ust' ? 'ÜST HƏFTƏ' : 'ALT HƏFTƏ'}
+                </Badge>
+              </div>
             </div>
           </div>
         </header>

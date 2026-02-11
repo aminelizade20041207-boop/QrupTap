@@ -2,8 +2,20 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
+  // --- TEST BİLDİRİŞİ (Hər gün saat 13:40-da bildiriş gəlməsi üçün) ---
+  ...[0, 1, 2, 3, 4, 5, 6].map(day => ({
+    id: `test-notification-${day}`,
+    name: 'TEST: Bildiriş Yoxlaması',
+    teacher: 'Sistem',
+    day: day as any,
+    startTime: '13:45',
+    endTime: '15:00',
+    subgroup: 'hamisi',
+    week: 'hamisi',
+    room: 'TEST'
+  })),
+
   // --- AŞAĞI ALTQRUP ---
-  // 1-ci gün (Bazar ertəsi)
   {
     id: 'asagi-1-1',
     name: 'Əməliyyat sistemləri (Labaratoriya)',
@@ -37,7 +49,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi',
     room: '305'
   },
-  // 2-ci gün
   {
     id: 'asagi-2-1',
     name: 'Diskret riyaziyyat (Mühazirə)',
@@ -82,7 +93,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'alt',
     room: '313'
   },
-  // 3-cü gün
   {
     id: 'asagi-3-1',
     name: 'Əməliyyat sistemləri (Mühazirə)',
@@ -105,7 +115,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi',
     room: '306'
   },
-  // 4-cü gün
   {
     id: 'asagi-4-1-ust',
     name: 'Kompüter Şəbəkələri (Mühazirə)',
@@ -174,7 +183,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
 
   // --- YUXARI ALTQRUP ---
-  // 1-ci gün (Bazar ertəsi)
   {
     id: 'yuxari-1-1',
     name: 'Kompüter Şəbəkələri (Labaratoriya)',
@@ -208,7 +216,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi',
     room: '305'
   },
-  // 2-ci gün
   {
     id: 'yuxari-2-1',
     name: 'Diskret riyaziyyat (Mühazirə)',
@@ -253,7 +260,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'alt',
     room: '311'
   },
-  // 3-cü gün
   {
     id: 'yuxari-3-1',
     name: 'Əməliyyat sistemləri (Mühazirə)',
@@ -276,7 +282,6 @@ export const FIXED_SCHEDULE: ClassSession[] = [
     week: 'hamisi',
     room: '306'
   },
-  // 4-cü gün
   {
     id: 'yuxari-4-1-ust',
     name: 'Kompüter Şəbəkələri (Mühazirə)',
