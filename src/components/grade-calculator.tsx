@@ -55,10 +55,9 @@ export const GradeCalculator = () => {
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
-    const allGrades = [
-      ...(hasColls ? colloquiums : []),
-      ...(hasSeminars ? seminars : [])
-    ].map(Number).filter(n => !isNaN(n) && n > 0);
+    const collValues = colloquiums.map(Number).filter(n => !isNaN(n) && n > 0);
+    const semValues = seminars.map(Number).filter(n => !isNaN(n) && n > 0);
+    const allGrades = [...collValues, ...semValues];
 
     if (allGrades.length > 0) {
       const avg = allGrades.reduce((a, b) => a + b, 0) / allGrades.length;
@@ -137,7 +136,7 @@ export const GradeCalculator = () => {
                   {colloquiums.map((val, idx) => (
                     <Input 
                       key={idx}
-                      type="number" 
+                      type="text" 
                       placeholder={`Məs: 10`} 
                       value={val} 
                       onChange={(e) => {
@@ -166,7 +165,7 @@ export const GradeCalculator = () => {
                   {seminars.map((sem, idx) => (
                     <div key={idx} className="relative group">
                       <Input 
-                        type="number" 
+                        type="text" 
                         placeholder={`Məs: 10`} 
                         value={sem} 
                         onChange={(e) => updateSeminar(idx, e.target.value)}

@@ -77,7 +77,7 @@ export default function Home() {
       return;
     }
 
-    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24.png';
+    const iconUrl = 'https://placehold.co/192x192.png?text=IT24';
 
     try {
       if ('serviceWorker' in navigator) {
@@ -185,7 +185,7 @@ export default function Home() {
         </Tabs>
 
         <footer className="pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} İT24 - Əlizadə Akşin</p>
+          <p>© 2026 İT24 - Əlizadə Akşin</p>
           <p className="text-[10px] mt-1 opacity-50">16 fevral 2026-cı il tarixindən etibarən hesablanır</p>
         </footer>
       </div>

@@ -46,14 +46,14 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     screenshots: [
       {
-        src: 'https://picsum.photos/seed/it24mobile1/1080/1920.png',
+        src: 'https://placehold.co/1080x1920.png?text=Günlük+Cədvəl',
         sizes: '1080x1920',
         type: 'image/png',
         label: 'Günlük Dərs Cədvəli',
         form_factor: 'narrow'
       },
       {
-        src: 'https://picsum.photos/seed/it24wide1/1920/1080.png',
+        src: 'https://placehold.co/1920x1080.png?text=Həftəlik+Cədvəl',
         sizes: '1920x1080',
         type: 'image/png',
         label: 'Həftəlik Cədvəl Görünüşü',
