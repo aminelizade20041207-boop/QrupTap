@@ -52,28 +52,27 @@ export default function Home() {
     setProfile(null);
   };
 
-  const triggerTestNotification = () => {
-    if ('Notification' in window) {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          new Notification('İT24 Bildiriş Testi', {
-            body: 'Təbriklər! Bildiriş sistemi işləyir.',
-          });
-          toast({ title: "Test Bildirişi", description: "Bildiriş göndərildi!" });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Bildiriş İcazəsi",
-            description: "Zəhmət olmasa bildirişlərə icazə verin.",
-          });
-        }
-      });
+  const triggerTestNotification = async () => {
+    if (!('Notification' in window)) {
+      toast({ variant: "destructive", title: "Xəta", description: "Bu cihaz bildirişləri dəstəkləmir." });
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        registration.showNotification('İT24 Bildiriş Testi', {
+          body: 'Təbriklər! Sistem bildirişləri artıq işləyir.',
+          icon: 'https://picsum.photos/seed/it24-icon/192/192',
+          vibrate: [200, 100, 200]
+        });
+      } else {
+        new Notification('İT24 Bildiriş Testi', { body: 'Təbriklər! Bildiriş sistemi işləyir.' });
+      }
+      toast({ title: "Test Bildirişi", description: "Sistem bildirişi göndərildi!" });
     } else {
-      toast({
-        variant: "destructive",
-        title: "Xəta",
-        description: "Bu cihaz bildirişləri dəstəkləmir.",
-      });
+      toast({ variant: "destructive", title: "İcazə Verilmədi", description: "Zəhmət olmasa brauzer parametrlərindən bildirişlərə icazə verin." });
     }
   };
 
@@ -104,7 +103,7 @@ export default function Home() {
               onClick={triggerTestNotification}
               className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
             >
-              <Smartphone className="h-4 w-4" /> Test Bildirişi
+              <Smartphone className="h-4 w-4" /> Bildirişi Aktiv Et
             </Button>
             <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
               <Info className="h-5 w-5 text-primary" />

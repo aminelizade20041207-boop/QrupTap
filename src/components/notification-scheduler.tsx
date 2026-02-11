@@ -13,9 +13,6 @@ export const NotificationScheduler = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermission(Notification.permission);
-      if (Notification.permission === 'default') {
-        Notification.requestPermission().then(setPermission);
-      }
     }
 
     const checkInterval = setInterval(() => {
@@ -26,7 +23,6 @@ export const NotificationScheduler = () => {
       const now = new Date();
       const currentDay = now.getDay();
       
-      // Calculate current week (ust/alt)
       const startDate = new Date('2025-02-16');
       const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const weekIndex = Math.floor(diffInDays / 7);
@@ -46,25 +42,30 @@ export const NotificationScheduler = () => {
 
         const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
 
-        // Notify exactly 5 minutes before (allow small margin)
+        // Bildiriş tam 5 dəqiqə qalmış
         if (diffMinutes > 4.7 && diffMinutes < 5.3) {
-          showNotification(c);
+          showNotification(c.name, `Dərs 5 dəqiqəyə başlayacaq. Otaq: ${c.room || 'Qeyd edilməyib'}`);
         }
       });
-    }, 20000); // Check every 20 seconds to not miss the window
+    }, 30000);
 
     return () => clearInterval(checkInterval);
   }, [permission, toast]);
 
-  const showNotification = (c: ClassSession) => {
-    const title = `Dərs başlayır: ${c.name}`;
-    const body = `Dərs 5 dəqiqəyə başlayacaq. Otaq: ${c.room || 'Qeyd edilməyib'}`;
-
-    if (permission === 'granted') {
-      try {
+  const showNotification = async (title: string, body: string) => {
+    if (Notification.permission === 'granted') {
+      // Mobil cihazlarda sistem bildirişi üçün Service Worker istifadə olunmalıdır
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        registration.showNotification(title, {
+          body,
+          icon: 'https://picsum.photos/seed/it24-icon/192/192',
+          badge: 'https://picsum.photos/seed/it24-icon/192/192',
+          vibrate: [200, 100, 200],
+          tag: 'it24-class-notification'
+        });
+      } else {
         new Notification(title, { body });
-      } catch (e) {
-        toast({ title, description: body });
       }
     } else {
       toast({ title, description: body });
