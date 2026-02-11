@@ -31,7 +31,8 @@ export default function Home() {
       setNotifPermission(Notification.permission);
     }
 
-    const startDate = new Date('2025-02-16');
+    // Reference start date for 2026 spring semester
+    const startDate = new Date('2026-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const weekIndex = Math.floor(diffInDays / 7);
@@ -77,15 +78,14 @@ export default function Home() {
       return;
     }
 
-    // Pure transparent icon for status bar to avoid white square
     const badgeUrl = 'https://placehold.co/96x96/transparent/ffffff?text=IT';
     const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24';
 
     try {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification('İT24 Bildiriş Testi', {
-          body: `Salam, ${profile.name}! Təbriklər, bildiriş sistemi işləyir.`,
+        await registration.showNotification('Test Bildirişi', {
+          body: `Salam, ${profile.name}!`,
           icon: iconUrl,
           badge: badgeUrl,
           vibrate: [200, 100, 200],
@@ -93,8 +93,8 @@ export default function Home() {
         });
         toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
       } else {
-        new Notification('İT24 Bildiriş Testi', { 
-          body: `Salam, ${profile.name}! Təbriklər, bildiriş sistemi işləyir.`, 
+        new Notification('Test Bildirişi', { 
+          body: `Salam, ${profile.name}!`, 
           icon: iconUrl 
         });
         toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
@@ -187,7 +187,7 @@ export default function Home() {
 
         <footer className="pt-8 border-t text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} İT24 - Əlizadə Akşin</p>
-          <p className="text-[10px] mt-1 opacity-50">16 fevral 2025-ci il tarixindən etibarən hesablanır</p>
+          <p className="text-[10px] mt-1 opacity-50">16 fevral 2026-cı il tarixindən etibarən hesablanır</p>
         </footer>
       </div>
     </div>

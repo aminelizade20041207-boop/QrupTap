@@ -18,7 +18,8 @@ export const NotificationScheduler = () => {
       const now = new Date();
       const currentDay = now.getDay();
       
-      const startDate = new Date('2025-02-16');
+      // Start reference date for 2026
+      const startDate = new Date('2026-02-16');
       const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const weekIndex = Math.floor(diffInDays / 7);
       const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
