@@ -103,7 +103,7 @@ export default function Home() {
               onClick={triggerTestNotification}
               className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
             >
-              <Smartphone className="h-4 w-4" /> Bildirişi Aktiv Et
+              <Smartphone className="h-4 w-4" /> Bildirişi Test Et
             </Button>
             <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
               <Info className="h-5 w-5 text-primary" />
