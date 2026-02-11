@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Info, Smartphone } from 'lucide-react';
+import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2 } from 'lucide-react';
 import { UserProfile, WeekType } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
@@ -18,12 +18,17 @@ export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
   const [isClient, setIsClient] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
 
   useEffect(() => {
     setIsClient(true);
     const savedProfile = localStorage.getItem('it24_profile');
     if (savedProfile) {
       setProfile(JSON.parse(savedProfile));
+    }
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setNotifPermission(Notification.permission);
     }
 
     const startDate = new Date('2025-02-16');
@@ -52,28 +57,37 @@ export default function Home() {
     setProfile(null);
   };
 
-  const triggerTestNotification = async () => {
+  const requestPermission = async () => {
     if (!('Notification' in window)) {
       toast({ variant: "destructive", title: "Xəta", description: "Bu cihaz bildirişləri dəstəkləmir." });
       return;
     }
-
     const permission = await Notification.requestPermission();
+    setNotifPermission(permission);
     if (permission === 'granted') {
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        registration.showNotification('İT24 Bildiriş Testi', {
-          body: 'Təbriklər! Sistem bildirişləri artıq işləyir.',
-          icon: 'https://picsum.photos/seed/it24-icon/192/192',
-          vibrate: [200, 100, 200]
-        });
-      } else {
-        new Notification('İT24 Bildiriş Testi', { body: 'Təbriklər! Bildiriş sistemi işləyir.' });
-      }
-      toast({ title: "Test Bildirişi", description: "Sistem bildirişi göndərildi!" });
+      toast({ title: "Uğurlu!", description: "Bildirişlər aktiv edildi." });
     } else {
-      toast({ variant: "destructive", title: "İcazə Verilmədi", description: "Zəhmət olmasa brauzer parametrlərindən bildirişlərə icazə verin." });
+      toast({ variant: "destructive", title: "Xəta", description: "Bildiriş icazəsi rədd edildi." });
     }
+  };
+
+  const triggerTestNotification = async () => {
+    if (notifPermission !== 'granted') {
+      toast({ variant: "destructive", title: "İcazə Yoxdur", description: "Zəhmət olmasa əvvəlcə bildirişləri aktiv edin." });
+      return;
+    }
+
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      registration.showNotification('İT24 Bildiriş Testi', {
+        body: 'Təbriklər! Sistem bildirişləri artıq telefonun yuxarı hissəsində görünür.',
+        icon: 'https://picsum.photos/seed/it24-icon/192/192',
+        vibrate: [200, 100, 200]
+      });
+    } else {
+      new Notification('İT24 Bildiriş Testi', { body: 'Təbriklər! Bildiriş sistemi işləyir.' });
+    }
+    toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
   };
 
   return (
@@ -97,14 +111,26 @@ export default function Home() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={triggerTestNotification}
-              className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-            >
-              <Smartphone className="h-4 w-4" /> Bildirişi Test Et
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant={notifPermission === 'granted' ? "ghost" : "default"} 
+                size="sm" 
+                onClick={requestPermission}
+                disabled={notifPermission === 'granted'}
+                className="gap-2"
+              >
+                {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Bell className="h-4 w-4" />}
+                {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={triggerTestNotification}
+                className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+              >
+                <Smartphone className="h-4 w-4" /> Test Et
+              </Button>
+            </div>
             <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
               <Info className="h-5 w-5 text-primary" />
               <div className="flex flex-col">

@@ -2,7 +2,7 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
-  // --- TEST BİLDİRİŞİ (Hər gün saat 14:10-da bildiriş gəlməsi üçün başlanğıcı 14:15 qoyuruq) ---
+  // --- TEST BİLDİRİŞİ (Saat 14:10-da bildiriş gəlməsi üçün dərsi 14:15-ə qoyuruq) ---
   ...[0, 1, 2, 3, 4, 5, 6].map(day => ({
     id: `test-notification-${day}`,
     name: 'TEST: Bildiriş Yoxlaması',

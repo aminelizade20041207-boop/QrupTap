@@ -1,25 +1,20 @@
 
-self.addEventListener('push', function(event) {
-  const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: 'https://picsum.photos/seed/it24-icon/192/192',
-    badge: 'https://picsum.photos/seed/it24-icon/192/192',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: '2'
-    }
-  };
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+});
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+self.addEventListener('activate', function(event) {
+  event.waitUntil(clients.claim());
 });
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/')
+    clients.matchAll({ type: 'window' }).then(function(clientList) {
+      if (clientList.length > 0) {
+        return clientList[0].focus();
+      }
+      return clients.openWindow('/');
+    })
   );
 });
