@@ -15,8 +15,13 @@ export const metadata: Metadata = {
     title: 'İT24',
   },
   icons: {
-    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-    apple: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    icon: [
+      { url: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24', sizes: '192x192', type: 'image/png' },
+      { url: 'https://placehold.co/512x512/4A90E2/ffffff?text=IT24', sizes: '512x512', type: 'image/png' }
+    ],
+    apple: [
+      { url: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24', sizes: '192x192', type: 'image/png' }
+    ],
   },
 };
 
