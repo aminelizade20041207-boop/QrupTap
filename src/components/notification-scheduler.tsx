@@ -8,13 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 
 export const NotificationScheduler = () => {
   const { toast } = useToast();
-  const [permission, setPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      setPermission(Notification.permission);
-    }
-
     const checkInterval = setInterval(() => {
       const savedProfile = localStorage.getItem('it24_profile');
       if (!savedProfile) return;
@@ -28,44 +23,65 @@ export const NotificationScheduler = () => {
       const weekIndex = Math.floor(diffInDays / 7);
       const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
-      const classes = FIXED_SCHEDULE.filter(c => 
-        (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
-        (c.week === 'hamisi' || c.week === currentWeek)
-      );
+      // Bugünün dərsləri
+      const dailyClasses = FIXED_SCHEDULE
+        .filter(c => 
+          (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+          (c.week === 'hamisi' || c.week === currentWeek) &&
+          Number(c.day) === currentDay
+        )
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-      classes.forEach((c) => {
-        if (Number(c.day) !== currentDay) return;
-
+      dailyClasses.forEach((c, index) => {
         const [startHours, startMinutes] = c.startTime.split(':').map(Number);
         const classTime = new Date(now);
         classTime.setHours(startHours, startMinutes, 0, 0);
 
-        const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
+        if (index === 0) {
+          // Günün İLK dərsi: 20 dəqiqə qalmış
+          const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
+          if (diffMinutes > 19.5 && diffMinutes < 20.5) {
+            showNotification(`Günün İlk Dərsi: ${c.name}`, `Dərs 20 dəqiqəyə başlayacaq. Otaq: ${c.room || '?'}`);
+          }
+        } else {
+          // Digər dərslər: Əvvəlki dərsin bitdiyi an
+          const prevClass = dailyClasses[index - 1];
+          const [endHours, endMinutes] = prevClass.endTime.split(':').map(Number);
+          const prevEndTime = new Date(now);
+          prevEndTime.setHours(endHours, endMinutes, 0, 0);
 
-        // Bildiriş tam 5 dəqiqə qalmış
-        if (diffMinutes > 4.7 && diffMinutes < 5.3) {
-          showNotification(c.name, `Dərs 5 dəqiqəyə başlayacaq. Otaq: ${c.room || 'Qeyd edilməyib'}`);
+          const diffSeconds = (now.getTime() - prevEndTime.getTime()) / 1000;
+          // Əgər əvvəlki dərs indicə (son 30 saniyədə) bitibsə
+          if (diffSeconds >= 0 && diffSeconds < 31) {
+            showNotification(`Növbəti Dərs: ${c.name}`, `Əvvəlki dərs bitdi. Yeni dərs otağı: ${c.room || '?'}`);
+          }
         }
       });
-    }, 30000);
+    }, 30000); // Hər 30 saniyədən bir yoxla
 
     return () => clearInterval(checkInterval);
-  }, [permission, toast]);
+  }, [toast]);
 
   const showNotification = async (title: string, body: string) => {
-    if (Notification.permission === 'granted') {
-      // Mobil cihazlarda sistem bildirişi üçün Service Worker istifadə olunmalıdır
+    const iconUrl = 'https://picsum.photos/seed/it-coding/192/192';
+    
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        registration.showNotification(title, {
-          body,
-          icon: 'https://picsum.photos/seed/it24-icon/192/192',
-          badge: 'https://picsum.photos/seed/it24-icon/192/192',
-          vibrate: [200, 100, 200],
-          tag: 'it24-class-notification'
-        });
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          registration.showNotification(title, {
+            body,
+            icon: iconUrl,
+            badge: iconUrl,
+            vibrate: [200, 100, 200],
+            tag: 'it24-schedule-alert',
+            renotify: true
+          });
+        } catch (e) {
+          new Notification(title, { body, icon: iconUrl });
+        }
       } else {
-        new Notification(title, { body });
+        new Notification(title, { body, icon: iconUrl });
       }
     } else {
       toast({ title, description: body });
