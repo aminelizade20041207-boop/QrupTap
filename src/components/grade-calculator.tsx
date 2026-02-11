@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -206,9 +205,6 @@ export const GradeCalculator = () => {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  * {selectedSubject} üçün cəmi <b>{isOS ? 30 : 15} bal</b> verilmiş laboratoriyalara bölünür.
-                </p>
               </div>
             )}
 

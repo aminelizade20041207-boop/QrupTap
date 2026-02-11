@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -77,7 +76,7 @@ export default function Home() {
       return;
     }
 
-    const iconUrl = 'https://placehold.co/192x192.png?text=IT24';
+    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24';
 
     try {
       if ('serviceWorker' in navigator) {
