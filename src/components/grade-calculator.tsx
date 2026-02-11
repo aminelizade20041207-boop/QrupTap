@@ -76,7 +76,7 @@ export const GradeCalculator = () => {
   };
 
   const getResultMessage = (res: number) => {
-    if (res >= 40) return { text: "Əla! İmtahana hazırsan.", color: "bg-green-500", icon: <CheckCircle2 className="h-5 w-5" /> };
+    if (res >= 40) return { text: "Əla!", color: "bg-green-500", icon: <CheckCircle2 className="h-5 w-5" /> };
     if (res >= 30) return { text: "Normal", color: "bg-primary", icon: <CheckCircle2 className="h-5 w-5" /> };
     return { text: "Kafi deyil!", color: "bg-destructive", icon: <AlertCircle className="h-5 w-5" /> };
   };

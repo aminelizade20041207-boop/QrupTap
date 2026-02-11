@@ -78,22 +78,21 @@ export default function Home() {
       return;
     }
 
-    const badgeUrl = 'https://placehold.co/96x96/transparent/ffffff?text=IT';
     const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24';
 
     try {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification('Test Bildirişi', {
+        await registration.showNotification('İT24 Bildiriş Testi', {
           body: `Salam, ${profile.name}!`,
           icon: iconUrl,
-          badge: badgeUrl,
+          badge: iconUrl,
           vibrate: [200, 100, 200],
           tag: 'test-notification'
         });
         toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
       } else {
-        new Notification('Test Bildirişi', { 
+        new Notification('İT24 Bildiriş Testi', { 
           body: `Salam, ${profile.name}!`, 
           icon: iconUrl 
         });
