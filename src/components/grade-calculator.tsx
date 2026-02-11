@@ -13,8 +13,8 @@ import { Badge } from '@/components/ui/badge';
 
 export const GradeCalculator = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [attendance, setAttendance] = useState<number>(0);
-  const [independentWork, setIndependentWork] = useState<number>(0);
+  const [attendance, setAttendance] = useState<string>('');
+  const [independentWork, setIndependentWork] = useState<string>('');
   const [colloquiums, setColloquiums] = useState<string[]>(['', '', '']);
   const [seminars, setSeminars] = useState<string[]>([]);
   const [completedLabs, setCompletedLabs] = useState<number>(0);
@@ -26,11 +26,11 @@ export const GradeCalculator = () => {
   const isDiscrete = selectedSubject.toLowerCase().includes('diskret');
   const isCN = selectedSubject.toLowerCase().includes('şəbəkə');
 
-  const hasLabs = !isDiscrete; 
+  const hasLabs = !isDiscrete && !isOS; 
   const hasColls = !isOS;
   const hasSeminars = !isOS;
   
-  const maxLabs = (isOS || isCN) ? 8 : 5;
+  const maxLabs = isCN ? 8 : (isOS ? 8 : 5);
   const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
@@ -39,6 +39,8 @@ export const GradeCalculator = () => {
     setCompletedLabs(0);
     setColloquiums(['', '', '']);
     setSeminars([]);
+    setAttendance('');
+    setIndependentWork('');
   }, [selectedSubject]);
 
   const addSeminar = () => setSeminars([...seminars, '']);
@@ -68,8 +70,11 @@ export const GradeCalculator = () => {
     }
 
     // 3. Laboratoriya balları
-    if (hasLabs) {
-      const labScore = (completedLabs / maxLabs) * labTotalPoints;
+    // Qeyd: Əməliyyat sistemlərində laboratoriya var (30 bal), amma yuxarıda hasLabs şərti fərqli idi.
+    // Şərtə uyğun düzəliş: OS-də lab var.
+    const effectiveMaxLabs = isOS ? 8 : (isCN ? 8 : (isDiscrete ? 0 : 5));
+    if (effectiveMaxLabs > 0) {
+      const labScore = (completedLabs / effectiveMaxLabs) * (isOS ? 30 : 15);
       total += labScore;
     }
 
@@ -110,8 +115,9 @@ export const GradeCalculator = () => {
                 <Input 
                   type="number" 
                   max="10"
+                  placeholder="Məs: 10"
                   value={attendance} 
-                  onChange={(e) => setAttendance(Number(e.target.value))} 
+                  onChange={(e) => setAttendance(e.target.value)} 
                 />
               </div>
               <div className="space-y-2">
@@ -119,8 +125,9 @@ export const GradeCalculator = () => {
                 <Input 
                   type="number" 
                   max="10"
+                  placeholder="Məs: 10"
                   value={independentWork} 
-                  onChange={(e) => setIndependentWork(Number(e.target.value))} 
+                  onChange={(e) => setIndependentWork(e.target.value)} 
                 />
               </div>
             </div>
@@ -179,16 +186,16 @@ export const GradeCalculator = () => {
               </div>
             )}
 
-            {hasLabs && (
+            {(hasLabs || isOS) && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
                   <Badge variant="outline" className="font-bold text-primary">
-                    {completedLabs} / {maxLabs}
+                    {completedLabs} / {isOS ? 8 : (isCN ? 8 : 5)}
                   </Badge>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {Array.from({ length: maxLabs }).map((_, idx) => (
+                  {Array.from({ length: isOS ? 8 : (isCN ? 8 : 5) }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1 === completedLabs ? idx : idx + 1)}
@@ -203,7 +210,7 @@ export const GradeCalculator = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2">
-                  * {selectedSubject} üçün laboratoriya balı: hər verilmiş laboratoriya üzrə bölünməklə cəmi <b>{labTotalPoints} bal</b>.
+                  * {selectedSubject} üçün laboratoriya balı: hər verilmiş laboratoriya üzrə bölünməklə cəmi <b>{isOS ? 30 : 15} bal</b>.
                 </p>
               </div>
             )}
@@ -218,7 +225,7 @@ export const GradeCalculator = () => {
                 <h2 className="text-5xl font-bold">{result}</h2>
                 <div className="mt-4 flex justify-center gap-2">
                   <Badge variant="secondary" className="bg-white/20 text-white border-none">
-                    {result >= 25 ? 'İmtahana İcazə Verilir' : 'Kəsr Təhlükəsi!'}
+                    {result >= 25 ? 'Əla! İmtahana hazırsan.' : 'Daha çox çalışmalısan!'}
                   </Badge>
                 </div>
               </div>

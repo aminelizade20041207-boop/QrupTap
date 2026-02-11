@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'İT24',
   },
+  icons: {
+    icon: 'https://picsum.photos/seed/it-coding/192/192',
+    apple: 'https://picsum.photos/seed/it-coding/192/192',
+  },
   formatDetection: {
     telephone: false,
   },
