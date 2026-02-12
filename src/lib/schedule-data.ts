@@ -159,7 +159,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'asagi-4-3-alt',
-    name: 'Kompüter Şəbəkələri (Laboratoriya)',
+    name: 'Kompüter Şəbəkələri (Məşğələ)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
     startTime: '17:05',
@@ -326,7 +326,7 @@ export const FIXED_SCHEDULE: ClassSession[] = [
   },
   {
     id: 'yuxari-4-3-alt',
-    name: 'Kompüter Şəbəkələri (Laboratoriya)',
+    name: 'Kompüter Şəbəkələri (Məşğələ)',
     teacher: 'Ceyhun Əlizadə',
     day: 4,
     startTime: '17:05',

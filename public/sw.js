@@ -1,35 +1,40 @@
-const CACHE_NAME = 'it24-cache-v4';
-const ASSETS = [
+
+const CACHE_NAME = 'it24-cache-v5';
+const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',
-  'https://img.icons8.com/ios-filled/192/4A90E2/it.png',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://img.icons8.com/ios-filled/192/4A90E2/it.png'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
       );
     })
   );
-  return self.clients.claim();
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/');
+        }
+      });
     })
   );
 });

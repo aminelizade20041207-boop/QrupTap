@@ -17,15 +17,30 @@ export const DailyView = ({ classes }: ViewProps) => {
     .filter(c => Number(c.day) === todayIdx)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const getClassIcon = (name: string) => {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes('laboratoriya') || lowerName.includes('lab')) {
+  const parseClassName = (fullName: string) => {
+    const parts = fullName.split('(');
+    const name = parts[0].trim();
+    const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+    return { name, type };
+  };
+
+  const getClassIcon = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('laboratoriya') || lowerType.includes('lab')) {
       return <FlaskConical className="h-5 w-5 text-primary" />;
     }
-    if (lowerName.includes('məşğələ') || lowerName.includes('seminar')) {
+    if (lowerType.includes('məşğələ') || lowerType.includes('seminar')) {
       return <Users className="h-5 w-5 text-primary" />;
     }
     return <BookOpen className="h-5 w-5 text-primary" />;
+  };
+
+  const getTypeColor = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('laboratoriya')) return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
+    if (lowerType.includes('məşğələ')) return 'bg-green-500/10 text-green-600 border-green-500/20';
+    if (lowerType.includes('mühazirə')) return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+    return 'bg-muted text-muted-foreground';
   };
 
   return (
@@ -35,47 +50,59 @@ export const DailyView = ({ classes }: ViewProps) => {
         <Badge variant="outline" className="bg-white">{todaysClasses.length} Dərs bu gün</Badge>
       </div>
       {todaysClasses.length > 0 ? (
-        todaysClasses.map((c) => (
-          <Card key={c.id} className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-all">
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="bg-primary/10 p-2 sm:p-3 rounded-xl flex shrink-0">
-                  {getClassIcon(c.name)}
-                </div>
-                <div className="flex-1 min-w-0 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                    <h4 className="font-bold text-lg sm:text-xl leading-tight text-foreground truncate">{c.name}</h4>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {c.room && (
-                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-[10px] h-5">
-                          <MapPin className="h-3 w-3 mr-1" /> {c.room}
-                        </Badge>
-                      )}
-                      {c.week !== 'hamisi' && (
-                        <Badge variant="outline" className="text-[9px] border-primary/30 text-primary h-5">
-                          {c.week === 'ust' ? 'ÜST' : 'ALT'}
-                        </Badge>
-                      )}
-                    </div>
+        todaysClasses.map((c) => {
+          const { name, type } = parseClassName(c.name);
+          return (
+            <Card key={c.id} className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-all">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="bg-primary/10 p-2.5 rounded-xl flex shrink-0 items-center justify-center">
+                    {getClassIcon(type)}
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                      <Clock className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-medium">{c.startTime} - {c.endTime}</span>
-                    </div>
-                    {c.teacher && (
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg truncate">
-                        <UserIcon className="h-3.5 w-3.5 text-primary" />
-                        <span className="font-medium truncate">{c.teacher}</span>
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-bold text-base sm:text-lg leading-tight text-foreground break-words flex-1">
+                          {name}
+                        </h4>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {c.week !== 'hamisi' && (
+                            <Badge variant="outline" className="text-[9px] border-primary/30 text-primary h-5 px-1.5 font-bold">
+                              {c.week === 'ust' ? 'ÜST' : 'ALT'}
+                            </Badge>
+                          )}
+                          {c.room && (
+                            <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-[10px] h-5 px-1.5 font-bold">
+                              <MapPin className="h-3 w-3 mr-1" /> {c.room}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    )}
+                      {type && (
+                        <div className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border w-fit ${getTypeColor(type)}`}>
+                          {type}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                        <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="font-medium">{c.startTime} - {c.endTime}</span>
+                      </div>
+                      {c.teacher && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg truncate">
+                          <UserIcon className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <span className="font-medium truncate">{c.teacher}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+              </CardContent>
+            </Card>
+          );
+        })
       ) : (
         <Card className="border-dashed">
           <CardContent className="py-16 text-center text-muted-foreground">
