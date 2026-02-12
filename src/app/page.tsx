@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2, Moon, Sun } from 'lucide-react';
-import { UserProfile, WeekType, GradeDetails } from '@/lib/types';
+import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2, Moon, Sun, Settings, Settings2, RotateCcw } from 'lucide-react';
+import { UserProfile, WeekType, GradeDetails, NotificationSettings } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
@@ -14,6 +14,17 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+
+const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
+  firstClassEnabled: true,
+  firstClassMinutes: 60,
+  otherClassesEnabled: false,
+  otherClassesMinutes: 15
+};
 
 export default function Home() {
   const { toast } = useToast();
@@ -25,12 +36,17 @@ export default function Home() {
   const [editingSubject, setEditingSubject] = useState<string | undefined>();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('it24_profile');
     if (savedProfile) {
       try {
-        setProfile(JSON.parse(savedProfile));
+        const parsed = JSON.parse(savedProfile);
+        if (!parsed.notificationSettings) {
+          parsed.notificationSettings = DEFAULT_NOTIF_SETTINGS;
+        }
+        setProfile(parsed);
       } catch (e) {
         localStorage.removeItem('it24_profile');
       }
@@ -68,7 +84,7 @@ export default function Home() {
 
   if (!profile) {
     return <Onboarding onComplete={(p) => {
-      const newProfile: UserProfile = { ...p, savedGrades: {}, savedDetails: {} };
+      const newProfile: UserProfile = { ...p, savedGrades: {}, savedDetails: {}, notificationSettings: DEFAULT_NOTIF_SETTINGS };
       setProfile(newProfile);
       localStorage.setItem('it24_profile', JSON.stringify(newProfile));
     }} />;
@@ -157,6 +173,15 @@ export default function Home() {
     }
   };
 
+  const updateNotifSettings = (newSettings: NotificationSettings) => {
+    updateProfile({ ...profile, notificationSettings: newSettings });
+  };
+
+  const setStandardNotifSettings = () => {
+    updateNotifSettings(DEFAULT_NOTIF_SETTINGS);
+    toast({ title: "Standart Ayarlar", description: "Bildiriş ayarları sıfırlandı." });
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -186,6 +211,76 @@ export default function Home() {
             >
               {isDarkMode ? <Sun className="h-5 w-5 text-primary" /> : <Moon className="h-5 w-5 text-primary" />}
             </Button>
+
+            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
+                  <Settings className="h-5 w-5 text-primary" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Settings2 className="h-5 w-5 text-primary" /> Ayarlar
+                  </DialogTitle>
+                  <DialogDescription>
+                    Tətbiq və bildiriş tənzimləmələrini buradan idarə edin.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Bildiriş Ayarları</h4>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="first-notif" className="font-medium">İlk dərs bildirişi</Label>
+                        <Switch 
+                          id="first-notif" 
+                          checked={profile.notificationSettings?.firstClassEnabled}
+                          onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, firstClassEnabled: checked })}
+                        />
+                      </div>
+                      {profile.notificationSettings?.firstClassEnabled && (
+                        <div className="flex items-center gap-3 animate-in slide-in-from-top-2">
+                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                          <Input 
+                            type="number" 
+                            className="h-8 w-20"
+                            value={profile.notificationSettings.firstClassMinutes}
+                            onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, firstClassMinutes: parseInt(e.target.value) || 0 })}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="other-notif" className="font-medium">Digər dərslər bildirişi</Label>
+                        <Switch 
+                          id="other-notif" 
+                          checked={profile.notificationSettings?.otherClassesEnabled}
+                          onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesEnabled: checked })}
+                        />
+                      </div>
+                      {profile.notificationSettings?.otherClassesEnabled && (
+                        <div className="flex items-center gap-3 animate-in slide-in-from-top-2">
+                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                          <Input 
+                            type="number" 
+                            className="h-8 w-20"
+                            value={profile.notificationSettings.otherClassesMinutes}
+                            onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesMinutes: parseInt(e.target.value) || 0 })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5" onClick={setStandardNotifSettings}>
+                    <RotateCcw className="h-4 w-4" /> Standart Ayarlar
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="relative group transition-transform active:scale-95 ml-1"

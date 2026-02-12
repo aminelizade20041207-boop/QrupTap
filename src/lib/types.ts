@@ -50,6 +50,13 @@ export interface UserMaterial {
   createdAt: string;
 }
 
+export interface NotificationSettings {
+  firstClassEnabled: boolean;
+  firstClassMinutes: number;
+  otherClassesEnabled: boolean;
+  otherClassesMinutes: number;
+}
+
 export interface UserProfile {
   name: string;
   subgroup: 'yuxari' | 'asagi';
@@ -59,4 +66,5 @@ export interface UserProfile {
   savedAbsences?: Record<string, number>;
   notesList?: UserNote[];
   materialsList?: UserMaterial[];
+  notificationSettings?: NotificationSettings;
 }

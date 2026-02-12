@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useRef } from 'react';
@@ -24,6 +25,7 @@ export const NotificationScheduler = () => {
       if (!savedProfile) return;
       
       const profile: UserProfile = JSON.parse(savedProfile);
+      const settings = profile.notificationSettings;
       const now = new Date();
       const currentDay = now.getDay();
       const todayStr = now.toDateString();
@@ -54,27 +56,25 @@ export const NotificationScheduler = () => {
         const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
         const notifId = `class_${c.id}_${todayStr}`;
 
-        if (index === 0 && diffMinutes > 0 && diffMinutes <= 20) {
-          if (!lastNotifiedRef.current[notifId]) {
-            showNotification(`Günün İlk Dərsi: ${c.name}`, `Dərs yaxınlaşır. Otaq: ${c.room || '?'}`);
-            lastNotifiedRef.current[notifId] = 'sent';
-            localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
+        // İlk dərs bildirişi
+        if (index === 0 && settings?.firstClassEnabled) {
+          const limit = settings.firstClassMinutes || 20;
+          if (diffMinutes > 0 && diffMinutes <= limit) {
+            if (!lastNotifiedRef.current[notifId]) {
+              showNotification(`Günün İlk Dərsi: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
+              lastNotifiedRef.current[notifId] = 'sent';
+              localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
+            }
           }
         }
 
-        if (index > 0) {
-          const prevClass = dailyClasses[index - 1];
-          const [endHours, endMinutes] = prevClass.endTime.split(':').map(Number);
-          const prevEndTime = new Date(now);
-          prevEndTime.setHours(endHours, endMinutes, 0, 0);
-
-          const breakDiff = (now.getTime() - prevEndTime.getTime()) / 1000;
-          const breakNotifId = `break_${c.id}_${todayStr}`;
-
-          if (breakDiff >= 0 && breakDiff < 600) {
-            if (!lastNotifiedRef.current[breakNotifId]) {
-              showNotification(`Növbəti Dərs: ${c.name}`, `Tənəffüs başladı. Yeni dərs otağı: ${c.room || '?'}`);
-              lastNotifiedRef.current[breakNotifId] = 'sent';
+        // Digər dərslər bildirişi
+        if (index > 0 && settings?.otherClassesEnabled) {
+          const limit = settings.otherClassesMinutes || 15;
+          if (diffMinutes > 0 && diffMinutes <= limit) {
+            if (!lastNotifiedRef.current[notifId]) {
+              showNotification(`Növbəti Dərs: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
+              lastNotifiedRef.current[notifId] = 'sent';
               localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
             }
           }
@@ -86,7 +86,6 @@ export const NotificationScheduler = () => {
   }, [toast]);
 
   const showNotification = async (title: string, body: string) => {
-    // Android "Ağ kvadrat" problemini həll etmək üçün mütləq şəffaf fonlu PNG
     const iconUrl = 'https://img.icons8.com/ios-filled/192/4A90E2/it.png';
     
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
