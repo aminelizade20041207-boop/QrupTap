@@ -5,11 +5,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Minus, Plus, AlertTriangle } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
   'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
@@ -18,6 +19,12 @@ const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = 
   'Diskret riyaziyyat': { m1: 3, m2: 5, fail: 6 },
   'Obyekt-yönümlü proqramlaşdırma': { m1: 3, m2: 6, fail: 8 }
 };
+
+interface ProfileViewProps {
+  profile: UserProfile;
+  onUpdate: (profile: UserProfile) => void;
+  onEditGrade: (subject: string) => void;
+}
 
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,6 +37,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
+  const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -53,12 +61,18 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     }
   };
 
+  const toggleAbsence = (subject: string) => {
+    setExpandedAbsences(prev => ({
+      ...prev,
+      [subject]: !prev[subject]
+    }));
+  };
+
   const handleUpdateAbsence = (subject: string, delta: number) => {
     const rules = ABSENCE_RULES[subject];
     const current = profile.savedAbsences?.[subject] || 0;
     const maxLimit = rules ? rules.fail : 99;
     
-    // Cap at 0 and maxLimit
     const newValue = Math.max(0, Math.min(maxLimit, current + delta));
     
     onUpdate({
@@ -229,6 +243,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             const grade = profile.savedGrades?.[subject];
             const absences = profile.savedAbsences?.[subject] || 0;
             const status = getAbsenceStatus(subject, absences);
+            const isExpanded = expandedAbsences[subject];
 
             return (
               <Card key={subject} className="overflow-hidden hover:shadow-md transition-all border-primary/10 bg-card">
@@ -240,32 +255,46 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                       </div>
                       <span className="font-bold text-sm">{subject}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
+                    <div className="flex items-center gap-2">
+                      <div className="text-right mr-2">
                         {grade !== undefined ? (
                           <div className="flex flex-col">
                             <span className={`text-xl font-black leading-none ${grade >= 30 ? 'text-primary' : 'text-destructive'}`}>
                               {grade}
                             </span>
-                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Bal</span>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground italic font-medium">Bal yoxdur</span>
+                          <span className="text-[9px] text-muted-foreground italic font-medium">Bal yoxdur</span>
                         )}
                       </div>
+                      
                       <Button 
-                        variant="outline" 
+                        variant="ghost" 
                         size="icon" 
                         onClick={() => onEditGrade(subject)}
-                        className="text-muted-foreground hover:text-primary h-9 w-9 border-primary/10"
+                        className="text-muted-foreground hover:text-primary h-9 w-9"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
+
+                      {ABSENCE_RULES[subject] && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => toggleAbsence(subject)}
+                          className={cn(
+                            "h-9 w-9 transition-all border-primary/10",
+                            isExpanded ? "bg-primary text-white border-primary" : "text-primary hover:bg-primary/5"
+                          )}
+                        >
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                      )}
                     </div>
                   </div>
 
-                  {ABSENCE_RULES[subject] && (
-                    <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {ABSENCE_RULES[subject] && isExpanded && (
+                    <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2 duration-200">
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qayıb Sayı:</span>
