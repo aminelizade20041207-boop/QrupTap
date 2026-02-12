@@ -40,4 +40,5 @@ export interface UserProfile {
   photo?: string;
   savedGrades?: Record<string, number>;
   savedDetails?: Record<string, GradeDetails>;
+  savedAbsences?: Record<string, number>;
 }

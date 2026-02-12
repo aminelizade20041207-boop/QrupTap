@@ -5,16 +5,25 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Settings } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Minus, Plus, AlertTriangle } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface ProfileViewProps {
   profile: UserProfile;
   onUpdate: (profile: UserProfile) => void;
   onEditGrade: (subject: string) => void;
 }
+
+const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
+  'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
+  'Əməliyyat sistemləri': { m1: 3, m2: 6, fail: 8 },
+  'Verilənlər bazası sistemləri': { m1: 3, m2: 6, fail: 8 },
+  'Diskret riyaziyyat': { m1: 3, m2: 5, fail: 6 },
+  'Obyekt-yönümlü proqramlaşdırma': { m1: 3, m2: 6, fail: 8 }
+};
 
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +59,35 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     }
   };
 
+  const handleUpdateAbsence = (subject: string, delta: number) => {
+    const current = profile.savedAbsences?.[subject] || 0;
+    const newValue = Math.max(0, current + delta);
+    onUpdate({
+      ...profile,
+      savedAbsences: {
+        ...(profile.savedAbsences || {}),
+        [subject]: newValue
+      }
+    });
+  };
+
+  const getAbsenceStatus = (subject: string, count: number) => {
+    const rules = ABSENCE_RULES[subject];
+    if (!rules) return null;
+
+    if (count >= rules.fail) {
+      return { label: 'Kəsildin!', color: 'bg-destructive text-white', icon: <AlertTriangle className="h-3 w-3" /> };
+    }
+    if (count >= rules.m2) {
+      return { label: '-2 Bal', color: 'bg-orange-500 text-white', icon: <Minus className="h-3 w-3" /> };
+    }
+    if (count >= rules.m1) {
+      return { label: '-1 Bal', color: 'bg-yellow-500 text-white', icon: <Minus className="h-3 w-3" /> };
+    }
+    return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3" /> };
+  };
+
+  // Touch and Mouse handlers for photo editing
   const handleStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setLastTouch({ x: clientX, y: clientY });
@@ -110,8 +148,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.src = selectedImage;
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      const size = Math.min(img.width, img.height);
       const canvasSize = 400;
       
       ctx.save();
@@ -125,18 +161,10 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       const finalX = (canvasSize / 2) + position.x;
       const finalY = (canvasSize / 2) + position.y;
 
-      ctx.drawImage(
-        img, 
-        finalX - (drawWidth / 2), 
-        finalY - (drawHeight / 2), 
-        drawWidth, 
-        drawHeight
-      );
-      
+      ctx.drawImage(img, finalX - (drawWidth / 2), finalY - (drawHeight / 2), drawWidth, drawHeight);
       ctx.restore();
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      onUpdate({ ...profile, photo: dataUrl });
+      onUpdate({ ...profile, photo: canvas.toDataURL('image/jpeg', 0.8) });
       setIsEditing(false);
       setSelectedImage(null);
     };
@@ -144,10 +172,10 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
 
   return (
     <div className="space-y-6">
-      <Card className="border-t-4 border-t-primary shadow-lg overflow-hidden">
+      <Card className="border-t-4 border-t-primary shadow-lg overflow-hidden bg-card">
         <CardHeader className="text-center pb-2 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="relative w-32 h-32 mx-auto mb-4">
-            <Avatar className="w-32 h-32 border-4 border-white dark:border-gray-800 shadow-xl">
+            <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
               <AvatarImage src={profile.photo} className="object-cover" />
               <AvatarFallback className="bg-primary/10 text-primary">
                 <User className="h-16 w-16" />
@@ -157,7 +185,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             {profile.photo && (
               <button 
                 onClick={handleRemovePhoto}
-                className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white dark:border-gray-800 translate-x-1/4 -translate-y-1/4"
+                className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 -translate-y-1/4"
                 title="Şəkli Sil"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -166,19 +194,12 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
 
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white dark:border-gray-800 translate-x-1/4 translate-y-1/4"
+              className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 translate-y-1/4"
               title="Şəkil Əlavə Et"
             >
               <Camera className="h-5 w-5" />
             </button>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handlePhotoUpload} 
-              accept="image/*" 
-              className="hidden" 
-            />
+            <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
           </div>
           <CardTitle className="text-2xl font-bold">{profile.name}</CardTitle>
           <CardDescription className="font-bold text-primary uppercase tracking-widest text-xs">
@@ -188,15 +209,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         <CardContent className="pt-4 border-t">
           <div className="flex justify-around text-center">
             <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Ümumi Fənlər</p>
-              <p className="text-xl font-black text-foreground">{subjects.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Fənlər</p>
+              <p className="text-xl font-black">{subjects.length}</p>
             </div>
             <div className="w-px bg-border h-8 my-auto" />
             <div className="space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Daxil Edilən</p>
-              <p className="text-xl font-black text-primary">
-                {Object.keys(profile.savedGrades || {}).length}
-              </p>
+              <p className="text-xl font-black text-primary">{Object.keys(profile.savedGrades || {}).length}</p>
             </div>
           </div>
         </CardContent>
@@ -205,42 +224,84 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       <div className="space-y-4">
         <h3 className="text-lg font-bold flex items-center gap-2 text-foreground px-1">
           <GraduationCap className="h-5 w-5 text-primary" />
-          Fənn Giriş Ballarım
+          Fənn Kabinetim
         </h3>
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {subjects.map(subject => {
             const grade = profile.savedGrades?.[subject];
+            const absences = profile.savedAbsences?.[subject] || 0;
+            const status = getAbsenceStatus(subject, absences);
+
             return (
-              <Card key={subject} className="overflow-hidden hover:shadow-md transition-all border-primary/10">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/5 p-2 rounded-lg">
-                      <BookOpen className="h-5 w-5 text-primary" />
+              <Card key={subject} className="overflow-hidden hover:shadow-md transition-all border-primary/10 bg-card">
+                <CardContent className="p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/5 p-2 rounded-lg">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                      </div>
+                      <span className="font-bold text-sm">{subject}</span>
                     </div>
-                    <span className="font-bold text-sm">{subject}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        {grade !== undefined ? (
+                          <div className="flex flex-col">
+                            <span className={`text-xl font-black leading-none ${grade >= 30 ? 'text-primary' : 'text-destructive'}`}>
+                              {grade}
+                            </span>
+                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Bal</span>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground italic font-medium">Bal yoxdur</span>
+                        )}
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => onEditGrade(subject)}
+                        className="text-muted-foreground hover:text-primary h-9 w-9 border-primary/10"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      {grade !== undefined ? (
-                        <div className="flex flex-col">
-                          <span className={`text-xl font-black leading-none ${grade >= 30 ? 'text-primary' : 'text-destructive'}`}>
-                            {grade}
-                          </span>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase">Bal</span>
+
+                  {ABSENCE_RULES[subject] && (
+                    <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qayıb Sayı:</span>
+                        <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => handleUpdateAbsence(subject, -1)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center font-bold text-lg">{absences}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => handleUpdateAbsence(subject, 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground italic font-medium">Yoxdur</span>
+                      </div>
+                      
+                      {status && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
+                          <Badge className={`h-7 px-3 gap-1.5 font-bold ${status.color}`}>
+                            {status.icon}
+                            {status.label}
+                          </Badge>
+                        </div>
                       )}
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => onEditGrade(subject)}
-                      className="text-muted-foreground hover:text-primary h-9 w-9 border-primary/10"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -262,10 +323,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               onMouseLeave={() => setIsDragging(false)}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
-              onTouchEnd={() => {
-                setIsDragging(false);
-                setLastDistance(0);
-              }}
+              onTouchEnd={() => { setIsDragging(false); setLastDistance(0); }}
               onWheel={handleWheel}
             >
               {selectedImage && (
@@ -283,22 +341,15 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 />
               )}
             </div>
-
             <div className="mt-6 text-center text-xs text-muted-foreground flex flex-col items-center gap-2 bg-muted/50 p-3 rounded-lg w-full">
-              <div className="flex items-center gap-2">
-                <Move className="h-4 w-4 text-primary" />
-                <span className="font-medium">Dartaraq yerini tənzimləyin</span>
-              </div>
+              <span className="font-medium">Dartaraq yerini tənzimləyin</span>
               <p className="opacity-70">İki barmaqla və ya çarxla yaxınlaşdırın</p>
             </div>
-
             <canvas ref={canvasRef} width={400} height={400} className="hidden" />
           </div>
           <DialogFooter className="p-4 bg-muted/30 border-t flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
-            <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2">
-              <Check className="h-4 w-4" /> Tamamla
-            </Button>
+            <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2"><Check className="h-4 w-4" /> Tamamla</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
