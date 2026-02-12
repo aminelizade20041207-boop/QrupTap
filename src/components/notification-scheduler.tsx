@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
-import { UserProfile } from '@/lib/types';
+import { UserProfile, NotificationChannel } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const NotificationScheduler = () => {
@@ -26,6 +26,8 @@ export const NotificationScheduler = () => {
       
       const profile: UserProfile = JSON.parse(savedProfile);
       const settings = profile.notificationSettings;
+      if (!settings) return;
+
       const now = new Date();
       const currentDay = now.getDay();
       const todayStr = now.toDateString();
@@ -48,38 +50,36 @@ export const NotificationScheduler = () => {
         )
         .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-      dailyClasses.forEach((c, index) => {
-        const [startHours, startMinutes] = c.startTime.split(':').map(Number);
-        const classTime = new Date(now);
-        classTime.setHours(startHours, startMinutes, 0, 0);
+      const processChannel = (channel: NotificationChannel, channelId: string) => {
+        if (!channel.enabled) return;
 
-        const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
-        const notifId = `class_${c.id}_${todayStr}`;
+        dailyClasses.forEach((c, index) => {
+          const [startHours, startMinutes] = c.startTime.split(':').map(Number);
+          const classTime = new Date(now);
+          classTime.setHours(startHours, startMinutes, 0, 0);
 
-        // İlk dərs bildirişi
-        if (index === 0 && settings?.firstClassEnabled) {
-          const limit = settings.firstClassMinutes || 20;
+          const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
+          const notifId = `class_${c.id}_${todayStr}_${channelId}`;
+
+          const isFirstClass = index === 0;
+          const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
+
+          // Əgər dərsə qalan vaxt təyin olunmuş limit daxilindədirsə (məsələn 60 dəqiqə və ya 15 dəqiqə)
           if (diffMinutes > 0 && diffMinutes <= limit) {
             if (!lastNotifiedRef.current[notifId]) {
-              showNotification(`Günün İlk Dərsi: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
+              const prefix = isFirstClass ? 'Günün İlk Dərsi' : 'Növbəti Dərs';
+              showNotification(`${prefix}: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
               lastNotifiedRef.current[notifId] = 'sent';
               localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
             }
           }
-        }
+        });
+      };
 
-        // Digər dərslər bildirişi
-        if (index > 0 && settings?.otherClassesEnabled) {
-          const limit = settings.otherClassesMinutes || 15;
-          if (diffMinutes > 0 && diffMinutes <= limit) {
-            if (!lastNotifiedRef.current[notifId]) {
-              showNotification(`Növbəti Dərs: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
-              lastNotifiedRef.current[notifId] = 'sent';
-              localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
-            }
-          }
-        }
-      });
+      // Hər iki kanalı yoxla
+      processChannel(settings.firstChannel, 'ch1');
+      processChannel(settings.secondChannel, 'ch2');
+
     }, 15000);
 
     return () => clearInterval(checkInterval);

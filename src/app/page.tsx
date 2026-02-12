@@ -18,12 +18,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 
 const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
-  firstClassEnabled: true,
-  firstClassMinutes: 60,
-  otherClassesEnabled: false,
-  otherClassesMinutes: 15
+  firstChannel: {
+    enabled: true,
+    firstClassMinutes: 60,
+    otherClassesMinutes: 15
+  },
+  secondChannel: {
+    enabled: false,
+    firstClassMinutes: 30,
+    otherClassesMinutes: 10
+  }
 };
 
 export default function Home() {
@@ -43,7 +50,7 @@ export default function Home() {
     if (savedProfile) {
       try {
         const parsed = JSON.parse(savedProfile);
-        if (!parsed.notificationSettings) {
+        if (!parsed.notificationSettings || !parsed.notificationSettings.firstChannel) {
           parsed.notificationSettings = DEFAULT_NOTIF_SETTINGS;
         }
         setProfile(parsed);
@@ -220,73 +227,105 @@ export default function Home() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Settings2 className="h-5 w-5 text-primary" /> Bildiriş Ayarları
+                  <DialogTitle className="flex items-center gap-2 text-primary font-bold">
+                    <Settings2 className="h-5 w-5" /> Bildiriş Ayarları
                   </DialogTitle>
                   <DialogDescription>
-                    Xatırlatmaları istəyinizə uyğun aktiv edin və vaxtını təyin edin.
+                    Bildiriş kanallarını və xatırlatma vaxtlarını təyin edin.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-bold text-primary uppercase tracking-wider">İlk Dərs Bildirişi</Label>
-                        <p className="text-[10px] text-muted-foreground">Günün ilk dərsi üçün xatırlatma</p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
-                        <Label htmlFor="first-notif" className="font-medium">Aktiv Et</Label>
-                        <Switch 
-                          id="first-notif" 
-                          checked={profile.notificationSettings?.firstClassEnabled}
-                          onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, firstClassEnabled: checked })}
-                        />
-                      </div>
-                      
-                      {profile.notificationSettings?.firstClassEnabled && (
-                        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20 animate-in slide-in-from-top-2">
-                          <Label className="text-xs font-medium whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                  {/* Birinci Bildiriş Kanali */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/20">
+                      <Label htmlFor="first-notif-channel" className="font-bold text-primary">Birinci Bildiriş</Label>
+                      <Switch 
+                        id="first-notif-channel" 
+                        checked={profile.notificationSettings?.firstChannel.enabled}
+                        onCheckedChange={(checked) => updateNotifSettings({ 
+                          ...profile.notificationSettings!, 
+                          firstChannel: { ...profile.notificationSettings!.firstChannel, enabled: checked }
+                        })}
+                      />
+                    </div>
+                    
+                    {profile.notificationSettings?.firstChannel.enabled && (
+                      <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərs (Dəqiqə əvvəl)</Label>
                           <Input 
                             type="number" 
-                            className="h-9 w-24 bg-background"
-                            value={profile.notificationSettings.firstClassMinutes}
-                            onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, firstClassMinutes: parseInt(e.target.value) || 0 })}
+                            className="h-9"
+                            value={profile.notificationSettings.firstChannel.firstClassMinutes}
+                            onChange={(e) => updateNotifSettings({ 
+                              ...profile.notificationSettings!, 
+                              firstChannel: { ...profile.notificationSettings!.firstChannel, firstClassMinutes: parseInt(e.target.value) || 0 }
+                            })}
                           />
                         </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-1">
-                        <Label className="text-sm font-bold text-primary uppercase tracking-wider">Digər Dərslər Bildirişi</Label>
-                        <p className="text-[10px] text-muted-foreground">Günün növbəti dərsləri üçün xatırlatma</p>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
-                        <Label htmlFor="other-notif" className="font-medium">Aktiv Et</Label>
-                        <Switch 
-                          id="other-notif" 
-                          checked={profile.notificationSettings?.otherClassesEnabled}
-                          onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesEnabled: checked })}
-                        />
-                      </div>
-
-                      {profile.notificationSettings?.otherClassesEnabled && (
-                        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20 animate-in slide-in-from-top-2">
-                          <Label className="text-xs font-medium whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslər (Dəqiqə əvvəl)</Label>
                           <Input 
                             type="number" 
-                            className="h-9 w-24 bg-background"
-                            value={profile.notificationSettings.otherClassesMinutes}
-                            onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesMinutes: parseInt(e.target.value) || 0 })}
+                            className="h-9"
+                            value={profile.notificationSettings.firstChannel.otherClassesMinutes}
+                            onChange={(e) => updateNotifSettings({ 
+                              ...profile.notificationSettings!, 
+                              firstChannel: { ...profile.notificationSettings!.firstChannel, otherClassesMinutes: parseInt(e.target.value) || 0 }
+                            })}
                           />
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
-                  <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11" onClick={setStandardNotifSettings}>
+                  <Separator />
+
+                  {/* Ikinci Bildiriş Kanali */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border">
+                      <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş</Label>
+                      <Switch 
+                        id="second-notif-channel" 
+                        checked={profile.notificationSettings?.secondChannel.enabled}
+                        onCheckedChange={(checked) => updateNotifSettings({ 
+                          ...profile.notificationSettings!, 
+                          secondChannel: { ...profile.notificationSettings!.secondChannel, enabled: checked }
+                        })}
+                      />
+                    </div>
+
+                    {profile.notificationSettings?.secondChannel.enabled && (
+                      <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərs (Dəqiqə əvvəl)</Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            value={profile.notificationSettings.secondChannel.firstClassMinutes}
+                            onChange={(e) => updateNotifSettings({ 
+                              ...profile.notificationSettings!, 
+                              secondChannel: { ...profile.notificationSettings!.secondChannel, firstClassMinutes: parseInt(e.target.value) || 0 }
+                            })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslər (Dəqiqə əvvəl)</Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            value={profile.notificationSettings.secondChannel.otherClassesMinutes}
+                            onChange={(e) => updateNotifSettings({ 
+                              ...profile.notificationSettings!, 
+                              secondChannel: { ...profile.notificationSettings!.secondChannel, otherClassesMinutes: parseInt(e.target.value) || 0 }
+                            })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11 font-bold" onClick={setStandardNotifSettings}>
                     <RotateCcw className="h-4 w-4" /> Standart Ayarlar
                   </Button>
                 </div>

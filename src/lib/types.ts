@@ -50,11 +50,15 @@ export interface UserMaterial {
   createdAt: string;
 }
 
-export interface NotificationSettings {
-  firstClassEnabled: boolean;
+export interface NotificationChannel {
+  enabled: boolean;
   firstClassMinutes: number;
-  otherClassesEnabled: boolean;
   otherClassesMinutes: number;
+}
+
+export interface NotificationSettings {
+  firstChannel: NotificationChannel;
+  secondChannel: NotificationChannel;
 }
 
 export interface UserProfile {
