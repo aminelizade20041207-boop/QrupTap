@@ -1,5 +1,5 @@
 
-import type {Metadata, Viewport} from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase';
@@ -9,20 +9,12 @@ import Script from 'next/script';
 export const metadata: Metadata = {
   title: 'İT24 - Dərs Cədvəli',
   description: 'İT24 qrupu üçün mərkəzi dərs cədvəli və xatırlatmalar.',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'İT24',
-  },
-  icons: {
-    icon: [
-      { url: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24', sizes: '192x192', type: 'image/png' },
-      { url: 'https://placehold.co/512x512/4A90E2/ffffff?text=IT24', sizes: '512x512', type: 'image/png' }
-    ],
-    apple: [
-      { url: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24', sizes: '192x192', type: 'image/png' }
-    ],
-  },
+  }
 };
 
 export const viewport: Viewport = {
@@ -56,10 +48,10 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                  console.log('ServiceWorker registration successful');
-                }, function(err) {
-                  console.log('ServiceWorker registration failed: ', err);
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                  console.log('SW registered');
+                }).catch(function(err) {
+                  console.log('SW error:', err);
                 });
               });
             }

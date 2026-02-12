@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -25,10 +26,6 @@ export const GradeCalculator = () => {
   const isDiscrete = selectedSubject.toLowerCase().includes('diskret');
   const isCN = selectedSubject.toLowerCase().includes('şəbəkə');
 
-  const hasLabs = !isDiscrete && !isOS; 
-  const hasColls = !isOS;
-  const hasSeminars = !isOS;
-  
   const maxLabs = isCN ? 8 : (isOS ? 8 : 5);
   const multiplier = isDiscrete ? 3 : 1.5;
 
@@ -40,14 +37,6 @@ export const GradeCalculator = () => {
     setAttendance('');
     setIndependentWork('');
   }, [selectedSubject]);
-
-  const addSeminar = () => setSeminars([...seminars, '']);
-  const removeSeminar = (index: number) => setSeminars(seminars.filter((_, i) => i !== index));
-  const updateSeminar = (index: number, value: string) => {
-    const newSeminars = [...seminars];
-    newSeminars[index] = value;
-    setSeminars(newSeminars);
-  };
 
   const calculateGrade = () => {
     let total = 0;
@@ -104,7 +93,7 @@ export const GradeCalculator = () => {
         </div>
 
         {selectedSubject && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Davamiyyət (Max 10)</Label>
@@ -128,61 +117,59 @@ export const GradeCalculator = () => {
               </div>
             </div>
 
-            {hasColls && (
-              <div className="space-y-3">
-                <Label>Kollokvium Qiymətləri</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {colloquiums.map((val, idx) => (
+            <div className="space-y-3">
+              <Label>Kollokvium Qiymətləri</Label>
+              <div className="grid grid-cols-3 gap-3">
+                {colloquiums.map((val, idx) => (
+                  <Input 
+                    key={idx}
+                    type="text" 
+                    placeholder={`Məs: 10`} 
+                    value={val} 
+                    onChange={(e) => {
+                      const c = [...colloquiums];
+                      c[idx] = e.target.value;
+                      setColloquiums(c);
+                    }} 
+                    className="h-11"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Seminar Qiymətləri</Label>
+                <Button variant="outline" size="sm" onClick={() => setSeminars([...seminars, ''])} className="h-8 gap-1">
+                  <Plus className="h-4 w-4" /> Əlavə et
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {seminars.map((sem, idx) => (
+                  <div key={idx} className="relative group">
                     <Input 
-                      key={idx}
                       type="text" 
                       placeholder={`Məs: 10`} 
-                      value={val} 
+                      value={sem} 
                       onChange={(e) => {
-                        const c = [...colloquiums];
-                        c[idx] = e.target.value;
-                        setColloquiums(c);
-                      }} 
-                      className="h-11"
+                        const s = [...seminars];
+                        s[idx] = e.target.value;
+                        setSeminars(s);
+                      }}
+                      className="pr-8 h-11"
                     />
-                  ))}
-                </div>
+                    <button 
+                      onClick={() => setSeminars(seminars.filter((_, i) => i !== idx))}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
-            {hasSeminars && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2">
-                    Seminar Qiymətləri
-                  </Label>
-                  <Button variant="outline" size="sm" onClick={addSeminar} className="h-8 gap-1">
-                    <Plus className="h-4 w-4" /> Əlavə et
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {seminars.map((sem, idx) => (
-                    <div key={idx} className="relative group">
-                      <Input 
-                        type="text" 
-                        placeholder={`Məs: 10`} 
-                        value={sem} 
-                        onChange={(e) => updateSeminar(idx, e.target.value)}
-                        className="pr-8 h-11"
-                      />
-                      <button 
-                        onClick={() => removeSeminar(idx)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(hasLabs || isOS) && (
+            {(maxLabs > 0) && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <div className="flex items-center justify-between mb-2">
                   <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
@@ -194,14 +181,14 @@ export const GradeCalculator = () => {
                   {Array.from({ length: maxLabs }).map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setCompletedLabs(idx + 1 === completedLabs ? idx : idx + 1)}
+                      onClick={() => setCompletedLabs(idx + 1)}
                       className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold ${
                         idx < completedLabs 
-                          ? 'bg-primary border-primary text-white shadow-md scale-105' 
-                          : 'bg-white border-muted-foreground/20 hover:border-primary/50'
+                          ? 'bg-primary border-primary text-white shadow-md' 
+                          : 'bg-white border-muted-foreground/20'
                       }`}
                     >
-                      {idx < completedLabs ? <CheckCircle2 className="h-5 w-5" /> : idx + 1}
+                      {idx + 1}
                     </button>
                   ))}
                 </div>
@@ -213,7 +200,7 @@ export const GradeCalculator = () => {
             </Button>
 
             {result !== null && (
-              <div className={`mt-6 p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center animate-in zoom-in-95 duration-300 shadow-xl`}>
+              <div className={`mt-6 p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center shadow-xl animate-in zoom-in-95 duration-300`}>
                 <p className="text-sm font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
                 <h2 className="text-6xl font-black mb-3">{result}</h2>
                 <div className="flex justify-center items-center gap-2 bg-white/20 py-2 px-4 rounded-full w-fit mx-auto">

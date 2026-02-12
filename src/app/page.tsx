@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -16,28 +17,36 @@ export default function Home() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
-  const [isClient, setIsClient] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
 
   useEffect(() => {
-    setIsClient(true);
+    // Profil məlumatlarını oflayn rejimdə də stabil oxumaq üçün
     const savedProfile = localStorage.getItem('it24_profile');
     if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+      try {
+        setProfile(JSON.parse(savedProfile));
+      } catch (e) {
+        console.error("Profil oxunarkən xəta:", e);
+      }
     }
 
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setNotifPermission(Notification.permission);
     }
 
+    // Tarix hesablama (2026-cı il üçün)
     const startDate = new Date('2026-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const weekIndex = Math.floor(diffInDays / 7);
     setCurrentWeek(weekIndex % 2 === 0 ? 'ust' : 'alt');
+    
+    // Tətbiqin tam hazır olduğunu bildiririk (hydration xətalarının qarşısını alır)
+    setIsReady(true);
   }, []);
 
-  if (!isClient) return null;
+  if (!isReady) return null;
 
   if (!profile) {
     return <Onboarding onComplete={(p) => {
@@ -53,7 +62,7 @@ export default function Home() {
 
   const resetProfile = () => {
     localStorage.removeItem('it24_profile');
-    setProfile(null);
+    window.location.reload();
   };
 
   const requestPermission = async () => {
@@ -65,8 +74,6 @@ export default function Home() {
     setNotifPermission(permission);
     if (permission === 'granted') {
       toast({ title: "Uğurlu!", description: "Bildirişlər aktiv edildi." });
-    } else {
-      toast({ variant: "destructive", title: "Xəta", description: "Bildiriş icazəsi rədd edildi." });
     }
   };
 
@@ -76,6 +83,7 @@ export default function Home() {
       return;
     }
 
+    // Android "Ağ kvadrat" problemini həll etmək üçün ikon linkini optimallaşdırırıq
     const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff.png?text=IT24';
 
     try {
@@ -89,13 +97,13 @@ export default function Home() {
           tag: 'test-notification',
           renotify: true
         });
-        toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
+        toast({ title: "Test Göndərildi", description: "Bildiriş panelini yoxlayın!" });
       } else {
         new Notification('İT24 Bildiriş Testi', { 
           body: `Salam, ${profile.name}!`, 
           icon: iconUrl 
         });
-        toast({ title: "Test Göndərildi", description: "Yuxarı paneli yoxlayın!" });
+        toast({ title: "Test Göndərildi", description: "Bildiriş panelini yoxlayın!" });
       }
     } catch (err) {
       toast({ variant: "destructive", title: "Xəta", description: "Bildiriş göndərilə bilmədi." });
@@ -170,15 +178,15 @@ export default function Home() {
             </TabsList>
           </div>
 
-          <TabsContent value="daily" className="min-h-[400px] animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="daily" className="min-h-[400px]">
             <DailyView classes={filteredClasses} />
           </TabsContent>
           
-          <TabsContent value="weekly" className="min-h-[400px] animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="weekly" className="min-h-[400px]">
             <WeeklyView classes={filteredClasses} />
           </TabsContent>
 
-          <TabsContent value="calculator" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <TabsContent value="calculator">
             <GradeCalculator />
           </TabsContent>
         </Tabs>
