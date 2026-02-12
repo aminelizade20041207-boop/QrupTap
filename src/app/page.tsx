@@ -210,7 +210,11 @@ export default function Home() {
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
     if (!profile.notificationSettings) return;
     const isOtherClass = field === 'otherClassesMinutes';
-    const numValue = value === '' ? 0 : (isOtherClass ? Math.min(90, parseInt(value) || 0) : (parseInt(value) || 0));
+    // Mənfi ədədləri Math.max ilə bloklayırıq
+    const parsedValue = parseInt(value) || 0;
+    const nonNegativeValue = Math.max(0, parsedValue);
+    const numValue = value === '' ? 0 : (isOtherClass ? Math.min(90, nonNegativeValue) : nonNegativeValue);
+    
     updateNotifSettings({
       ...profile.notificationSettings,
       [channel]: { ...profile.notificationSettings[channel], [field]: numValue }
@@ -280,27 +284,32 @@ export default function Home() {
                     {profile.notificationSettings?.firstChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                            <span>Günün İlk Dərsinə Qalmış</span>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Günün İlk Dərsinə</span>
                             <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}</span>
+                            <span>Qalmış</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
                             placeholder="Dəqiqə əvvəl"
+                            min="0"
                             value={profile.notificationSettings.firstChannel.firstClassMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                            <span>Digər Dərslərə Qalmış</span>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Digər Dərslərə</span>
                             <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span>
+                            <span>Qalmış</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
                             placeholder="Dəqiqə əvvəl (Maks 90)"
+                            min="0"
+                            max="90"
                             value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
@@ -337,27 +346,32 @@ export default function Home() {
                     {profile.notificationSettings?.secondChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                            <span>Günün İlk Dərsinə Qalmış</span>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Günün İlk Dərsinə</span>
                             <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.firstClassMinutes)}</span>
+                            <span>Qalmış</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
                             placeholder="Dəqiqə əvvəl"
+                            min="0"
                             value={profile.notificationSettings.secondChannel.firstClassMinutes || ''}
                             onChange={(e) => handleMinutesChange('secondChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
-                            <span>Digər Dərslərə Qalmış</span>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Digər Dərslərə</span>
                             <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.otherClassesMinutes)}</span>
+                            <span>Qalmış</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
                             placeholder="Dəqiqə əvvəl (Maks 90)"
+                            min="0"
+                            max="90"
                             value={profile.notificationSettings.secondChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('secondChannel', 'otherClassesMinutes', e.target.value)}
                           />
