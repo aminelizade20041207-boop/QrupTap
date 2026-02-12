@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function Home() {
   const { toast } = useToast();
@@ -22,6 +23,7 @@ export default function Home() {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
   const [activeTab, setActiveTab] = useState('daily');
   const [editingSubject, setEditingSubject] = useState<string | undefined>();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('it24_profile');
@@ -81,11 +83,12 @@ export default function Home() {
     updateProfile(updatedProfile);
     toast({ title: "Yadda saxlanıldı", description: `${subject} balınız kabinetə əlavə edildi.` });
     setEditingSubject(undefined);
-    setActiveTab('profile');
+    setIsProfileOpen(true);
   };
 
   const handleEditGrade = (subject: string) => {
     setEditingSubject(subject);
+    setIsProfileOpen(false);
     setActiveTab('calculator');
   };
 
@@ -141,14 +144,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <header className="flex items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm">İT24</div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline">Dərs Cədvəli</h1>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">Dərs Cədvəli</h1>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <User className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-muted-foreground text-xs md:text-sm">
               <span>Salam, <b>{profile.name}</b></span>
               <button 
                 onClick={resetProfile} 
@@ -158,81 +160,104 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="flex gap-2">
-              <Button 
-                variant={notifPermission === 'granted' ? "ghost" : "default"} 
-                size="sm" 
-                onClick={requestPermission}
-                disabled={notifPermission === 'granted'}
-                className="gap-2"
-              >
-                {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Bell className="h-4 w-4" />}
-                {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={triggerTestNotification}
-                className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
-              >
-                <Smartphone className="h-4 w-4" /> Test Et
-              </Button>
-            </div>
-            <div className="flex items-center gap-3 bg-white/50 p-3 rounded-xl border border-primary/20 shadow-sm">
-              <Info className="h-5 w-5 text-primary" />
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Cari Həftə</span>
-                <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="w-fit font-bold">
-                  {currentWeek === 'ust' ? 'ÜST HƏFTƏ' : 'ALT HƏFTƏ'}
-                </Badge>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="relative group transition-transform active:scale-95"
+            >
+              <Avatar className={`h-12 w-12 border-2 transition-all ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white shadow-sm'}`}>
+                <AvatarImage src={profile.photo} />
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  <User className="h-6 w-6" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white">
+                <User className="h-3 w-3" />
               </div>
-            </div>
+            </button>
           </div>
         </header>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-2 rounded-xl border overflow-x-auto">
-            <TabsList className="grid w-full md:w-[800px] grid-cols-4 min-w-[500px]">
-              <TabsTrigger value="daily" className="flex items-center gap-2">
-                <Bell className="h-4 w-4" /> Günlük
-              </TabsTrigger>
-              <TabsTrigger value="weekly" className="flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4" /> Həftəlik
-              </TabsTrigger>
-              <TabsTrigger value="calculator" className="flex items-center gap-2">
-                <Calculator className="h-4 w-4" /> Giriş Balı
-              </TabsTrigger>
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" /> Kabinet
-              </TabsTrigger>
-            </TabsList>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex gap-2">
+            <Button 
+              variant={notifPermission === 'granted' ? "ghost" : "default"} 
+              size="sm" 
+              onClick={requestPermission}
+              disabled={notifPermission === 'granted'}
+              className="gap-2"
+            >
+              {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Bell className="h-4 w-4" />}
+              {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={triggerTestNotification}
+              className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+            >
+              <Smartphone className="h-4 w-4" /> Test
+            </Button>
           </div>
+          <div className="flex items-center gap-3 bg-white/50 p-2 px-3 rounded-xl border border-primary/20 shadow-sm ml-auto">
+            <Info className="h-4 w-4 text-primary" />
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>
+              <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="font-bold text-[10px]">
+                {currentWeek === 'ust' ? 'ÜST' : 'ALT'}
+              </Badge>
+            </div>
+          </div>
+        </div>
 
-          <TabsContent value="daily" className="min-h-[400px]">
-            <DailyView classes={filteredClasses} />
-          </TabsContent>
-          
-          <TabsContent value="weekly" className="min-h-[400px]">
-            <WeeklyView classes={filteredClasses} />
-          </TabsContent>
-
-          <TabsContent value="calculator">
-            <GradeCalculator 
-              onSave={handleSaveGrade} 
-              initialSubject={editingSubject}
-              existingDetails={editingSubject ? profile.savedDetails?.[editingSubject] : undefined}
-            />
-          </TabsContent>
-
-          <TabsContent value="profile">
+        {isProfileOpen ? (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" /> Şəxsi Kabinet
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setIsProfileOpen(false)}>Geri Qayıt</Button>
+            </div>
             <ProfileView 
               profile={profile} 
               onUpdate={updateProfile}
               onEditGrade={handleEditGrade}
             />
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-1.5 rounded-xl border overflow-x-auto">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Bell className="h-4 w-4" /> Günlük
+                </TabsTrigger>
+                <TabsTrigger value="weekly" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <LayoutGrid className="h-4 w-4" /> Həftəlik
+                </TabsTrigger>
+                <TabsTrigger value="calculator" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Calculator className="h-4 w-4" /> Giriş Balı
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="daily" className="min-h-[400px]">
+              <DailyView classes={filteredClasses} />
+            </TabsContent>
+            
+            <TabsContent value="weekly" className="min-h-[400px]">
+              <WeeklyView classes={filteredClasses} />
+            </TabsContent>
+
+            <TabsContent value="calculator">
+              <GradeCalculator 
+                onSave={handleSaveGrade} 
+                initialSubject={editingSubject}
+                existingDetails={editingSubject ? profile.savedDetails?.[editingSubject] : undefined}
+              />
+            </TabsContent>
+          </Tabs>
+        )}
 
         <footer className="pt-8 border-t text-center text-sm text-muted-foreground">
           <p>© 2026 İT24 - Əlizadə Akşin</p>
