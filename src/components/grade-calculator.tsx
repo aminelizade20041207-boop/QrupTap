@@ -7,12 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info, Save } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 
-export const GradeCalculator = () => {
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
+interface GradeCalculatorProps {
+  onSave?: (subject: string, grade: number) => void;
+  initialSubject?: string;
+}
+
+export const GradeCalculator = ({ onSave, initialSubject }: GradeCalculatorProps) => {
+  const [selectedSubject, setSelectedSubject] = useState<string>(initialSubject || '');
   const [attendance, setAttendance] = useState<string>('');
   const [independentWork, setIndependentWork] = useState<string>('');
   const [colloquiums, setColloquiums] = useState<string[]>(['', '', '']);
@@ -29,6 +34,12 @@ export const GradeCalculator = () => {
   const maxLabs = isDiscrete ? 0 : (isOS || isCN ? 8 : 5);
   const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
+
+  useEffect(() => {
+    if (initialSubject) {
+      setSelectedSubject(initialSubject);
+    }
+  }, [initialSubject]);
 
   useEffect(() => {
     setResult(null);
@@ -61,6 +72,12 @@ export const GradeCalculator = () => {
     }
     
     setResult(parseFloat(total.toFixed(2)));
+  };
+
+  const handleSave = () => {
+    if (result !== null && onSave) {
+      onSave(selectedSubject, result);
+    }
   };
 
   const getResultMessage = (res: number) => {
@@ -204,11 +221,6 @@ export const GradeCalculator = () => {
                     </button>
                   ))}
                 </div>
-                {completedLabs > 0 && (
-                  <p className="text-[11px] font-medium text-primary mt-2">
-                    Cari laboratoriya balınız: {((completedLabs / maxLabs) * labTotalPoints).toFixed(1)} / {labTotalPoints}
-                  </p>
-                )}
               </div>
             )}
 
@@ -217,13 +229,18 @@ export const GradeCalculator = () => {
             </Button>
 
             {result !== null && (
-              <div className={`mt-6 p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center shadow-xl animate-in zoom-in-95 duration-300`}>
-                <p className="text-sm font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
-                <h2 className="text-6xl font-black mb-3">{result}</h2>
-                <div className="flex justify-center items-center gap-2 bg-white/20 py-2 px-4 rounded-full w-fit mx-auto">
-                  {getResultMessage(result).icon}
-                  <span className="font-bold text-sm">{getResultMessage(result).text}</span>
+              <div className="space-y-4 animate-in zoom-in-95 duration-300">
+                <div className={`p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center shadow-xl`}>
+                  <p className="text-sm font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
+                  <h2 className="text-6xl font-black mb-3">{result}</h2>
+                  <div className="flex justify-center items-center gap-2 bg-white/20 py-2 px-4 rounded-full w-fit mx-auto">
+                    {getResultMessage(result).icon}
+                    <span className="font-bold text-sm">{getResultMessage(result).text}</span>
+                  </div>
                 </div>
+                <Button variant="outline" onClick={handleSave} className="w-full h-12 gap-2 border-primary text-primary hover:bg-primary/5 font-bold">
+                  <Save className="h-5 w-5" /> Kabinetdə Yadda Saxla
+                </Button>
               </div>
             )}
           </div>

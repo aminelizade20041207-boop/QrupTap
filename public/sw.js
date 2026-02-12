@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'it24-cache-v5';
+const CACHE_NAME = 'it24-cache-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',
@@ -30,11 +30,18 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
+      return response || fetch(event.request).then((fetchResponse) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          if (event.request.url.startsWith('http') && event.request.method === 'GET') {
+            cache.put(event.request, fetchResponse.clone());
+          }
+          return fetchResponse;
+        });
       });
+    }).catch(() => {
+      if (event.request.mode === 'navigate') {
+        return caches.match('/');
+      }
     })
   );
 });

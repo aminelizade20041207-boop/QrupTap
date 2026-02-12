@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
+import { ProfileView } from '@/components/profile-view';
 
 export default function Home() {
   const { toast } = useToast();
@@ -18,6 +20,8 @@ export default function Home() {
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
   const [isReady, setIsReady] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
+  const [activeTab, setActiveTab] = useState('daily');
+  const [editingSubject, setEditingSubject] = useState<string | undefined>();
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('it24_profile');
@@ -46,8 +50,9 @@ export default function Home() {
 
   if (!profile) {
     return <Onboarding onComplete={(p) => {
-      setProfile(p);
-      localStorage.setItem('it24_profile', JSON.stringify(p));
+      const newProfile = { ...p, savedGrades: {} };
+      setProfile(newProfile);
+      localStorage.setItem('it24_profile', JSON.stringify(newProfile));
     }} />;
   }
 
@@ -55,6 +60,29 @@ export default function Home() {
     (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
     (c.week === 'hamisi' || c.week === currentWeek)
   );
+
+  const updateProfile = (updatedProfile: UserProfile) => {
+    setProfile(updatedProfile);
+    localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
+  };
+
+  const handleSaveGrade = (subject: string, grade: number) => {
+    const updatedProfile = {
+      ...profile,
+      savedGrades: {
+        ...(profile.savedGrades || {}),
+        [subject]: grade
+      }
+    };
+    updateProfile(updatedProfile);
+    toast({ title: "Yadda saxlanıldı", description: `${subject} balınız kabinetə əlavə edildi.` });
+    setActiveTab('profile');
+  };
+
+  const handleEditGrade = (subject: string) => {
+    setEditingSubject(subject);
+    setActiveTab('calculator');
+  };
 
   const resetProfile = () => {
     localStorage.removeItem('it24_profile');
@@ -79,7 +107,6 @@ export default function Home() {
       return;
     }
 
-    // "Ağ kvadrat" problemini həll etmək üçün ikon8-dən şəffaf ikon istifadəsi
     const iconUrl = 'https://img.icons8.com/ios-filled/192/4A90E2/it.png';
 
     try {
@@ -117,12 +144,12 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <User className="h-4 w-4" />
-              <span>Salam, <b>{profile.name}</b> ({profile.subgroup === 'yuxari' ? 'Yuxarı' : 'Aşağı'} altqrup)</span>
+              <span>Salam, <b>{profile.name}</b></span>
               <button 
                 onClick={resetProfile} 
                 className="text-primary hover:underline ml-2 font-medium"
               >
-                Dəyişdir
+                Sıfırla
               </button>
             </div>
           </div>
@@ -159,9 +186,9 @@ export default function Home() {
           </div>
         </header>
 
-        <Tabs defaultValue="daily" className="w-full space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-2 rounded-xl border">
-            <TabsList className="grid w-full md:w-[600px] grid-cols-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-2 rounded-xl border overflow-x-auto">
+            <TabsList className="grid w-full md:w-[800px] grid-cols-4 min-w-[500px]">
               <TabsTrigger value="daily" className="flex items-center gap-2">
                 <Bell className="h-4 w-4" /> Günlük
               </TabsTrigger>
@@ -170,6 +197,9 @@ export default function Home() {
               </TabsTrigger>
               <TabsTrigger value="calculator" className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" /> Giriş Balı
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="flex items-center gap-2">
+                <User className="h-4 w-4" /> Kabinet
               </TabsTrigger>
             </TabsList>
           </div>
@@ -183,7 +213,18 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="calculator">
-            <GradeCalculator />
+            <GradeCalculator 
+              onSave={handleSaveGrade} 
+              initialSubject={editingSubject}
+            />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <ProfileView 
+              profile={profile} 
+              onUpdate={updateProfile}
+              onEditGrade={handleEditGrade}
+            />
           </TabsContent>
         </Tabs>
 

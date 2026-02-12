@@ -28,4 +28,6 @@ export const DAYS_OF_WEEK = [
 export interface UserProfile {
   name: string;
   subgroup: 'yuxari' | 'asagi';
+  photo?: string;
+  savedGrades?: Record<string, number>;
 }
