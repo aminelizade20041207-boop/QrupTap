@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -181,12 +180,42 @@ export default function Home() {
   };
 
   const updateNotifSettings = (newSettings: NotificationSettings) => {
+    // Ikinci bildiriş yalnız birinci aktiv olduqda aktiv ola bilər
+    if (!newSettings.firstChannel.enabled) {
+      newSettings.secondChannel.enabled = false;
+    }
+    
+    // Maksimum 90 dəqiqə limiti tətbiq edirik
+    newSettings.firstChannel.firstClassMinutes = Math.min(90, newSettings.firstChannel.firstClassMinutes);
+    newSettings.firstChannel.otherClassesMinutes = Math.min(90, newSettings.firstChannel.otherClassesMinutes);
+    newSettings.secondChannel.firstClassMinutes = Math.min(90, newSettings.secondChannel.firstClassMinutes);
+    newSettings.secondChannel.otherClassesMinutes = Math.min(90, newSettings.secondChannel.otherClassesMinutes);
+
     updateProfile({ ...profile, notificationSettings: newSettings });
   };
 
   const setStandardNotifSettings = () => {
     updateNotifSettings(DEFAULT_NOTIF_SETTINGS);
     toast({ title: "Standart Ayarlar", description: "Bildiriş ayarları sıfırlandı." });
+  };
+
+  const formatTimeMinutes = (min: number) => {
+    if (min <= 0) return '';
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    if (h > 0) {
+      return `(${h} saat${m > 0 ? ` ${m} dəqiqə` : ''})`;
+    }
+    return '';
+  };
+
+  const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
+    if (!profile.notificationSettings) return;
+    const numValue = value === '' ? 0 : Math.min(90, parseInt(value) || 0);
+    updateNotifSettings({
+      ...profile.notificationSettings,
+      [channel]: { ...profile.notificationSettings[channel], [field]: numValue }
+    });
   };
 
   return (
@@ -231,7 +260,7 @@ export default function Home() {
                     <Settings2 className="h-5 w-5" /> Bildiriş Ayarları
                   </DialogTitle>
                   <DialogDescription>
-                    Bildiriş kanallarını və xatırlatma vaxtlarını təyin edin.
+                    Bildiriş kanallarını və xatırlatma vaxtlarını təyin edin (Maksimum 90 dəq).
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
@@ -252,27 +281,27 @@ export default function Home() {
                     {profile.notificationSettings?.firstChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərs (Dəqiqə əvvəl)</Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                            Günün İlk Dərsi {formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}
+                          </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            value={profile.notificationSettings.firstChannel.firstClassMinutes}
-                            onChange={(e) => updateNotifSettings({ 
-                              ...profile.notificationSettings!, 
-                              firstChannel: { ...profile.notificationSettings!.firstChannel, firstClassMinutes: parseInt(e.target.value) || 0 }
-                            })}
+                            placeholder="Dəqiqə"
+                            value={profile.notificationSettings.firstChannel.firstClassMinutes || ''}
+                            onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslər (Dəqiqə əvvəl)</Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                            Digər Dərslər {formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}
+                          </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            value={profile.notificationSettings.firstChannel.otherClassesMinutes}
-                            onChange={(e) => updateNotifSettings({ 
-                              ...profile.notificationSettings!, 
-                              firstChannel: { ...profile.notificationSettings!.firstChannel, otherClassesMinutes: parseInt(e.target.value) || 0 }
-                            })}
+                            placeholder="Dəqiqə"
+                            value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
+                            onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
                         </div>
                       </div>
@@ -283,10 +312,19 @@ export default function Home() {
 
                   {/* Ikinci Bildiriş Kanali */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border">
-                      <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş</Label>
+                    <div className={cn(
+                      "flex items-center justify-between p-3 rounded-xl border transition-opacity",
+                      !profile.notificationSettings?.firstChannel.enabled ? "opacity-50 bg-muted" : "bg-muted/50"
+                    )}>
+                      <div className="space-y-0.5">
+                        <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş</Label>
+                        {!profile.notificationSettings?.firstChannel.enabled && (
+                          <p className="text-[9px] text-destructive">Əvvəlcə birinci bildirişi aktiv edin</p>
+                        )}
+                      </div>
                       <Switch 
                         id="second-notif-channel" 
+                        disabled={!profile.notificationSettings?.firstChannel.enabled}
                         checked={profile.notificationSettings?.secondChannel.enabled}
                         onCheckedChange={(checked) => updateNotifSettings({ 
                           ...profile.notificationSettings!, 
@@ -298,27 +336,27 @@ export default function Home() {
                     {profile.notificationSettings?.secondChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərs (Dəqiqə əvvəl)</Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                            Günün İlk Dərsi {formatTimeMinutes(profile.notificationSettings.secondChannel.firstClassMinutes)}
+                          </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            value={profile.notificationSettings.secondChannel.firstClassMinutes}
-                            onChange={(e) => updateNotifSettings({ 
-                              ...profile.notificationSettings!, 
-                              secondChannel: { ...profile.notificationSettings!.secondChannel, firstClassMinutes: parseInt(e.target.value) || 0 }
-                            })}
+                            placeholder="Dəqiqə"
+                            value={profile.notificationSettings.secondChannel.firstClassMinutes || ''}
+                            onChange={(e) => handleMinutesChange('secondChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslər (Dəqiqə əvvəl)</Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                            Digər Dərslər {formatTimeMinutes(profile.notificationSettings.secondChannel.otherClassesMinutes)}
+                          </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            value={profile.notificationSettings.secondChannel.otherClassesMinutes}
-                            onChange={(e) => updateNotifSettings({ 
-                              ...profile.notificationSettings!, 
-                              secondChannel: { ...profile.notificationSettings!.secondChannel, otherClassesMinutes: parseInt(e.target.value) || 0 }
-                            })}
+                            placeholder="Dəqiqə"
+                            value={profile.notificationSettings.secondChannel.otherClassesMinutes || ''}
+                            onChange={(e) => handleMinutesChange('secondChannel', 'otherClassesMinutes', e.target.value)}
                           />
                         </div>
                       </div>
