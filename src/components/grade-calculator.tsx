@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -44,7 +43,6 @@ export const GradeCalculator = () => {
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
-    // Əməliyyat sistemlərində kollokvium/seminar yoxdur
     if (!isOS) {
       const collValues = colloquiums.map(Number).filter(n => !isNaN(n) && n > 0);
       const semValues = seminars.map(Number).filter(n => !isNaN(n) && n > 0);
@@ -56,7 +54,6 @@ export const GradeCalculator = () => {
       }
     }
 
-    // Diskret riyaziyyatda laboratoriya yoxdur
     if (maxLabs > 0) {
       const labScore = (completedLabs / maxLabs) * labTotalPoints;
       total += labScore;
@@ -184,7 +181,7 @@ export const GradeCalculator = () => {
                   <div className="space-y-1">
                     <Label className="font-bold">Laboratoriya</Label>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Ümumi bal təsiri: {labTotalPoints} bal
+                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: {labTotalPoints} bal
                     </p>
                   </div>
                   <Badge variant="outline" className="font-bold text-primary bg-white">

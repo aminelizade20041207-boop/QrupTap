@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -21,7 +20,6 @@ export default function Home() {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
 
   useEffect(() => {
-    // Profil məlumatlarını oflayn rejimdə də stabil oxumaq
     const savedProfile = localStorage.getItem('it24_profile');
     if (savedProfile) {
       try {
@@ -35,7 +33,6 @@ export default function Home() {
       setNotifPermission(Notification.permission);
     }
 
-    // Tarix hesablama (2026-cı il üçün)
     const startDate = new Date('2026-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -82,8 +79,8 @@ export default function Home() {
       return;
     }
 
-    // Android "Ağ kvadrat" problemini həll etmək üçün şəffaf fonlu PNG ikon
-    const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff.png?text=IT24';
+    // "Ağ kvadrat" problemini həll etmək üçün ikon8-dən şəffaf ikon istifadəsi
+    const iconUrl = 'https://img.icons8.com/ios-filled/192/4A90E2/it.png';
 
     try {
       if ('serviceWorker' in navigator) {
