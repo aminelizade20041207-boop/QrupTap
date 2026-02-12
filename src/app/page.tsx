@@ -181,15 +181,12 @@ export default function Home() {
   };
 
   const updateNotifSettings = (newSettings: NotificationSettings) => {
-    // Ikinci bildiriş yalnız birinci aktiv olduqda aktiv ola bilər
     if (!newSettings.firstChannel.enabled) {
       newSettings.secondChannel.enabled = false;
     }
     
-    // Maksimum 90 dəqiqə limiti tətbiq edirik
-    newSettings.firstChannel.firstClassMinutes = Math.min(90, newSettings.firstChannel.firstClassMinutes);
+    // Yalnız digər dərslər üçün 90 dəqiqə limiti tətbiq edirik
     newSettings.firstChannel.otherClassesMinutes = Math.min(90, newSettings.firstChannel.otherClassesMinutes);
-    newSettings.secondChannel.firstClassMinutes = Math.min(90, newSettings.secondChannel.firstClassMinutes);
     newSettings.secondChannel.otherClassesMinutes = Math.min(90, newSettings.secondChannel.otherClassesMinutes);
 
     updateProfile({ ...profile, notificationSettings: newSettings });
@@ -212,7 +209,8 @@ export default function Home() {
 
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
     if (!profile.notificationSettings) return;
-    const numValue = value === '' ? 0 : Math.min(90, parseInt(value) || 0);
+    const isOtherClass = field === 'otherClassesMinutes';
+    const numValue = value === '' ? 0 : (isOtherClass ? Math.min(90, parseInt(value) || 0) : (parseInt(value) || 0));
     updateNotifSettings({
       ...profile.notificationSettings,
       [channel]: { ...profile.notificationSettings[channel], [field]: numValue }
@@ -261,7 +259,7 @@ export default function Home() {
                     <Settings2 className="h-5 w-5" /> Bildiriş Ayarları
                   </DialogTitle>
                   <DialogDescription>
-                    Bildiriş kanallarını və xatırlatma vaxtlarını təyin edin (Maksimum 90 dəq).
+                    Bildiriş sayını və göndərilmə vaxtını təyin edin.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
@@ -300,7 +298,7 @@ export default function Home() {
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə"
+                            placeholder="Dəqiqə (Maks 90)"
                             value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
@@ -355,7 +353,7 @@ export default function Home() {
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə"
+                            placeholder="Dəqiqə (Maks 90)"
                             value={profile.notificationSettings.secondChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('secondChannel', 'otherClassesMinutes', e.target.value)}
                           />
