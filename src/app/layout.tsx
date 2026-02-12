@@ -50,6 +50,20 @@ export default function RootLayout({
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(function(reg) {
                   console.log('SW registered');
+                  // Yeniləmə yoxlanışı
+                  reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    if (installingWorker) {
+                      installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                          if (navigator.serviceWorker.controller) {
+                            console.log('Yeni versiya tapıldı, tətbiq yenilənir...');
+                            window.location.reload();
+                          }
+                        }
+                      };
+                    }
+                  };
                 }).catch(function(err) {
                   console.log('SW error:', err);
                 });
