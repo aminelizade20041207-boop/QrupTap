@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2 } from 'lucide-react';
+import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2, Moon, Sun } from 'lucide-react';
 import { UserProfile, WeekType, GradeDetails } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
@@ -24,6 +24,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('daily');
   const [editingSubject, setEditingSubject] = useState<string | undefined>();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const savedProfile = localStorage.getItem('it24_profile');
@@ -39,6 +40,9 @@ export default function Home() {
       setNotifPermission(Notification.permission);
     }
 
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+
     const startDate = new Date('2026-02-16');
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -47,6 +51,18 @@ export default function Home() {
     
     setIsReady(true);
   }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('it24_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('it24_theme', 'light');
+    }
+  };
 
   if (!isReady) return <div className="min-h-screen bg-background" />;
 
@@ -161,18 +177,26 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleDarkMode}
+              className="rounded-full hover:bg-primary/10 transition-colors"
+            >
+              {isDarkMode ? <Sun className="h-5 w-5 text-primary" /> : <Moon className="h-5 w-5 text-primary" />}
+            </Button>
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="relative group transition-transform active:scale-95"
+              className="relative group transition-transform active:scale-95 ml-1"
             >
-              <Avatar className={`h-12 w-12 border-2 transition-all ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white shadow-sm'}`}>
+              <Avatar className={`h-11 w-11 border-2 transition-all ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white dark:border-gray-800 shadow-sm'}`}>
                 <AvatarImage src={profile.photo} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   <User className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white">
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white dark:border-gray-800">
                 <User className="h-3 w-3" />
               </div>
             </button>
@@ -201,7 +225,7 @@ export default function Home() {
             </Button>
           </div>
           
-          <div className="flex items-center gap-3 bg-white/50 p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
+          <div className="flex items-center gap-3 bg-white/50 dark:bg-white/5 p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
             <Info className="h-4 w-4 text-primary" />
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>
@@ -228,7 +252,7 @@ export default function Home() {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 p-1.5 rounded-xl border overflow-x-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-white/5 p-1.5 rounded-xl border overflow-x-auto">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
                   <Bell className="h-4 w-4" /> Günlük

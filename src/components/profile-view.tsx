@@ -5,12 +5,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Moon, Sun, Settings } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Settings } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 
 interface ProfileViewProps {
   profile: UserProfile;
@@ -29,23 +27,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDarkMode(isDark);
-  }, []);
-
-  const toggleDarkMode = (checked: boolean) => {
-    setIsDarkMode(checked);
-    if (checked) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('it24_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('it24_theme', 'light');
-    }
-  };
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -129,17 +110,29 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.src = selectedImage;
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const ratio = 400 / 256;
-      const drawWidth = 400 * zoom;
-      const drawHeight = (img.height / img.width) * drawWidth;
-      const finalX = (canvas.width / 2) + (position.x * ratio);
-      const finalY = (canvas.height / 2) + (position.y * ratio);
-
+      
+      const size = Math.min(img.width, img.height);
+      const canvasSize = 400;
+      
       ctx.save();
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+      ctx.arc(canvasSize / 2, canvasSize / 2, canvasSize / 2, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(img, finalX - (drawWidth / 2), finalY - (drawHeight / 2), drawWidth, drawHeight);
+
+      const drawWidth = canvasSize * zoom;
+      const drawHeight = (img.height / img.width) * drawWidth;
+      
+      const finalX = (canvasSize / 2) + position.x;
+      const finalY = (canvasSize / 2) + position.y;
+
+      ctx.drawImage(
+        img, 
+        finalX - (drawWidth / 2), 
+        finalY - (drawHeight / 2), 
+        drawWidth, 
+        drawHeight
+      );
+      
       ctx.restore();
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
@@ -205,29 +198,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 {Object.keys(profile.savedGrades || {}).length}
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-primary/10 shadow-md">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" /> Tənzimləmələr
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-1">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                {isDarkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
-              </div>
-              <Label htmlFor="dark-mode" className="font-bold cursor-pointer">Qaranlıq Rejim</Label>
-            </div>
-            <Switch 
-              id="dark-mode" 
-              checked={isDarkMode} 
-              onCheckedChange={toggleDarkMode}
-            />
           </div>
         </CardContent>
       </Card>
