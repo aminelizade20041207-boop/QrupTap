@@ -64,7 +64,6 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
 
   const calculateGrade = () => {
     let total = 0;
-    // Giriş balları üçün Math.round istifadə edirik ki, kəsr qalmasın
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
@@ -84,7 +83,6 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
       total += labScore;
     }
     
-    // Yalnız tam ədəd göstəririk: 15.46 -> 15, 15.50 -> 16
     setResult(Math.round(total));
   };
 
@@ -115,7 +113,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
           Giriş Balı Hesablayıcı
         </CardTitle>
         <CardDescription>
-          Qiymətlərinizi daxil edin (Yalnız tam ədədlər göstərilir).
+          Qiymətlərinizi daxil edin
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
