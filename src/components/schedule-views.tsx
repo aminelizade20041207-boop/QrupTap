@@ -37,9 +37,9 @@ export const DailyView = ({ classes }: ViewProps) => {
 
   const getTypeColor = (type: string) => {
     const lowerType = type.toLowerCase();
-    if (lowerType.includes('laboratoriya')) return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
-    if (lowerType.includes('məşğələ')) return 'bg-green-500/10 text-green-600 border-green-500/20';
-    if (lowerType.includes('mühazirə')) return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+    if (lowerType.includes('laboratoriya')) return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20';
+    if (lowerType.includes('məşğələ')) return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20';
+    if (lowerType.includes('mühazirə')) return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
     return 'bg-muted text-muted-foreground';
   };
 
@@ -47,7 +47,9 @@ export const DailyView = ({ classes }: ViewProps) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-primary">{DAYS_OF_WEEK[todayIdx]}</h3>
-        <Badge variant="outline" className="bg-white">{todaysClasses.length} Dərs bu gün</Badge>
+        <Badge variant="outline" className="bg-background/50 dark:bg-muted/20 border-primary/20">
+          {todaysClasses.length} Dərs bu gün
+        </Badge>
       </div>
       {todaysClasses.length > 0 ? (
         todaysClasses.map((c) => {

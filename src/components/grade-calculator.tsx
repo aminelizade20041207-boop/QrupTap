@@ -230,7 +230,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                     >
                       <RotateCcw className="h-3 w-3" /> Sıfırla
                     </Button>
-                    <Badge variant="outline" className="font-bold text-primary bg-white h-7 px-2">
+                    <Badge variant="outline" className="font-bold text-primary bg-background dark:bg-muted/20 h-7 px-2">
                       {completedLabs} / {maxLabs}
                     </Badge>
                   </div>
@@ -243,7 +243,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                       className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-sm ${
                         idx < completedLabs 
                           ? 'bg-primary border-primary text-white shadow-md' 
-                          : 'bg-white border-muted-foreground/20'
+                          : 'bg-background border-muted-foreground/20'
                       }`}
                     >
                       {idx + 1}
