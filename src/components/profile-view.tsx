@@ -5,12 +5,14 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
   'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
@@ -27,6 +29,7 @@ interface ProfileViewProps {
 }
 
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -38,6 +41,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
+  const [notes, setNotes] = useState(profile.notes || '');
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -81,6 +85,14 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         ...(profile.savedAbsences || {}),
         [subject]: newValue
       }
+    });
+  };
+
+  const handleSaveNotes = () => {
+    onUpdate({ ...profile, notes });
+    toast({
+      title: "Qeyd yadda saxlanıldı",
+      description: "Qeydləriniz uğurla yeniləndi."
     });
   };
 
@@ -230,6 +242,32 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               <p className="text-xl font-black text-primary">{Object.keys(profile.savedGrades || {}).length}</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg border-primary/10 bg-card overflow-hidden">
+        <CardHeader className="bg-primary/5 pb-3">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <StickyNote className="h-5 w-5 text-primary" />
+            Mənim Qeydlərim
+          </CardTitle>
+          <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
+            Vacib məlumatları bura yaza bilərsiniz
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 space-y-4">
+          <Textarea 
+            placeholder="Məsələn: Bazar ertəsi imtahan var, kitabları gətir..."
+            className="min-h-[120px] resize-none border-primary/10 focus:border-primary/30 transition-all bg-background"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+          <Button 
+            className="w-full gap-2 font-bold shadow-sm"
+            onClick={handleSaveNotes}
+          >
+            <Save className="h-4 w-4" /> Qeydi Yadda Saxla
+          </Button>
         </CardContent>
       </Card>
 

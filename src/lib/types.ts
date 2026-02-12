@@ -41,4 +41,5 @@ export interface UserProfile {
   savedGrades?: Record<string, number>;
   savedDetails?: Record<string, GradeDetails>;
   savedAbsences?: Record<string, number>;
+  notes?: string;
 }
