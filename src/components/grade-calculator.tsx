@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info, Save } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info, Save, RotateCcw } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 import { GradeDetails } from '@/lib/types';
@@ -214,16 +214,26 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
 
             {maxLabs > 0 && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="space-y-1">
                     <Label className="font-bold">Laboratoriya</Label>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: <span className="font-bold">{labTotalPoints}</span>
                     </p>
                   </div>
-                  <Badge variant="outline" className="font-bold text-primary bg-white w-fit">
-                    {completedLabs} / {maxLabs}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setCompletedLabs(0)}
+                      className="h-7 text-[10px] gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Sıfırla
+                    </Button>
+                    <Badge variant="outline" className="font-bold text-primary bg-white h-7 px-2">
+                      {completedLabs} / {maxLabs}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {Array.from({ length: maxLabs }).map((_, idx) => (

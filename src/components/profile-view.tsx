@@ -5,7 +5,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2 } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -42,6 +42,10 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemovePhoto = () => {
+    onUpdate({ ...profile, photo: undefined });
   };
 
   const handleStart = (clientX: number, clientY: number) => {
@@ -104,33 +108,17 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.src = selectedImage;
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Riyazi düzəliş: Önizləmədəki 256px ilə Canvasdakı 400px arasındakı nisbət
       const ratio = 400 / 256;
-      
-      // Şəklin canvas üzərindəki əsas eni (önizləmədəki width: 100% məntiqi ilə)
       const drawWidth = 400 * zoom;
       const drawHeight = (img.height / img.width) * drawWidth;
-      
-      // Mərkəzdən sürüşmə koordinatları
       const finalX = (canvas.width / 2) + (position.x * ratio);
       const finalY = (canvas.height / 2) + (position.y * ratio);
 
       ctx.save();
-      // Dairəvi kəsim
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
       ctx.clip();
-      
-      // Şəkli dəqiq koordinatlara çək
-      ctx.drawImage(
-        img, 
-        finalX - (drawWidth / 2), 
-        finalY - (drawHeight / 2), 
-        drawWidth, 
-        drawHeight
-      );
-      
+      ctx.drawImage(img, finalX - (drawWidth / 2), finalY - (drawHeight / 2), drawWidth, drawHeight);
       ctx.restore();
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
@@ -151,12 +139,22 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 <User className="h-16 w-16" />
               </AvatarFallback>
             </Avatar>
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-1 right-1 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white"
-            >
-              <Camera className="h-5 w-5" />
-            </button>
+            <div className="absolute bottom-1 right-1 flex gap-1">
+              {profile.photo && (
+                <button 
+                  onClick={handleRemovePhoto}
+                  className="bg-destructive text-white p-2 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white"
+              >
+                <Camera className="h-5 w-5" />
+              </button>
+            </div>
             <input 
               type="file" 
               ref={fileInputRef} 
