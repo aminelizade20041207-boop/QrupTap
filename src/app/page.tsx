@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -185,7 +186,6 @@ export default function Home() {
       newSettings.secondChannel.enabled = false;
     }
     
-    // Yalnız digər dərslər üçün 90 dəqiqə limiti tətbiq edirik
     newSettings.firstChannel.otherClassesMinutes = Math.min(90, newSettings.firstChannel.otherClassesMinutes);
     newSettings.secondChannel.otherClassesMinutes = Math.min(90, newSettings.secondChannel.otherClassesMinutes);
 
@@ -204,7 +204,7 @@ export default function Home() {
     if (h > 0) {
       return `(${h} saat${m > 0 ? ` ${m} dəqiqə` : ''})`;
     }
-    return '';
+    return `(${m} dəqiqə)`;
   };
 
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
@@ -266,7 +266,7 @@ export default function Home() {
                   {/* Birinci Bildiriş Kanali */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/20">
-                      <Label htmlFor="first-notif-channel" className="font-bold text-primary">Birinci Bildiriş</Label>
+                      <Label htmlFor="first-notif-channel" className="font-bold text-primary">Birinci Bildiriş Kanalı</Label>
                       <Switch 
                         id="first-notif-channel" 
                         checked={profile.notificationSettings?.firstChannel.enabled}
@@ -280,25 +280,27 @@ export default function Home() {
                     {profile.notificationSettings?.firstChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                            Günün İlk Dərsi {formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                            <span>Günün İlk Dərsinə Qalmış</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə"
+                            placeholder="Dəqiqə əvvəl"
                             value={profile.notificationSettings.firstChannel.firstClassMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                            Digər Dərslər {formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                            <span>Digər Dərslərə Qalmış</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə (Maks 90)"
+                            placeholder="Dəqiqə əvvəl (Maks 90)"
                             value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
@@ -316,9 +318,9 @@ export default function Home() {
                       !profile.notificationSettings?.firstChannel.enabled ? "opacity-50 bg-muted" : "bg-muted/50"
                     )}>
                       <div className="space-y-0.5">
-                        <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş</Label>
+                        <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş Kanalı</Label>
                         {!profile.notificationSettings?.firstChannel.enabled && (
-                          <p className="text-[9px] text-destructive">Əvvəlcə birinci bildirişi aktiv edin</p>
+                          <p className="text-[9px] text-destructive">Əvvəlcə birinci kanalı aktiv edin</p>
                         )}
                       </div>
                       <Switch 
@@ -335,25 +337,27 @@ export default function Home() {
                     {profile.notificationSettings?.secondChannel.enabled && (
                       <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                            Günün İlk Dərsi {formatTimeMinutes(profile.notificationSettings.secondChannel.firstClassMinutes)}
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                            <span>Günün İlk Dərsinə Qalmış</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.firstClassMinutes)}</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə"
+                            placeholder="Dəqiqə əvvəl"
                             value={profile.notificationSettings.secondChannel.firstClassMinutes || ''}
                             onChange={(e) => handleMinutesChange('secondChannel', 'firstClassMinutes', e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                            Digər Dərslər {formatTimeMinutes(profile.notificationSettings.secondChannel.otherClassesMinutes)}
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                            <span>Digər Dərslərə Qalmış</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.otherClassesMinutes)}</span>
                           </Label>
                           <Input 
                             type="number" 
                             className="h-9"
-                            placeholder="Dəqiqə (Maks 90)"
+                            placeholder="Dəqiqə əvvəl (Maks 90)"
                             value={profile.notificationSettings.secondChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('secondChannel', 'otherClassesMinutes', e.target.value)}
                           />
@@ -444,7 +448,7 @@ export default function Home() {
                   <LayoutGrid className="h-4 w-4" /> Həftəlik
                 </TabsTrigger>
                 <TabsTrigger value="calculator" className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Calculator className="h-4 w-4" /> Giriş Balı
+                  <Calculator className="h-4 w-4" /> Giriş Ballarım
                 </TabsTrigger>
               </TabsList>
             </div>
