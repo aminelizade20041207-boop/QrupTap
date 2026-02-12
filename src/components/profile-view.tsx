@@ -11,12 +11,6 @@ import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 
-interface ProfileViewProps {
-  profile: UserProfile;
-  onUpdate: (profile: UserProfile) => void;
-  onEditGrade: (subject: string) => void;
-}
-
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
   'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
   'Əməliyyat sistemləri': { m1: 3, m2: 6, fail: 8 },
@@ -60,8 +54,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   };
 
   const handleUpdateAbsence = (subject: string, delta: number) => {
+    const rules = ABSENCE_RULES[subject];
     const current = profile.savedAbsences?.[subject] || 0;
-    const newValue = Math.max(0, current + delta);
+    const maxLimit = rules ? rules.fail : 99;
+    
+    // Cap at 0 and maxLimit
+    const newValue = Math.max(0, Math.min(maxLimit, current + delta));
+    
     onUpdate({
       ...profile,
       savedAbsences: {
@@ -87,7 +86,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3" /> };
   };
 
-  // Touch and Mouse handlers for photo editing
   const handleStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setLastTouch({ x: clientX, y: clientY });
@@ -269,13 +267,17 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                   {ABSENCE_RULES[subject] && (
                     <div className="pt-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qayıb Sayı:</span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Qayıb Sayı:</span>
+                          <span className="text-[10px] font-bold text-primary/70">Max: {ABSENCE_RULES[subject].fail}</span>
+                        </div>
                         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border">
                           <Button 
                             variant="ghost" 
                             size="icon" 
                             className="h-7 w-7" 
                             onClick={() => handleUpdateAbsence(subject, -1)}
+                            disabled={absences <= 0}
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -285,6 +287,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                             size="icon" 
                             className="h-7 w-7" 
                             onClick={() => handleUpdateAbsence(subject, 1)}
+                            disabled={absences >= ABSENCE_RULES[subject].fail}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
