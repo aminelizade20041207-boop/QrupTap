@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -177,14 +178,14 @@ export const GradeCalculator = () => {
 
             {maxLabs > 0 && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                   <div className="space-y-1">
                     <Label className="font-bold">Laboratoriya</Label>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: <span className="font-bold">{labTotalPoints}</span> bal
+                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: <span className="font-bold">{labTotalPoints}</span>
                     </p>
                   </div>
-                  <Badge variant="outline" className="font-bold text-primary bg-white">
+                  <Badge variant="outline" className="font-bold text-primary bg-white w-fit">
                     {completedLabs} / {maxLabs}
                   </Badge>
                 </div>
@@ -193,7 +194,7 @@ export const GradeCalculator = () => {
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1)}
-                      className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-sm ${
                         idx < completedLabs 
                           ? 'bg-primary border-primary text-white shadow-md' 
                           : 'bg-white border-muted-foreground/20'

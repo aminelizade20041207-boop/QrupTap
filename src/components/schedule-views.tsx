@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -19,12 +20,12 @@ export const DailyView = ({ classes }: ViewProps) => {
   const getClassIcon = (name: string) => {
     const lowerName = name.toLowerCase();
     if (lowerName.includes('laboratoriya') || lowerName.includes('lab')) {
-      return <FlaskConical className="h-6 w-6 text-primary" />;
+      return <FlaskConical className="h-5 w-5 text-primary" />;
     }
     if (lowerName.includes('məşğələ') || lowerName.includes('seminar')) {
-      return <Users className="h-6 w-6 text-primary" />;
+      return <Users className="h-5 w-5 text-primary" />;
     }
-    return <BookOpen className="h-6 w-6 text-primary" />;
+    return <BookOpen className="h-5 w-5 text-primary" />;
   };
 
   return (
@@ -36,37 +37,37 @@ export const DailyView = ({ classes }: ViewProps) => {
       {todaysClasses.length > 0 ? (
         todaysClasses.map((c) => (
           <Card key={c.id} className="overflow-hidden border-l-4 border-l-primary hover:shadow-md transition-all">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="bg-primary/10 p-3 rounded-xl hidden sm:flex">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-xl flex shrink-0">
                   {getClassIcon(c.name)}
                 </div>
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-bold text-xl leading-tight text-foreground">{c.name}</h4>
-                    <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <h4 className="font-bold text-lg sm:text-xl leading-tight text-foreground truncate">{c.name}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
                       {c.room && (
-                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-[10px] h-5">
                           <MapPin className="h-3 w-3 mr-1" /> {c.room}
                         </Badge>
                       )}
                       {c.week !== 'hamisi' && (
-                        <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                        <Badge variant="outline" className="text-[9px] border-primary/30 text-primary h-5">
                           {c.week === 'ust' ? 'ÜST' : 'ALT'}
                         </Badge>
                       )}
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                      <Clock className="h-4 w-4 text-primary" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                      <Clock className="h-3.5 w-3.5 text-primary" />
                       <span className="font-medium">{c.startTime} - {c.endTime}</span>
                     </div>
                     {c.teacher && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
-                        <UserIcon className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{c.teacher}</span>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg truncate">
+                        <UserIcon className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-medium truncate">{c.teacher}</span>
                       </div>
                     )}
                   </div>
