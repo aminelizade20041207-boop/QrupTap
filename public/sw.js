@@ -1,6 +1,8 @@
 
-const CACHE_NAME = 'it24-cache-v25';
-const ASSETS = [
+const CACHE_NAME = 'it24-cache-v50'; // Hər dəfə bu nömrəni qaldırmaq lazımdır
+const OFFLINE_URL = '/offline.html';
+
+const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
@@ -11,7 +13,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
@@ -27,18 +29,24 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/');
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-      });
+      return response || fetch(event.request);
     })
   );
 });
