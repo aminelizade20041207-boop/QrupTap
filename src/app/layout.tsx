@@ -49,23 +49,31 @@ export default function RootLayout({
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                  console.log('SW registered');
-                  // Yeniləmə yoxlanışı
+                  console.log('SW Registered');
+                  
+                  // Yeni versiya tapılanda dərhal yoxla
                   reg.onupdatefound = () => {
                     const installingWorker = reg.installing;
                     if (installingWorker) {
                       installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed') {
-                          if (navigator.serviceWorker.controller) {
-                            console.log('Yeni versiya tapıldı, tətbiq yenilənir...');
-                            window.location.reload();
-                          }
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                          console.log('Yeni versiya aktivləşdirilir...');
+                          window.location.reload();
                         }
                       };
                     }
                   };
                 }).catch(function(err) {
-                  console.log('SW error:', err);
+                  console.log('SW Registration Error:', err);
+                });
+
+                // Service Worker nəzarəti dəyişəndə (yəni yeni SW aktivləşəndə) səhifəni yenilə
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                  if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                  }
                 });
               });
             }

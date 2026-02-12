@@ -83,8 +83,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
       total += labScore;
     }
     
-    // Riyazi yuvarlaqlaşdırma: .50-dən yuxarı yuxarıya, aşağı aşağıya
-    // Tam ədəd olması üçün Math.round istifadə edilir
+    // Riyazi yuvarlaqlaşdırma: .50-dən aşağı aşağıya, .50 və yuxarı yuxarıya
     setResult(Math.round(total));
   };
 
@@ -115,7 +114,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
           Giriş Balı Hesablayıcı
         </CardTitle>
         <CardDescription>
-          Qiymətlərinizi daxil edin.
+          Qiymətlərinizi daxil edin (Yalnız tam ədədlər göstərilir).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -167,7 +166,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                       <Input 
                         key={idx}
                         type="text" 
-                        placeholder={`Məs: 10`} 
+                        placeholder="Məs: 10" 
                         value={val} 
                         onChange={(e) => {
                           const c = [...colloquiums];
@@ -192,7 +191,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                       <div key={idx} className="relative group">
                         <Input 
                           type="text" 
-                          placeholder={`Məs: 10`} 
+                          placeholder="Məs: 10" 
                           value={sem} 
                           onChange={(e) => {
                             const s = [...seminars];
