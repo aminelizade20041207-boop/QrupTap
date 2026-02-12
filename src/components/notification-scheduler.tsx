@@ -86,7 +86,7 @@ export const NotificationScheduler = () => {
           }
         }
       });
-    }, 20000); // Check every 20 seconds for better precision
+    }, 20000);
 
     return () => clearInterval(checkInterval);
   }, [toast]);
