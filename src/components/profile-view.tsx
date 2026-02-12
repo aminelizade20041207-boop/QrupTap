@@ -133,7 +133,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3" /> };
   };
 
-  // Photo Cropping Logic (Simplified for stability)
   const handleStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setLastTouch({ x: clientX, y: clientY });
