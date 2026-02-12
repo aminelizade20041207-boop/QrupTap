@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
 
@@ -26,7 +26,8 @@ export const GradeCalculator = () => {
   const isDiscrete = selectedSubject.toLowerCase().includes('diskret');
   const isCN = selectedSubject.toLowerCase().includes('şəbəkə');
 
-  const maxLabs = isCN ? 8 : (isOS ? 8 : 5);
+  const maxLabs = isDiscrete ? 0 : (isOS || isCN ? 8 : 5);
+  const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
   useEffect(() => {
@@ -43,20 +44,24 @@ export const GradeCalculator = () => {
     total += Math.min(Number(attendance) || 0, 10);
     total += Math.min(Number(independentWork) || 0, 10);
 
-    const collValues = colloquiums.map(Number).filter(n => !isNaN(n) && n > 0);
-    const semValues = seminars.map(Number).filter(n => !isNaN(n) && n > 0);
-    const allGrades = [...collValues, ...semValues];
+    // Əməliyyat sistemlərində kollokvium/seminar yoxdur
+    if (!isOS) {
+      const collValues = colloquiums.map(Number).filter(n => !isNaN(n) && n > 0);
+      const semValues = seminars.map(Number).filter(n => !isNaN(n) && n > 0);
+      const allGrades = [...collValues, ...semValues];
 
-    if (allGrades.length > 0) {
-      const avg = allGrades.reduce((a, b) => a + b, 0) / allGrades.length;
-      total += avg * multiplier;
+      if (allGrades.length > 0) {
+        const avg = allGrades.reduce((a, b) => a + b, 0) / allGrades.length;
+        total += avg * multiplier;
+      }
     }
 
-    const effectiveMaxLabs = isOS ? 8 : (isCN ? 8 : (isDiscrete ? 0 : 5));
-    if (effectiveMaxLabs > 0) {
-      const labScore = (completedLabs / effectiveMaxLabs) * (isOS ? 30 : 15);
+    // Diskret riyaziyyatda laboratoriya yoxdur
+    if (maxLabs > 0) {
+      const labScore = (completedLabs / maxLabs) * labTotalPoints;
       total += labScore;
     }
+    
     setResult(parseFloat(total.toFixed(2)));
   };
 
@@ -117,62 +122,71 @@ export const GradeCalculator = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <Label>Kollokvium Qiymətləri</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {colloquiums.map((val, idx) => (
-                  <Input 
-                    key={idx}
-                    type="text" 
-                    placeholder={`Məs: 10`} 
-                    value={val} 
-                    onChange={(e) => {
-                      const c = [...colloquiums];
-                      c[idx] = e.target.value;
-                      setColloquiums(c);
-                    }} 
-                    className="h-11"
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Seminar Qiymətləri</Label>
-                <Button variant="outline" size="sm" onClick={() => setSeminars([...seminars, ''])} className="h-8 gap-1">
-                  <Plus className="h-4 w-4" /> Əlavə et
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {seminars.map((sem, idx) => (
-                  <div key={idx} className="relative group">
-                    <Input 
-                      type="text" 
-                      placeholder={`Məs: 10`} 
-                      value={sem} 
-                      onChange={(e) => {
-                        const s = [...seminars];
-                        s[idx] = e.target.value;
-                        setSeminars(s);
-                      }}
-                      className="pr-8 h-11"
-                    />
-                    <button 
-                      onClick={() => setSeminars(seminars.filter((_, i) => i !== idx))}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+            {!isOS && (
+              <>
+                <div className="space-y-3">
+                  <Label>Kollokvium Qiymətləri</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {colloquiums.map((val, idx) => (
+                      <Input 
+                        key={idx}
+                        type="text" 
+                        placeholder={`Məs: 10`} 
+                        value={val} 
+                        onChange={(e) => {
+                          const c = [...colloquiums];
+                          c[idx] = e.target.value;
+                          setColloquiums(c);
+                        }} 
+                        className="h-11"
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {(maxLabs > 0) && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Seminar Qiymətləri</Label>
+                    <Button variant="outline" size="sm" onClick={() => setSeminars([...seminars, ''])} className="h-8 gap-1">
+                      <Plus className="h-4 w-4" /> Əlavə et
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {seminars.map((sem, idx) => (
+                      <div key={idx} className="relative group">
+                        <Input 
+                          type="text" 
+                          placeholder={`Məs: 10`} 
+                          value={sem} 
+                          onChange={(e) => {
+                            const s = [...seminars];
+                            s[idx] = e.target.value;
+                            setSeminars(s);
+                          }}
+                          className="pr-8 h-11"
+                        />
+                        <button 
+                          onClick={() => setSeminars(seminars.filter((_, i) => i !== idx))}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {maxLabs > 0 && (
               <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="font-bold">Verilmiş Laboratoriya Sayı</Label>
+                  <div className="space-y-1">
+                    <Label className="font-bold">Laboratoriya</Label>
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Info className="h-3 w-3" /> Ümumi bal təsiri: {labTotalPoints} bal
+                    </p>
+                  </div>
                   <Badge variant="outline" className="font-bold text-primary bg-white">
                     {completedLabs} / {maxLabs}
                   </Badge>
@@ -192,6 +206,11 @@ export const GradeCalculator = () => {
                     </button>
                   ))}
                 </div>
+                {completedLabs > 0 && (
+                  <p className="text-[11px] font-medium text-primary mt-2">
+                    Cari laboratoriya balınız: {((completedLabs / maxLabs) * labTotalPoints).toFixed(1)} / {labTotalPoints}
+                  </p>
+                )}
               </div>
             )}
 
