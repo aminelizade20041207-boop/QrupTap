@@ -84,6 +84,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
     }
     
     // Riyazi yuvarlaqlaşdırma: .50-dən yuxarı yuxarıya, aşağı aşağıya
+    // Tam ədəd olması üçün Math.round istifadə edilir
     setResult(Math.round(total));
   };
 
