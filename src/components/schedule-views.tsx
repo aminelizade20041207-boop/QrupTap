@@ -5,7 +5,7 @@ import React from 'react';
 import { ClassSession, DAYS_OF_WEEK } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User as UserIcon, BookOpen, MapPin } from 'lucide-react';
+import { Clock, User as UserIcon, BookOpen, MapPin, FlaskConical, Users } from 'lucide-react';
 
 interface ViewProps {
   classes: ClassSession[];
@@ -16,6 +16,14 @@ export const DailyView = ({ classes }: ViewProps) => {
   const todaysClasses = classes
     .filter(c => Number(c.day) === todayIdx)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const getClassIcon = (name: string) => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('mühazirə')) return <BookOpen className="h-6 w-6 text-primary" />;
+    if (lowerName.includes('laboratoriya')) return <FlaskConical className="h-6 w-6 text-primary" />;
+    if (lowerName.includes('məşğələ')) return <Users className="h-6 w-6 text-primary" />;
+    return <BookOpen className="h-6 w-6 text-primary" />;
+  };
 
   return (
     <div className="space-y-4">
@@ -29,7 +37,7 @@ export const DailyView = ({ classes }: ViewProps) => {
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
                 <div className="bg-primary/10 p-3 rounded-xl hidden sm:flex">
-                  <BookOpen className="h-6 w-6 text-primary" />
+                  {getClassIcon(c.name)}
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-start justify-between gap-2">

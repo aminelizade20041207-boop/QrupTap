@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -181,7 +182,7 @@ export const GradeCalculator = () => {
                   <div className="space-y-1">
                     <Label className="font-bold">Laboratoriya</Label>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: {labTotalPoints} bal
+                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: <span className="font-bold">{labTotalPoints}</span> bal
                     </p>
                   </div>
                   <Badge variant="outline" className="font-bold text-primary bg-white">
