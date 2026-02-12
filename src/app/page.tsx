@@ -221,51 +221,63 @@ export default function Home() {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <Settings2 className="h-5 w-5 text-primary" /> Ayarlar
+                    <Settings2 className="h-5 w-5 text-primary" /> Bildiriş Ayarları
                   </DialogTitle>
                   <DialogDescription>
-                    Tətbiq və bildiriş tənzimləmələrini buradan idarə edin.
+                    Xatırlatmaları istəyinizə uyğun aktiv edin və vaxtını təyin edin.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Bildiriş Ayarları</h4>
-                    
+                  <div className="space-y-6">
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="first-notif" className="font-medium">İlk dərs bildirişi</Label>
+                      <div className="flex flex-col gap-1">
+                        <Label className="text-sm font-bold text-primary uppercase tracking-wider">İlk Dərs Bildirişi</Label>
+                        <p className="text-[10px] text-muted-foreground">Günün ilk dərsi üçün xatırlatma</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
+                        <Label htmlFor="first-notif" className="font-medium">Aktiv Et</Label>
                         <Switch 
                           id="first-notif" 
                           checked={profile.notificationSettings?.firstClassEnabled}
                           onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, firstClassEnabled: checked })}
                         />
                       </div>
+                      
                       {profile.notificationSettings?.firstClassEnabled && (
-                        <div className="flex items-center gap-3 animate-in slide-in-from-top-2">
-                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20 animate-in slide-in-from-top-2">
+                          <Label className="text-xs font-medium whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
                           <Input 
                             type="number" 
-                            className="h-8 w-20"
+                            className="h-9 w-24 bg-background"
                             value={profile.notificationSettings.firstClassMinutes}
                             onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, firstClassMinutes: parseInt(e.target.value) || 0 })}
                           />
                         </div>
                       )}
+                    </div>
 
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="other-notif" className="font-medium">Digər dərslər bildirişi</Label>
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <Label className="text-sm font-bold text-primary uppercase tracking-wider">Digər Dərslər Bildirişi</Label>
+                        <p className="text-[10px] text-muted-foreground">Günün növbəti dərsləri üçün xatırlatma</p>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border">
+                        <Label htmlFor="other-notif" className="font-medium">Aktiv Et</Label>
                         <Switch 
                           id="other-notif" 
                           checked={profile.notificationSettings?.otherClassesEnabled}
                           onCheckedChange={(checked) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesEnabled: checked })}
                         />
                       </div>
+
                       {profile.notificationSettings?.otherClassesEnabled && (
-                        <div className="flex items-center gap-3 animate-in slide-in-from-top-2">
-                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
+                        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/20 animate-in slide-in-from-top-2">
+                          <Label className="text-xs font-medium whitespace-nowrap">Neçə dəqiqə əvvəl?</Label>
                           <Input 
                             type="number" 
-                            className="h-8 w-20"
+                            className="h-9 w-24 bg-background"
                             value={profile.notificationSettings.otherClassesMinutes}
                             onChange={(e) => updateNotifSettings({ ...profile.notificationSettings!, otherClassesMinutes: parseInt(e.target.value) || 0 })}
                           />
@@ -274,7 +286,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5" onClick={setStandardNotifSettings}>
+                  <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11" onClick={setStandardNotifSettings}>
                     <RotateCcw className="h-4 w-4" /> Standart Ayarlar
                   </Button>
                 </div>
@@ -320,7 +332,7 @@ export default function Home() {
             </Button>
           </div>
           
-          <div className="flex items-center gap-3 bg-white/50 dark:bg-white/5 p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
+          <div className="flex items-center gap-3 bg-background p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
             <Info className="h-4 w-4 text-primary" />
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>
@@ -347,7 +359,7 @@ export default function Home() {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-white/5 p-1.5 rounded-xl border overflow-x-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-1.5 rounded-xl border overflow-x-auto">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
                   <Bell className="h-4 w-4" /> Günlük
