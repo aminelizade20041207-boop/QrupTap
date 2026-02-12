@@ -25,9 +25,19 @@ export const DAYS_OF_WEEK = [
   'Şənbə',
 ] as const;
 
+export interface GradeDetails {
+  attendance: string;
+  independentWork: string;
+  colloquiums: string[];
+  seminars: string[];
+  completedLabs: number;
+  total: number;
+}
+
 export interface UserProfile {
   name: string;
   subgroup: 'yuxari' | 'asagi';
   photo?: string;
   savedGrades?: Record<string, number>;
+  savedDetails?: Record<string, GradeDetails>;
 }

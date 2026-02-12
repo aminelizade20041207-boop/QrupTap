@@ -10,20 +10,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, Calculator, CheckCircle2, AlertCircle, Info, Save } from 'lucide-react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
+import { GradeDetails } from '@/lib/types';
 
 interface GradeCalculatorProps {
-  onSave?: (subject: string, grade: number) => void;
+  onSave?: (subject: string, details: GradeDetails) => void;
   initialSubject?: string;
+  existingDetails?: GradeDetails;
 }
 
-export const GradeCalculator = ({ onSave, initialSubject }: GradeCalculatorProps) => {
+export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: GradeCalculatorProps) => {
   const [selectedSubject, setSelectedSubject] = useState<string>(initialSubject || '');
-  const [attendance, setAttendance] = useState<string>('');
-  const [independentWork, setIndependentWork] = useState<string>('');
-  const [colloquiums, setColloquiums] = useState<string[]>(['', '', '']);
-  const [seminars, setSeminars] = useState<string[]>([]);
-  const [completedLabs, setCompletedLabs] = useState<number>(0);
-  const [result, setResult] = useState<number | null>(null);
+  const [attendance, setAttendance] = useState<string>(existingDetails?.attendance || '');
+  const [independentWork, setIndependentWork] = useState<string>(existingDetails?.independentWork || '');
+  const [colloquiums, setColloquiums] = useState<string[]>(existingDetails?.colloquiums || ['', '', '']);
+  const [seminars, setSeminars] = useState<string[]>(existingDetails?.seminars || []);
+  const [completedLabs, setCompletedLabs] = useState<number>(existingDetails?.completedLabs || 0);
+  const [result, setResult] = useState<number | null>(existingDetails?.total || null);
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -35,19 +37,31 @@ export const GradeCalculator = ({ onSave, initialSubject }: GradeCalculatorProps
   const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
+  // Initial load when editing
   useEffect(() => {
     if (initialSubject) {
       setSelectedSubject(initialSubject);
+      if (existingDetails) {
+        setAttendance(existingDetails.attendance);
+        setIndependentWork(existingDetails.independentWork);
+        setColloquiums(existingDetails.colloquiums);
+        setSeminars(existingDetails.seminars);
+        setCompletedLabs(existingDetails.completedLabs);
+        setResult(existingDetails.total);
+      }
     }
-  }, [initialSubject]);
+  }, [initialSubject, existingDetails]);
 
+  // Reset fields if subject changes manually (and not via initialSubject)
   useEffect(() => {
-    setResult(null);
-    setCompletedLabs(0);
-    setColloquiums(['', '', '']);
-    setSeminars([]);
-    setAttendance('');
-    setIndependentWork('');
+    if (!initialSubject || selectedSubject !== initialSubject) {
+      setResult(null);
+      setCompletedLabs(0);
+      setColloquiums(['', '', '']);
+      setSeminars([]);
+      setAttendance('');
+      setIndependentWork('');
+    }
   }, [selectedSubject]);
 
   const calculateGrade = () => {
@@ -76,7 +90,14 @@ export const GradeCalculator = ({ onSave, initialSubject }: GradeCalculatorProps
 
   const handleSave = () => {
     if (result !== null && onSave) {
-      onSave(selectedSubject, result);
+      onSave(selectedSubject, {
+        attendance,
+        independentWork,
+        colloquiums,
+        seminars,
+        completedLabs,
+        total: result
+      });
     }
   };
 

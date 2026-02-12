@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2 } from 'lucide-react';
-import { UserProfile, WeekType } from '@/lib/types';
+import { UserProfile, WeekType, GradeDetails } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
@@ -50,7 +50,7 @@ export default function Home() {
 
   if (!profile) {
     return <Onboarding onComplete={(p) => {
-      const newProfile = { ...p, savedGrades: {} };
+      const newProfile: UserProfile = { ...p, savedGrades: {}, savedDetails: {} };
       setProfile(newProfile);
       localStorage.setItem('it24_profile', JSON.stringify(newProfile));
     }} />;
@@ -66,16 +66,21 @@ export default function Home() {
     localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
   };
 
-  const handleSaveGrade = (subject: string, grade: number) => {
+  const handleSaveGrade = (subject: string, details: GradeDetails) => {
     const updatedProfile = {
       ...profile,
       savedGrades: {
         ...(profile.savedGrades || {}),
-        [subject]: grade
+        [subject]: details.total
+      },
+      savedDetails: {
+        ...(profile.savedDetails || {}),
+        [subject]: details
       }
     };
     updateProfile(updatedProfile);
     toast({ title: "Yadda saxlanıldı", description: `${subject} balınız kabinetə əlavə edildi.` });
+    setEditingSubject(undefined);
     setActiveTab('profile');
   };
 
@@ -216,6 +221,7 @@ export default function Home() {
             <GradeCalculator 
               onSave={handleSaveGrade} 
               initialSubject={editingSubject}
+              existingDetails={editingSubject ? profile.savedDetails?.[editingSubject] : undefined}
             />
           </TabsContent>
 
