@@ -179,8 +179,8 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex gap-2">
+        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+          <div className="flex gap-2 sm:absolute sm:left-0">
             <Button 
               variant={notifPermission === 'granted' ? "ghost" : "default"} 
               size="sm" 
@@ -200,7 +200,8 @@ export default function Home() {
               <Smartphone className="h-4 w-4" /> Test
             </Button>
           </div>
-          <div className="flex items-center gap-3 bg-white/50 p-2 px-3 rounded-xl border border-primary/20 shadow-sm ml-auto">
+          
+          <div className="flex items-center gap-3 bg-white/50 p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
             <Info className="h-4 w-4 text-primary" />
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>

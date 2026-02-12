@@ -48,22 +48,19 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                // Mövcud qeydiyyatları yoxla və yenilənməyə məcbur et
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                  for(let registration of registrations) {
-                    registration.update();
-                  }
-                });
-
-                navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                  console.log('SW Registered');
+                // Versiyanı yeniləmək üçün timestamp istifadə edirik
+                const swUrl = '/sw.js?v=' + Date.now();
+                
+                navigator.serviceWorker.register(swUrl).then(function(reg) {
+                  console.log('SW Registered with versioning');
                   
+                  // Əgər yeni SW tapılarsa dərhal aktiv et
                   reg.onupdatefound = () => {
                     const installingWorker = reg.installing;
                     if (installingWorker) {
                       installingWorker.onstatechange = () => {
                         if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                          console.log('Yeni versiya tapıldı, yenilənir...');
+                          console.log('Yeni versiya aktivləşdirilir...');
                           window.location.reload();
                         }
                       };

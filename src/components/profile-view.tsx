@@ -1,15 +1,14 @@
 
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, ZoomIn, ZoomOut, Move, Check } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Slider } from '@/components/ui/slider';
 
 interface ProfileViewProps {
   profile: UserProfile;
@@ -20,11 +19,17 @@ interface ProfileViewProps {
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [posX, setPosX] = useState(0);
   const [posY, setPosY] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
+  const [lastDistance, setLastDistance] = useState(0);
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -43,6 +48,54 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     }
   };
 
+  // Touch and Mouse Event Handlers
+  const handleStart = (clientX: number, clientY: number) => {
+    setIsDragging(true);
+    setLastTouch({ x: clientX, y: clientY });
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDragging) return;
+    const deltaX = clientX - lastTouch.x;
+    const deltaY = clientY - lastTouch.y;
+    setPosX(prev => prev + deltaX / zoom);
+    setPosY(prev => prev + deltaY / zoom);
+    setLastTouch({ x: clientX, y: clientY });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      handleStart(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setLastDistance(dist);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (lastDistance > 0) {
+        const delta = dist / lastDistance;
+        setZoom(prev => Math.max(0.5, Math.min(5, prev * delta)));
+      }
+      setLastDistance(dist);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(prev => Math.max(0.5, Math.min(5, prev * delta)));
+  };
+
   const handleSaveCroppedImage = () => {
     if (!canvasRef.current || !selectedImage) return;
 
@@ -55,11 +108,9 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      const size = Math.min(img.width, img.height);
       const drawWidth = img.width * zoom;
       const drawHeight = img.height * zoom;
       
-      // Mərkəzləşdirilmiş çəkmə
       const x = (canvas.width - drawWidth) / 2 + (posX * zoom);
       const y = (canvas.height - drawHeight) / 2 + (posY * zoom);
 
@@ -171,20 +222,40 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       </div>
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
           <DialogHeader className="p-4 border-b">
-            <DialogTitle className="text-center">Şəkli Düzənlə</DialogTitle>
+            <DialogTitle className="text-center">Şəkli Dartaraq Tənzimlə</DialogTitle>
           </DialogHeader>
-          <div className="p-6 space-y-6">
-            <div className="relative w-64 h-64 mx-auto border-4 border-primary/20 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+          <div className="p-6 space-y-4">
+            <div 
+              ref={containerRef}
+              className="relative w-64 h-64 mx-auto border-4 border-primary/20 rounded-full overflow-hidden bg-muted cursor-move touch-none"
+              onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
+              onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
+              onMouseUp={() => setIsDragging(false)}
+              onMouseLeave={() => setIsDragging(false)}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={() => {
+                setIsDragging(false);
+                setLastDistance(0);
+              }}
+              onWheel={handleWheel}
+            >
               {selectedImage && (
                 <img 
                   src={selectedImage} 
                   alt="Preview" 
-                  className="max-w-none transition-transform"
+                  className="max-w-none pointer-events-none select-none"
                   style={{
-                    transform: `scale(${zoom}) translate(${posX}px, ${posY}px)`,
-                    cursor: 'move'
+                    transform: `translate(${posX * zoom}px, ${posY * zoom}px) scale(${zoom})`,
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    marginLeft: '-50%',
+                    marginTop: '-50%',
+                    width: '100%',
+                    height: 'auto'
                   }}
                 />
               )}
@@ -192,44 +263,12 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40 rounded-full"></div>
             </div>
 
-            <canvas ref={canvasRef} width={400} height={400} className="hidden" />
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold uppercase text-muted-foreground">
-                  <span className="flex items-center gap-1"><ZoomOut className="h-3 w-3" /> Böyütmə</span>
-                  <span className="flex items-center gap-1"><ZoomIn className="h-3 w-3" /></span>
-                </div>
-                <Slider 
-                  value={[zoom]} 
-                  min={0.5} 
-                  max={3} 
-                  step={0.1} 
-                  onValueChange={([v]) => setZoom(v)} 
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground block">Üfüqi (X)</span>
-                  <Slider 
-                    value={[posX]} 
-                    min={-200} 
-                    max={200} 
-                    onValueChange={([v]) => setPosX(v)} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground block">Şaquli (Y)</span>
-                  <Slider 
-                    value={[posY]} 
-                    min={-200} 
-                    max={200} 
-                    onValueChange={([v]) => setPosY(v)} 
-                  />
-                </div>
-              </div>
+            <div className="text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <Move className="h-3 w-3" />
+              <span>Dartaraq yerləşdirin, iki barmaqla və ya çarxla böyüdün</span>
             </div>
+
+            <canvas ref={canvasRef} width={400} height={400} className="hidden" />
           </div>
           <DialogFooter className="p-4 bg-muted/50 border-t gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
