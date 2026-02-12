@@ -37,7 +37,6 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
   const labTotalPoints = isOS ? 30 : 15;
   const multiplier = isDiscrete ? 3 : 1.5;
 
-  // Initial load when editing
   useEffect(() => {
     if (initialSubject) {
       setSelectedSubject(initialSubject);
@@ -52,7 +51,6 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
     }
   }, [initialSubject, existingDetails]);
 
-  // Reset fields if subject changes manually (and not via initialSubject)
   useEffect(() => {
     if (!initialSubject || selectedSubject !== initialSubject) {
       setResult(null);
@@ -85,7 +83,8 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
       total += labScore;
     }
     
-    setResult(parseFloat(total.toFixed(2)));
+    // Riyazi yuvarlaqlaşdırma: .50-dən yuxarı yuxarıya, aşağı aşağıya
+    setResult(Math.round(total));
   };
 
   const handleSave = () => {
