@@ -73,11 +73,11 @@ export default function Home() {
       ...profile,
       savedGrades: {
         ...(profile.savedGrades || {}),
-        [subject]: details.total
+        [subject]: Math.round(details.total)
       },
       savedDetails: {
         ...(profile.savedDetails || {}),
-        [subject]: details
+        [subject]: { ...details, total: Math.round(details.total) }
       }
     };
     updateProfile(updatedProfile);

@@ -19,14 +19,11 @@ interface ProfileViewProps {
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
-  
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
@@ -41,14 +38,12 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         setSelectedImage(reader.result as string);
         setIsEditing(true);
         setZoom(1);
-        setPosX(0);
-        setPosY(0);
+        setPosition({ x: 0, y: 0 });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Touch and Mouse Event Handlers
   const handleStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setLastTouch({ x: clientX, y: clientY });
@@ -58,8 +53,10 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     if (!isDragging) return;
     const deltaX = clientX - lastTouch.x;
     const deltaY = clientY - lastTouch.y;
-    setPosX(prev => prev + deltaX / zoom);
-    setPosY(prev => prev + deltaY / zoom);
+    setPosition(prev => ({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY
+    }));
     setLastTouch({ x: clientX, y: clientY });
   };
 
@@ -108,17 +105,25 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      const drawWidth = img.width * zoom;
-      const drawHeight = img.height * zoom;
-      
-      const x = (canvas.width - drawWidth) / 2 + (posX * zoom);
-      const y = (canvas.height - drawHeight) / 2 + (posY * zoom);
+      const ratio = 400 / 256; // Canvas size / Preview container size
+      const finalZoom = zoom * ratio;
+      const finalX = (canvas.width / 2) + (position.x * ratio);
+      const finalY = (canvas.height / 2) + (position.y * ratio);
 
       ctx.save();
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(img, x, y, drawWidth, drawHeight);
+      
+      // Draw image centered at the calculated position
+      ctx.drawImage(
+        img, 
+        finalX - (img.width * finalZoom / 2), 
+        finalY - (img.height * finalZoom / 2), 
+        img.width * finalZoom, 
+        img.height * finalZoom
+      );
+      
       ctx.restore();
 
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
@@ -226,10 +231,9 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
           <DialogHeader className="p-4 border-b">
             <DialogTitle className="text-center">Şəkli Dartaraq Tənzimlə</DialogTitle>
           </DialogHeader>
-          <div className="p-6 space-y-4">
+          <div className="p-10 flex flex-col items-center">
             <div 
-              ref={containerRef}
-              className="relative w-64 h-64 mx-auto border-4 border-primary/20 rounded-full overflow-hidden bg-muted cursor-move touch-none"
+              className="relative w-64 h-64 border-4 border-primary/30 rounded-full overflow-hidden bg-muted cursor-move touch-none shadow-inner"
               onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
               onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
               onMouseUp={() => setIsDragging(false)}
@@ -246,31 +250,29 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 <img 
                   src={selectedImage} 
                   alt="Preview" 
-                  className="max-w-none pointer-events-none select-none"
+                  className="max-w-none pointer-events-none select-none absolute"
                   style={{
-                    transform: `translate(${posX * zoom}px, ${posY * zoom}px) scale(${zoom})`,
-                    position: 'absolute',
+                    transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px)) scale(${zoom})`,
                     left: '50%',
                     top: '50%',
-                    marginLeft: '-50%',
-                    marginTop: '-50%',
                     width: '100%',
                     height: 'auto'
                   }}
                 />
               )}
-              {/* Overlay for circle guide */}
-              <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40 rounded-full"></div>
             </div>
 
-            <div className="text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-              <Move className="h-3 w-3" />
-              <span>Dartaraq yerləşdirin, iki barmaqla və ya çarxla böyüdün</span>
+            <div className="mt-6 text-center text-xs text-muted-foreground flex flex-col items-center gap-2 bg-muted/50 p-3 rounded-lg w-full">
+              <div className="flex items-center gap-2">
+                <Move className="h-4 w-4 text-primary" />
+                <span className="font-medium">Dartaraq yerini tənzimləyin</span>
+              </div>
+              <p className="opacity-70">İki barmaqla və ya çarxla yaxınlaşdırın</p>
             </div>
 
             <canvas ref={canvasRef} width={400} height={400} className="hidden" />
           </div>
-          <DialogFooter className="p-4 bg-muted/50 border-t gap-2">
+          <DialogFooter className="p-4 bg-muted/30 border-t flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
             <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2">
               <Check className="h-4 w-4" /> Tamamla
