@@ -40,6 +40,14 @@ export interface UserNote {
   createdAt: string;
 }
 
+export interface UserMaterial {
+  id: string;
+  subject: string;
+  title: string;
+  url: string;
+  createdAt: string;
+}
+
 export interface UserProfile {
   name: string;
   subgroup: 'yuxari' | 'asagi';
@@ -48,4 +56,5 @@ export interface UserProfile {
   savedDetails?: Record<string, GradeDetails>;
   savedAbsences?: Record<string, number>;
   notesList?: UserNote[];
+  materialsList?: UserMaterial[];
 }

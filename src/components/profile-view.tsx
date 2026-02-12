@@ -5,13 +5,16 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save, X } from 'lucide-react';
-import { UserProfile, UserNote } from '@/lib/types';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save, X, Library, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { UserProfile, UserNote, UserMaterial } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -42,10 +45,18 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
+  
+  // Note states
   const [newNote, setNewNote] = useState('');
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isNotesManagerOpen, setIsNotesManagerOpen] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState<UserNote | null>(null);
+
+  // Material states
+  const [isMaterialsManagerOpen, setIsMaterialsManagerOpen] = useState(false);
+  const [isMaterialAddOpen, setIsMaterialAddOpen] = useState(false);
+  const [materialToEdit, setMaterialToEdit] = useState<UserMaterial | null>(null);
+  const [materialForm, setMaterialForm] = useState({ subject: '', title: '', url: '' });
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -92,9 +103,9 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     });
   };
 
+  // Note Handlers
   const handleSaveNote = () => {
     if (!newNote.trim()) return;
-    
     if (noteToEdit) {
       onUpdate({
         ...profile,
@@ -115,16 +126,9 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       });
       toast({ title: "Qeyd əlavə edildi" });
     }
-    
     setNewNote('');
     setNoteToEdit(null);
     setIsNoteDialogOpen(false);
-  };
-
-  const handleEditNote = (note: UserNote) => {
-    setNoteToEdit(note);
-    setNewNote(note.text);
-    setIsNoteDialogOpen(true);
   };
 
   const handleDeleteNote = (id: string) => {
@@ -133,6 +137,58 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       notesList: (profile.notesList || []).filter(n => n.id !== id)
     });
     toast({ title: "Qeyd silindi" });
+  };
+
+  // Material Handlers
+  const handleSaveMaterial = () => {
+    if (!materialForm.subject || !materialForm.title || !materialForm.url) {
+      toast({ variant: "destructive", title: "Xəta", description: "Bütün xanaları doldurun." });
+      return;
+    }
+
+    let formattedUrl = materialForm.url;
+    if (!formattedUrl.startsWith('http')) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+
+    if (materialToEdit) {
+      onUpdate({
+        ...profile,
+        materialsList: (profile.materialsList || []).map(m => 
+          m.id === materialToEdit.id ? { ...m, ...materialForm, url: formattedUrl } : m
+        )
+      });
+      toast({ title: "Material yeniləndi" });
+    } else {
+      const material: UserMaterial = {
+        id: Math.random().toString(36).substr(2, 9),
+        ...materialForm,
+        url: formattedUrl,
+        createdAt: new Date().toLocaleString('az-AZ')
+      };
+      onUpdate({
+        ...profile,
+        materialsList: [material, ...(profile.materialsList || [])]
+      });
+      toast({ title: "Material əlavə edildi" });
+    }
+    setMaterialForm({ subject: '', title: '', url: '' });
+    setMaterialToEdit(null);
+    setIsMaterialAddOpen(false);
+  };
+
+  const handleDeleteMaterial = (id: string) => {
+    onUpdate({
+      ...profile,
+      materialsList: (profile.materialsList || []).filter(m => m.id !== id)
+    });
+    toast({ title: "Material silindi" });
+  };
+
+  const handleEditMaterial = (material: UserMaterial) => {
+    setMaterialToEdit(material);
+    setMaterialForm({ subject: material.subject, title: material.title, url: material.url });
+    setIsMaterialAddOpen(true);
   };
 
   const getAbsenceStatus = (subject: string, count: number) => {
@@ -265,26 +321,24 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4 border-t space-y-4">
-          <div className="flex justify-around text-center">
-            <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Fənlər</p>
-              <p className="text-xl font-black">{subjects.length}</p>
-            </div>
-            <div className="w-px bg-border h-8 my-auto" />
-            <div className="space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Daxil Edilən</p>
-              <p className="text-xl font-black text-primary">{Object.keys(profile.savedGrades || {}).length}</p>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Button 
+              variant="outline" 
+              className="gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
+              onClick={() => setIsNotesManagerOpen(true)}
+            >
+              <StickyNote className="h-4 w-4 text-primary" />
+              Qeydlər ({profile.notesList?.length || 0})
+            </Button>
+            <Button 
+              variant="outline" 
+              className="gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
+              onClick={() => setIsMaterialsManagerOpen(true)}
+            >
+              <Library className="h-4 w-4 text-primary" />
+              Materiallar ({profile.materialsList?.length || 0})
+            </Button>
           </div>
-          
-          <Button 
-            variant="outline" 
-            className="w-full gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
-            onClick={() => setIsNotesManagerOpen(true)}
-          >
-            <StickyNote className="h-4 w-4 text-primary" />
-            Qeydlərim ({profile.notesList?.length || 0})
-          </Button>
         </CardContent>
       </Card>
 
@@ -396,6 +450,113 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </div>
       </div>
 
+      {/* Materials Manager Dialog */}
+      <Dialog open={isMaterialsManagerOpen} onOpenChange={setIsMaterialsManagerOpen}>
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col h-[80vh] sm:h-auto sm:max-h-[80vh]">
+          <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Library className="h-5 w-5 text-primary" /> Dərs Materialları
+            </DialogTitle>
+            <Button size="sm" onClick={() => { setMaterialToEdit(null); setMaterialForm({ subject: '', title: '', url: '' }); setIsMaterialAddOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
+              <Plus className="h-5 w-5" />
+            </Button>
+          </DialogHeader>
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-4">
+              {!profile.materialsList?.length ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <Library className="h-16 w-16 mx-auto mb-4 opacity-10" />
+                  <p className="text-lg font-medium">Hələ ki, material yoxdur</p>
+                  <Button variant="link" onClick={() => setIsMaterialAddOpen(true)}>İlk materialı əlavə et</Button>
+                </div>
+              ) : (
+                subjects.map(subject => {
+                  const subjectMaterials = (profile.materialsList || []).filter(m => m.subject === subject);
+                  if (subjectMaterials.length === 0) return null;
+                  
+                  return (
+                    <div key={subject} className="space-y-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-primary px-1">{subject}</h4>
+                      <div className="grid gap-2">
+                        {subjectMaterials.map(material => (
+                          <div key={material.id} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border group">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="bg-primary/10 p-2 rounded-lg shrink-0">
+                                <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold truncate">{material.title}</p>
+                                <a href={material.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground flex items-center gap-1 hover:underline truncate">
+                                  Keçid et <ExternalLink className="h-2 w-2" />
+                                </a>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button onClick={() => handleEditMaterial(material)} className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                              <button onClick={() => handleDeleteMaterial(material.id)} className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Material Add/Edit Dialog */}
+      <Dialog open={isMaterialAddOpen} onOpenChange={setIsMaterialAddOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{materialToEdit ? 'Materialı Redaktə Et' : 'Yeni Material'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Fənn Seçin</Label>
+              <Select value={materialForm.subject} onValueChange={(v) => setMaterialForm({ ...materialForm, subject: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Dərsi seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjects.map(sub => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Başlıq (məs: PDF Mühazirə)</Label>
+              <Input 
+                value={materialForm.title} 
+                onChange={(e) => setMaterialForm({ ...materialForm, title: e.target.value })}
+                placeholder="Materialın adını daxil edin"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Link (URL)</Label>
+              <Input 
+                value={materialForm.url} 
+                onChange={(e) => setMaterialForm({ ...materialForm, url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsMaterialAddOpen(false)}>Ləğv Et</Button>
+            <Button onClick={handleSaveMaterial} disabled={!materialForm.subject || !materialForm.title || !materialForm.url}>
+              {materialToEdit ? 'Yenilə' : 'Yadda Saxla'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Notes Manager Dialog */}
       <Dialog open={isNotesManagerOpen} onOpenChange={setIsNotesManagerOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col h-[80vh] sm:h-auto sm:max-h-[80vh]">
@@ -423,7 +584,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                       <span className="text-[10px] text-muted-foreground font-medium uppercase">{note.createdAt}</span>
                       <div className="flex items-center gap-2">
                         <button 
-                          onClick={() => handleEditNote(note)}
+                          onClick={() => { setNoteToEdit(note); setNewNote(note.text); setIsNoteDialogOpen(true); }}
                           className="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
