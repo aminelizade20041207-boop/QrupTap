@@ -5,7 +5,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -236,7 +236,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       <div className="space-y-4">
         <h3 className="text-lg font-bold flex items-center gap-2 text-foreground px-1">
           <GraduationCap className="h-5 w-5 text-primary" />
-          Fənn Kabinetim
+          Giriş Ballarım:
         </h3>
         <div className="grid gap-4">
           {subjects.map(subject => {

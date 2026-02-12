@@ -213,34 +213,34 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
             )}
 
             {maxLabs > 0 && (
-              <div className="space-y-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="space-y-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <Label className="font-bold">Laboratoriya</Label>
+                    <div className="flex items-center gap-2">
+                      <Label className="font-bold">Laboratoriya</Label>
+                      <Badge variant="outline" className="font-bold text-primary bg-background dark:bg-muted/20 h-6 px-2">
+                        {completedLabs} / {maxLabs}
+                      </Badge>
+                    </div>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Laboratoriya üçün ayrılan ümumi bal: <span className="font-bold">{labTotalPoints}</span>
+                      <Info className="h-3 w-3" /> Ümumi bal: <span className="font-bold">{labTotalPoints}</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setCompletedLabs(0)}
-                      className="h-7 text-[10px] gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <RotateCcw className="h-3 w-3" /> Sıfırla
-                    </Button>
-                    <Badge variant="outline" className="font-bold text-primary bg-background dark:bg-muted/20 h-7 px-2">
-                      {completedLabs} / {maxLabs}
-                    </Badge>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setCompletedLabs(0)}
+                    className="h-8 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10 w-fit"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Sıfırla
+                  </Button>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap justify-center sm:justify-start">
                   {Array.from({ length: maxLabs }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1)}
-                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-sm ${
+                      className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-sm ${
                         idx < completedLabs 
                           ? 'bg-primary border-primary text-white shadow-md' 
                           : 'bg-background border-muted-foreground/20'
