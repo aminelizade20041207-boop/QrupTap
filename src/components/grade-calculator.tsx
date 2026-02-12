@@ -214,10 +214,10 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
 
             {maxLabs > 0 && (
               <div className="space-y-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <div className="flex flex-row items-center justify-between mb-2">
+                <div className="flex flex-row items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <Label className="font-bold">Laboratoriya</Label>
-                    <Badge variant="outline" className="font-bold text-primary bg-background h-6 px-2">
+                    <Label className="font-bold whitespace-nowrap">Laboratoriya</Label>
+                    <Badge variant="outline" className="font-bold text-primary bg-background h-6 px-2 text-[10px] sm:text-xs">
                       {completedLabs} / {maxLabs}
                     </Badge>
                   </div>
@@ -225,17 +225,17 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setCompletedLabs(0)}
-                    className="h-8 text-xs gap-1 text-destructive hover:bg-destructive/10"
+                    className="h-8 text-[10px] sm:text-xs gap-1 text-destructive hover:bg-destructive/10 shrink-0"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Sıfırla
                   </Button>
                 </div>
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-1.5 flex-wrap">
                   {Array.from({ length: maxLabs }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCompletedLabs(idx + 1)}
-                      className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-sm ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 transition-all flex items-center justify-center font-bold text-xs sm:text-sm ${
                         idx < completedLabs 
                           ? 'bg-primary border-primary text-white shadow-md' 
                           : 'bg-background border-muted-foreground/20'
@@ -245,7 +245,7 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                     </button>
                   ))}
                 </div>
-                <div className="mt-3 flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                <div className="mt-3 flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground font-medium">
                   <Info className="h-3.5 w-3.5" />
                   Maksimum laboratoriya balı: <b>{labTotalPoints}</b>
                 </div>
@@ -258,12 +258,12 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
 
             {result !== null && (
               <div className="space-y-4 animate-in zoom-in-95 duration-300">
-                <div className={`p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center shadow-xl`}>
-                  <p className="text-sm font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
-                  <h2 className="text-6xl font-black mb-3">{result}</h2>
-                  <div className="flex justify-center items-center gap-2 bg-white/20 py-2 px-4 rounded-full w-fit mx-auto">
+                <div className={`p-5 sm:p-6 ${getResultMessage(result).color} text-white rounded-2xl text-center shadow-xl`}>
+                  <p className="text-[10px] sm:text-xs font-medium opacity-90 mb-1 uppercase tracking-wider">Sizin Giriş Balınız</p>
+                  <h2 className="text-4xl sm:text-6xl font-black mb-2 sm:mb-3 leading-none">{result}</h2>
+                  <div className="flex justify-center items-center gap-1.5 sm:gap-2 bg-white/20 py-1.5 px-3 sm:px-4 rounded-full w-fit mx-auto">
                     {getResultMessage(result).icon}
-                    <span className="font-bold text-sm">{getResultMessage(result).text}</span>
+                    <span className="font-bold text-xs sm:text-sm">{getResultMessage(result).text}</span>
                   </div>
                 </div>
                 <Button variant="outline" onClick={handleSave} className="w-full h-12 gap-2 border-primary text-primary hover:bg-primary/5 font-bold">

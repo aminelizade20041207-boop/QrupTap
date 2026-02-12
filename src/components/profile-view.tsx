@@ -5,7 +5,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save, X, Library, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save, X, Library, ExternalLink, FileText, UploadCloud, FileIcon } from 'lucide-react';
 import { UserProfile, UserNote, UserMaterial } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -35,6 +35,7 @@ interface ProfileViewProps {
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const materialFileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -56,7 +57,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [isMaterialsManagerOpen, setIsMaterialsManagerOpen] = useState(false);
   const [isMaterialAddOpen, setIsMaterialAddOpen] = useState(false);
   const [materialToEdit, setMaterialToEdit] = useState<UserMaterial | null>(null);
-  const [materialForm, setMaterialForm] = useState({ subject: '', title: '', url: '' });
+  const [materialForm, setMaterialForm] = useState<{ subject: string; title: string; fileName: string; fileData: string; fileType: string }>({ 
+    subject: '', 
+    title: '', 
+    fileName: '', 
+    fileData: '', 
+    fileType: '' 
+  });
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -140,22 +147,37 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   };
 
   // Material Handlers
-  const handleSaveMaterial = () => {
-    if (!materialForm.subject || !materialForm.title || !materialForm.url) {
-      toast({ variant: "destructive", title: "Xəta", description: "Bütün xanaları doldurun." });
-      return;
+  const handleMaterialFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast({ variant: "destructive", title: "Xəta", description: "Faylın ölçüsü 2MB-dan çox ola bilməz (MVP limiti)." });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMaterialForm(prev => ({
+          ...prev,
+          fileName: file.name,
+          fileData: reader.result as string,
+          fileType: file.type
+        }));
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
-    let formattedUrl = materialForm.url;
-    if (!formattedUrl.startsWith('http')) {
-      formattedUrl = 'https://' + formattedUrl;
+  const handleSaveMaterial = () => {
+    if (!materialForm.subject || !materialForm.title || !materialForm.fileData) {
+      toast({ variant: "destructive", title: "Xəta", description: "Bütün xanaları doldurun və faylı seçin." });
+      return;
     }
 
     if (materialToEdit) {
       onUpdate({
         ...profile,
         materialsList: (profile.materialsList || []).map(m => 
-          m.id === materialToEdit.id ? { ...m, ...materialForm, url: formattedUrl } : m
+          m.id === materialToEdit.id ? { ...m, ...materialForm } : m
         )
       });
       toast({ title: "Material yeniləndi" });
@@ -163,7 +185,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       const material: UserMaterial = {
         id: Math.random().toString(36).substr(2, 9),
         ...materialForm,
-        url: formattedUrl,
         createdAt: new Date().toLocaleString('az-AZ')
       };
       onUpdate({
@@ -172,7 +193,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       });
       toast({ title: "Material əlavə edildi" });
     }
-    setMaterialForm({ subject: '', title: '', url: '' });
+    setMaterialForm({ subject: '', title: '', fileName: '', fileData: '', fileType: '' });
     setMaterialToEdit(null);
     setIsMaterialAddOpen(false);
   };
@@ -187,8 +208,23 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
 
   const handleEditMaterial = (material: UserMaterial) => {
     setMaterialToEdit(material);
-    setMaterialForm({ subject: material.subject, title: material.title, url: material.url });
+    setMaterialForm({ 
+      subject: material.subject, 
+      title: material.title, 
+      fileName: material.fileName, 
+      fileData: material.fileData, 
+      fileType: material.fileType 
+    });
     setIsMaterialAddOpen(true);
+  };
+
+  const handleOpenMaterial = (material: UserMaterial) => {
+    const link = document.createElement('a');
+    link.href = material.fileData;
+    link.download = material.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getAbsenceStatus = (subject: string, count: number) => {
@@ -457,7 +493,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             <DialogTitle className="flex items-center gap-2">
               <Library className="h-5 w-5 text-primary" /> Dərs Materialları
             </DialogTitle>
-            <Button size="sm" onClick={() => { setMaterialToEdit(null); setMaterialForm({ subject: '', title: '', url: '' }); setIsMaterialAddOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
+            <Button size="sm" onClick={() => { setMaterialToEdit(null); setMaterialForm({ subject: '', title: '', fileName: '', fileData: '', fileType: '' }); setIsMaterialAddOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
               <Plus className="h-5 w-5" />
             </Button>
           </DialogHeader>
@@ -467,7 +503,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 <div className="text-center py-16 text-muted-foreground">
                   <Library className="h-16 w-16 mx-auto mb-4 opacity-10" />
                   <p className="text-lg font-medium">Hələ ki, material yoxdur</p>
-                  <Button variant="link" onClick={() => setIsMaterialAddOpen(true)}>İlk materialı əlavə et</Button>
+                  <Button variant="link" onClick={() => setIsMaterialAddOpen(true)}>İlk materialı yüklə</Button>
                 </div>
               ) : (
                 subjects.map(subject => {
@@ -482,13 +518,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                           <div key={material.id} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border group">
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="bg-primary/10 p-2 rounded-lg shrink-0">
-                                <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                                <FileIcon className="h-3.5 w-3.5 text-primary" />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-bold truncate">{material.title}</p>
-                                <a href={material.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-muted-foreground flex items-center gap-1 hover:underline truncate">
-                                  Keçid et <ExternalLink className="h-2 w-2" />
-                                </a>
+                                <button onClick={() => handleOpenMaterial(material)} className="text-[10px] text-muted-foreground flex items-center gap-1 hover:underline truncate">
+                                  {material.fileName} <ExternalLink className="h-2 w-2" />
+                                </button>
                               </div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
@@ -515,7 +551,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       <Dialog open={isMaterialAddOpen} onOpenChange={setIsMaterialAddOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{materialToEdit ? 'Materialı Redaktə Et' : 'Yeni Material'}</DialogTitle>
+            <DialogTitle>{materialToEdit ? 'Materialı Redaktə Et' : 'Yeni Material Yüklə'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -540,17 +576,40 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               />
             </div>
             <div className="space-y-2">
-              <Label>Link (URL)</Label>
-              <Input 
-                value={materialForm.url} 
-                onChange={(e) => setMaterialForm({ ...materialForm, url: e.target.value })}
-                placeholder="https://..."
-              />
+              <Label>Fayl Seçin</Label>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-dashed gap-2 h-20"
+                  onClick={() => materialFileInputRef.current?.click()}
+                >
+                  <UploadCloud className="h-6 w-6 text-primary" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-bold">Faylı yaddaşdan seçin</span>
+                    <span className="text-[10px] text-muted-foreground">PDF, Şəkil və ya Digər (Max 2MB)</span>
+                  </div>
+                </Button>
+                {materialForm.fileName && (
+                  <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium truncate flex-1">{materialForm.fileName}</span>
+                    <button onClick={() => setMaterialForm(p => ({ ...p, fileName: '', fileData: '', fileType: '' }))} className="text-destructive">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                <input 
+                  type="file" 
+                  ref={materialFileInputRef} 
+                  onChange={handleMaterialFileUpload} 
+                  className="hidden" 
+                />
+              </div>
             </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsMaterialAddOpen(false)}>Ləğv Et</Button>
-            <Button onClick={handleSaveMaterial} disabled={!materialForm.subject || !materialForm.title || !materialForm.url}>
+            <Button onClick={handleSaveMaterial} disabled={!materialForm.subject || !materialForm.title || !materialForm.fileData}>
               {materialToEdit ? 'Yenilə' : 'Yadda Saxla'}
             </Button>
           </DialogFooter>

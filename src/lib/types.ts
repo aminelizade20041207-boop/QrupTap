@@ -44,7 +44,9 @@ export interface UserMaterial {
   id: string;
   subject: string;
   title: string;
-  url: string;
+  fileName: string;
+  fileData: string; // base64 string
+  fileType: string;
   createdAt: string;
 }
 
