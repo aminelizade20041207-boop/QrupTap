@@ -44,6 +44,8 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
   const [newNote, setNewNote] = useState('');
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [isNotesManagerOpen, setIsNotesManagerOpen] = useState(false);
+  const [noteToEdit, setNoteToEdit] = useState<UserNote | null>(null);
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -90,23 +92,39 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     });
   };
 
-  const handleAddNote = () => {
+  const handleSaveNote = () => {
     if (!newNote.trim()) return;
     
-    const note: UserNote = {
-      id: Math.random().toString(36).substr(2, 9),
-      text: newNote,
-      createdAt: new Date().toLocaleString('az-AZ')
-    };
-
-    onUpdate({
-      ...profile,
-      notesList: [note, ...(profile.notesList || [])]
-    });
+    if (noteToEdit) {
+      onUpdate({
+        ...profile,
+        notesList: (profile.notesList || []).map(n => 
+          n.id === noteToEdit.id ? { ...n, text: newNote } : n
+        )
+      });
+      toast({ title: "Qeyd yeniləndi" });
+    } else {
+      const note: UserNote = {
+        id: Math.random().toString(36).substr(2, 9),
+        text: newNote,
+        createdAt: new Date().toLocaleString('az-AZ')
+      };
+      onUpdate({
+        ...profile,
+        notesList: [note, ...(profile.notesList || [])]
+      });
+      toast({ title: "Qeyd əlavə edildi" });
+    }
     
     setNewNote('');
+    setNoteToEdit(null);
     setIsNoteDialogOpen(false);
-    toast({ title: "Qeyd əlavə edildi" });
+  };
+
+  const handleEditNote = (note: UserNote) => {
+    setNoteToEdit(note);
+    setNewNote(note.text);
+    setIsNoteDialogOpen(true);
   };
 
   const handleDeleteNote = (id: string) => {
@@ -213,7 +231,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <Card className="border-t-4 border-t-primary shadow-lg overflow-hidden bg-card">
         <CardHeader className="text-center pb-2 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="relative w-32 h-32 mx-auto mb-4">
@@ -246,7 +264,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             {profile.subgroup === 'yuxari' ? 'Yuxarı' : 'Aşağı'} Altqrup
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4 border-t">
+        <CardContent className="pt-4 border-t space-y-4">
           <div className="flex justify-around text-center">
             <div className="space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase font-black tracking-tighter">Fənlər</p>
@@ -258,50 +276,15 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               <p className="text-xl font-black text-primary">{Object.keys(profile.savedGrades || {}).length}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-lg border-primary/10 bg-card overflow-hidden">
-        <CardHeader className="bg-primary/5 pb-3 flex flex-row items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <StickyNote className="h-5 w-5 text-primary" />
-              Mənim Qeydlərim
-            </CardTitle>
-            <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
-              {profile.notesList?.length || 0} qeyd var
-            </CardDescription>
-          </div>
-          <Button size="sm" onClick={() => setIsNoteDialogOpen(true)} className="rounded-full h-8 w-8 p-0">
-            <Plus className="h-5 w-5" />
+          
+          <Button 
+            variant="outline" 
+            className="w-full gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
+            onClick={() => setIsNotesManagerOpen(true)}
+          >
+            <StickyNote className="h-4 w-4 text-primary" />
+            Qeydlərim ({profile.notesList?.length || 0})
           </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="h-[200px]">
-            <div className="p-4 space-y-3">
-              {!profile.notesList?.length ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <StickyNote className="h-10 w-10 mx-auto mb-2 opacity-10" />
-                  <p className="text-sm">Hələ ki, qeyd yoxdur</p>
-                </div>
-              ) : (
-                profile.notesList.map((note) => (
-                  <div key={note.id} className="group relative bg-muted/30 p-3 rounded-xl border border-primary/5 hover:border-primary/20 transition-all">
-                    <p className="text-sm whitespace-pre-wrap pr-6">{note.text}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-muted-foreground font-medium">{note.createdAt}</span>
-                      <button 
-                        onClick={() => handleDeleteNote(note.id)}
-                        className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </ScrollArea>
         </CardContent>
       </Card>
 
@@ -413,6 +396,78 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </div>
       </div>
 
+      {/* Notes Manager Dialog */}
+      <Dialog open={isNotesManagerOpen} onOpenChange={setIsNotesManagerOpen}>
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col h-[80vh] sm:h-auto sm:max-h-[80vh]">
+          <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5 text-primary" /> Mənim Qeydlərim
+            </DialogTitle>
+            <Button size="sm" onClick={() => { setNoteToEdit(null); setNewNote(''); setIsNoteDialogOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
+              <Plus className="h-5 w-5" />
+            </Button>
+          </DialogHeader>
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-3">
+              {!profile.notesList?.length ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <StickyNote className="h-16 w-16 mx-auto mb-4 opacity-10" />
+                  <p className="text-lg font-medium">Hələ ki, qeyd yoxdur</p>
+                  <Button variant="link" onClick={() => { setNoteToEdit(null); setNewNote(''); setIsNoteDialogOpen(true); }}>İlk qeydi yaz</Button>
+                </div>
+              ) : (
+                profile.notesList.map((note) => (
+                  <div key={note.id} className="group relative bg-muted/30 p-4 rounded-2xl border border-primary/5 hover:border-primary/20 transition-all">
+                    <p className="text-sm whitespace-pre-wrap pr-16">{note.text}</p>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-primary/5">
+                      <span className="text-[10px] text-muted-foreground font-medium uppercase">{note.createdAt}</span>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleEditNote(note)}
+                          className="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteNote(note.id)}
+                          className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Note Input/Edit Dialog */}
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{noteToEdit ? 'Qeydi Redaktə Et' : 'Yeni Qeyd'}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Qeydinizi bura yazın..."
+              className="min-h-[180px] resize-none rounded-xl"
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)}>Ləğv Et</Button>
+            <Button onClick={handleSaveNote} disabled={!newNote.trim()}>
+              {noteToEdit ? 'Yenilə' : 'Yadda Saxla'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Crop Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
           <DialogHeader className="p-4 border-b">
@@ -453,26 +508,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
           <DialogFooter className="p-4 bg-muted/30 border-t flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
             <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2"><Check className="h-4 w-4" /> Tamamla</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Yeni Qeyd</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Textarea 
-              placeholder="Qeydinizi bura yazın..."
-              className="min-h-[150px] resize-none"
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)}>Ləğv Et</Button>
-            <Button onClick={handleAddNote} disabled={!newNote.trim()}>Əlavə Et</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
