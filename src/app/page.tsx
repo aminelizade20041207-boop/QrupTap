@@ -21,13 +21,13 @@ export default function Home() {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
 
   useEffect(() => {
-    // Profil məlumatlarını oflayn rejimdə də stabil oxumaq üçün
+    // Profil məlumatlarını oflayn rejimdə də stabil oxumaq
     const savedProfile = localStorage.getItem('it24_profile');
     if (savedProfile) {
       try {
         setProfile(JSON.parse(savedProfile));
       } catch (e) {
-        console.error("Profil oxunarkən xəta:", e);
+        localStorage.removeItem('it24_profile');
       }
     }
 
@@ -42,11 +42,10 @@ export default function Home() {
     const weekIndex = Math.floor(diffInDays / 7);
     setCurrentWeek(weekIndex % 2 === 0 ? 'ust' : 'alt');
     
-    // Tətbiqin tam hazır olduğunu bildiririk (hydration xətalarının qarşısını alır)
     setIsReady(true);
   }, []);
 
-  if (!isReady) return null;
+  if (!isReady) return <div className="min-h-screen bg-background" />;
 
   if (!profile) {
     return <Onboarding onComplete={(p) => {
@@ -83,7 +82,7 @@ export default function Home() {
       return;
     }
 
-    // Android "Ağ kvadrat" problemini həll etmək üçün ikon linkini optimallaşdırırıq
+    // Android "Ağ kvadrat" problemini həll etmək üçün şəffaf fonlu PNG ikon
     const iconUrl = 'https://placehold.co/192x192/4A90E2/ffffff.png?text=IT24';
 
     try {
