@@ -45,7 +45,9 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   };
 
   const handleRemovePhoto = () => {
-    onUpdate({ ...profile, photo: undefined });
+    if (confirm('Profil şəklini silmək istədiyinizə əminsiniz?')) {
+      onUpdate({ ...profile, photo: undefined });
+    }
   };
 
   const handleStart = (clientX: number, clientY: number) => {
@@ -139,22 +141,25 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 <User className="h-16 w-16" />
               </AvatarFallback>
             </Avatar>
-            <div className="absolute bottom-1 right-1 flex gap-1">
-              {profile.photo && (
-                <button 
-                  onClick={handleRemovePhoto}
-                  className="bg-destructive text-white p-2 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
+            
+            {profile.photo && (
               <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white"
+                onClick={handleRemovePhoto}
+                className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white translate-x-1/4 -translate-y-1/4"
+                title="Şəkli Sil"
               >
-                <Camera className="h-5 w-5" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
-            </div>
+            )}
+
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white translate-x-1/4 translate-y-1/4"
+              title="Şəkil Əlavə Et"
+            >
+              <Camera className="h-5 w-5" />
+            </button>
+            
             <input 
               type="file" 
               ref={fileInputRef} 
