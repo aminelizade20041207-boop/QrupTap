@@ -34,6 +34,12 @@ export interface GradeDetails {
   total: number;
 }
 
+export interface UserNote {
+  id: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface UserProfile {
   name: string;
   subgroup: 'yuxari' | 'asagi';
@@ -41,5 +47,5 @@ export interface UserProfile {
   savedGrades?: Record<string, number>;
   savedDetails?: Record<string, GradeDetails>;
   savedAbsences?: Record<string, number>;
-  notes?: string;
+  notesList?: UserNote[];
 }

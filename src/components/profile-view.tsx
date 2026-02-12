@@ -5,14 +5,15 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save } from 'lucide-react';
-import { UserProfile } from '@/lib/types';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Save, X } from 'lucide-react';
+import { UserProfile, UserNote } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
   'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
@@ -41,7 +42,8 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
-  const [notes, setNotes] = useState(profile.notes || '');
+  const [newNote, setNewNote] = useState('');
+  const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -88,12 +90,31 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     });
   };
 
-  const handleSaveNotes = () => {
-    onUpdate({ ...profile, notes });
-    toast({
-      title: "Qeyd yadda saxlanıldı",
-      description: "Qeydləriniz uğurla yeniləndi."
+  const handleAddNote = () => {
+    if (!newNote.trim()) return;
+    
+    const note: UserNote = {
+      id: Math.random().toString(36).substr(2, 9),
+      text: newNote,
+      createdAt: new Date().toLocaleString('az-AZ')
+    };
+
+    onUpdate({
+      ...profile,
+      notesList: [note, ...(profile.notesList || [])]
     });
+    
+    setNewNote('');
+    setIsNoteDialogOpen(false);
+    toast({ title: "Qeyd əlavə edildi" });
+  };
+
+  const handleDeleteNote = (id: string) => {
+    onUpdate({
+      ...profile,
+      notesList: (profile.notesList || []).filter(n => n.id !== id)
+    });
+    toast({ title: "Qeyd silindi" });
   };
 
   const getAbsenceStatus = (subject: string, count: number) => {
@@ -112,6 +133,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3" /> };
   };
 
+  // Photo Cropping Logic (Simplified for stability)
   const handleStart = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setLastTouch({ x: clientX, y: clientY });
@@ -121,10 +143,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     if (!isDragging) return;
     const deltaX = clientX - lastTouch.x;
     const deltaY = clientY - lastTouch.y;
-    setPosition(prev => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY
-    }));
+    setPosition(prev => ({ x: prev.x + deltaX, y: prev.y + deltaY }));
     setLastTouch({ x: clientX, y: clientY });
   };
 
@@ -210,7 +229,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               <button 
                 onClick={handleRemovePhoto}
                 className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 -translate-y-1/4"
-                title="Şəkli Sil"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -219,7 +237,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             <button 
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 translate-y-1/4"
-              title="Şəkil Əlavə Et"
             >
               <Camera className="h-5 w-5" />
             </button>
@@ -246,28 +263,46 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       </Card>
 
       <Card className="shadow-lg border-primary/10 bg-card overflow-hidden">
-        <CardHeader className="bg-primary/5 pb-3">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <StickyNote className="h-5 w-5 text-primary" />
-            Mənim Qeydlərim
-          </CardTitle>
-          <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
-            Vacib məlumatları bura yaza bilərsiniz
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 space-y-4">
-          <Textarea 
-            placeholder="Məsələn: Bazar ertəsi imtahan var, kitabları gətir..."
-            className="min-h-[120px] resize-none border-primary/10 focus:border-primary/30 transition-all bg-background"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-          <Button 
-            className="w-full gap-2 font-bold shadow-sm"
-            onClick={handleSaveNotes}
-          >
-            <Save className="h-4 w-4" /> Qeydi Yadda Saxla
+        <CardHeader className="bg-primary/5 pb-3 flex flex-row items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <StickyNote className="h-5 w-5 text-primary" />
+              Mənim Qeydlərim
+            </CardTitle>
+            <CardDescription className="text-[10px] font-medium uppercase tracking-wider">
+              {profile.notesList?.length || 0} qeyd var
+            </CardDescription>
+          </div>
+          <Button size="sm" onClick={() => setIsNoteDialogOpen(true)} className="rounded-full h-8 w-8 p-0">
+            <Plus className="h-5 w-5" />
           </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ScrollArea className="h-[200px]">
+            <div className="p-4 space-y-3">
+              {!profile.notesList?.length ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <StickyNote className="h-10 w-10 mx-auto mb-2 opacity-10" />
+                  <p className="text-sm">Hələ ki, qeyd yoxdur</p>
+                </div>
+              ) : (
+                profile.notesList.map((note) => (
+                  <div key={note.id} className="group relative bg-muted/30 p-3 rounded-xl border border-primary/5 hover:border-primary/20 transition-all">
+                    <p className="text-sm whitespace-pre-wrap pr-6">{note.text}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] text-muted-foreground font-medium">{note.createdAt}</span>
+                      <button 
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
 
@@ -413,13 +448,32 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             </div>
             <div className="mt-6 text-center text-xs text-muted-foreground flex flex-col items-center gap-2 bg-muted/50 p-3 rounded-lg w-full">
               <span className="font-medium">Dartaraq yerini tənzimləyin</span>
-              <p className="opacity-70">İki barmaqla və ya çarxla yaxınlaşdırın</p>
             </div>
             <canvas ref={canvasRef} width={400} height={400} className="hidden" />
           </div>
           <DialogFooter className="p-4 bg-muted/30 border-t flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
             <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2"><Check className="h-4 w-4" /> Tamamla</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Yeni Qeyd</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea 
+              placeholder="Qeydinizi bura yazın..."
+              className="min-h-[150px] resize-none"
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNoteDialogOpen(false)}>Ləğv Et</Button>
+            <Button onClick={handleAddNote} disabled={!newNote.trim()}>Əlavə Et</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

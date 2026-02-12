@@ -214,28 +214,23 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
 
             {maxLabs > 0 && (
               <div className="space-y-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Label className="font-bold">Laboratoriya</Label>
-                      <Badge variant="outline" className="font-bold text-primary bg-background dark:bg-muted/20 h-6 px-2">
-                        {completedLabs} / {maxLabs}
-                      </Badge>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Ümumi bal: <span className="font-bold">{labTotalPoints}</span>
-                    </p>
+                <div className="flex flex-row items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="font-bold">Laboratoriya</Label>
+                    <Badge variant="outline" className="font-bold text-primary bg-background h-6 px-2">
+                      {completedLabs} / {maxLabs}
+                    </Badge>
                   </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setCompletedLabs(0)}
-                    className="h-8 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10 w-fit"
+                    className="h-8 text-xs gap-1 text-destructive hover:bg-destructive/10"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Sıfırla
                   </Button>
                 </div>
-                <div className="flex gap-2 flex-wrap justify-center sm:justify-start">
+                <div className="flex gap-2 flex-wrap">
                   {Array.from({ length: maxLabs }).map((_, idx) => (
                     <button
                       key={idx}
@@ -249,6 +244,10 @@ export const GradeCalculator = ({ onSave, initialSubject, existingDetails }: Gra
                       {idx + 1}
                     </button>
                   ))}
+                </div>
+                <div className="mt-3 flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                  <Info className="h-3.5 w-3.5" />
+                  Maksimum laboratoriya balı: <b>{labTotalPoints}</b>
                 </div>
               </div>
             )}
