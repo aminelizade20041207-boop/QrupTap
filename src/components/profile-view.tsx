@@ -105,23 +105,30 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      const ratio = 400 / 256; // Canvas size / Preview container size
-      const finalZoom = zoom * ratio;
+      // Riyazi düzəliş: Önizləmədəki 256px ilə Canvasdakı 400px arasındakı nisbət
+      const ratio = 400 / 256;
+      
+      // Şəklin canvas üzərindəki əsas eni (önizləmədəki width: 100% məntiqi ilə)
+      const drawWidth = 400 * zoom;
+      const drawHeight = (img.height / img.width) * drawWidth;
+      
+      // Mərkəzdən sürüşmə koordinatları
       const finalX = (canvas.width / 2) + (position.x * ratio);
       const finalY = (canvas.height / 2) + (position.y * ratio);
 
       ctx.save();
+      // Dairəvi kəsim
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
       ctx.clip();
       
-      // Draw image centered at the calculated position
+      // Şəkli dəqiq koordinatlara çək
       ctx.drawImage(
         img, 
-        finalX - (img.width * finalZoom / 2), 
-        finalY - (img.height * finalZoom / 2), 
-        img.width * finalZoom, 
-        img.height * finalZoom
+        finalX - (drawWidth / 2), 
+        finalY - (drawHeight / 2), 
+        drawWidth, 
+        drawHeight
       );
       
       ctx.restore();
