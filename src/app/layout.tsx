@@ -37,6 +37,17 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              if (localStorage.getItem('it24_theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+              } else {
+                document.documentElement.classList.remove('dark');
+              }
+            } catch (_) {}
+          `
+        }} />
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
@@ -48,13 +59,11 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                // Her yuklemede ferqli URL ile SW yoxlamasi
                 const swUrl = '/sw.js?t=' + Date.now();
                 
                 navigator.serviceWorker.register(swUrl).then(function(reg) {
                   console.log('SW Registered');
                   
-                  // Yeni SW tapilarsa dərhal aktiv et
                   reg.onupdatefound = () => {
                     const installingWorker = reg.installing;
                     if (installingWorker) {
@@ -67,10 +76,9 @@ export default function RootLayout({
                     }
                   };
                   
-                  // Periyodik yoxlama
                   setInterval(() => {
                     reg.update();
-                  }, 60000); // 1 deqiqeden bir
+                  }, 60000);
                 }).catch(function(err) {
                   console.log('SW Registration Error:', err);
                 });

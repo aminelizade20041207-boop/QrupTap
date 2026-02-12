@@ -5,10 +5,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2 } from 'lucide-react';
+import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Move, Trash2, Moon, Sun, Settings } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface ProfileViewProps {
   profile: UserProfile;
@@ -27,6 +29,23 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
   const [lastDistance, setLastDistance] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = (checked: boolean) => {
+    setIsDarkMode(checked);
+    if (checked) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('it24_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('it24_theme', 'light');
+    }
+  };
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
 
@@ -135,7 +154,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
       <Card className="border-t-4 border-t-primary shadow-lg overflow-hidden">
         <CardHeader className="text-center pb-2 bg-gradient-to-b from-primary/5 to-transparent">
           <div className="relative w-32 h-32 mx-auto mb-4">
-            <Avatar className="w-32 h-32 border-4 border-white shadow-xl">
+            <Avatar className="w-32 h-32 border-4 border-white dark:border-gray-800 shadow-xl">
               <AvatarImage src={profile.photo} className="object-cover" />
               <AvatarFallback className="bg-primary/10 text-primary">
                 <User className="h-16 w-16" />
@@ -145,7 +164,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             {profile.photo && (
               <button 
                 onClick={handleRemovePhoto}
-                className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white translate-x-1/4 -translate-y-1/4"
+                className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white dark:border-gray-800 translate-x-1/4 -translate-y-1/4"
                 title="Şəkli Sil"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -154,7 +173,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
 
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white translate-x-1/4 translate-y-1/4"
+              className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-white dark:border-gray-800 translate-x-1/4 translate-y-1/4"
               title="Şəkil Əlavə Et"
             >
               <Camera className="h-5 w-5" />
@@ -186,6 +205,29 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 {Object.keys(profile.savedGrades || {}).length}
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/10 shadow-md">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" /> Tənzimləmələr
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-1">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                {isDarkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
+              </div>
+              <Label htmlFor="dark-mode" className="font-bold cursor-pointer">Qaranlıq Rejim</Label>
+            </div>
+            <Switch 
+              id="dark-mode" 
+              checked={isDarkMode} 
+              onCheckedChange={toggleDarkMode}
+            />
           </div>
         </CardContent>
       </Card>
