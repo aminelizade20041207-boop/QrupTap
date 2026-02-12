@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -19,9 +18,12 @@ export const DailyView = ({ classes }: ViewProps) => {
 
   const getClassIcon = (name: string) => {
     const lowerName = name.toLowerCase();
-    if (lowerName.includes('mühazirə')) return <BookOpen className="h-6 w-6 text-primary" />;
-    if (lowerName.includes('laboratoriya')) return <FlaskConical className="h-6 w-6 text-primary" />;
-    if (lowerName.includes('məşğələ')) return <Users className="h-6 w-6 text-primary" />;
+    if (lowerName.includes('laboratoriya') || lowerName.includes('lab')) {
+      return <FlaskConical className="h-6 w-6 text-primary" />;
+    }
+    if (lowerName.includes('məşğələ') || lowerName.includes('seminar')) {
+      return <Users className="h-6 w-6 text-primary" />;
+    }
     return <BookOpen className="h-6 w-6 text-primary" />;
   };
 
