@@ -38,6 +38,7 @@ export default function Home() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
+  const [selectedWeeklyWeek, setSelectedWeeklyWeek] = useState<WeekType>('ust');
   const [isReady, setIsReady] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
   const [activeTab, setActiveTab] = useState('daily');
@@ -71,7 +72,9 @@ export default function Home() {
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const weekIndex = Math.floor(diffInDays / 7);
-    setCurrentWeek(weekIndex % 2 === 0 ? 'ust' : 'alt');
+    const calculatedWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
+    setCurrentWeek(calculatedWeek);
+    setSelectedWeeklyWeek(calculatedWeek);
     
     setIsReady(true);
   }, []);
@@ -98,9 +101,14 @@ export default function Home() {
     }} />;
   }
 
-  const filteredClasses = FIXED_SCHEDULE.filter(c => 
+  const dailyClasses = FIXED_SCHEDULE.filter(c => 
     (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
     (c.week === 'hamisi' || c.week === currentWeek)
+  );
+
+  const weeklyClasses = FIXED_SCHEDULE.filter(c => 
+    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+    (c.week === 'hamisi' || c.week === selectedWeeklyWeek)
   );
 
   const updateProfile = (updatedProfile: UserProfile) => {
@@ -210,7 +218,6 @@ export default function Home() {
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
     if (!profile.notificationSettings) return;
     const isOtherClass = field === 'otherClassesMinutes';
-    // Mənfi ədədləri Math.max ilə bloklayırıq
     const parsedValue = parseInt(value) || 0;
     const nonNegativeValue = Math.max(0, parsedValue);
     const numValue = value === '' ? 0 : (isOtherClass ? Math.min(90, nonNegativeValue) : nonNegativeValue);
@@ -219,6 +226,13 @@ export default function Home() {
       ...profile.notificationSettings,
       [channel]: { ...profile.notificationSettings[channel], [field]: numValue }
     });
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'weekly') {
+      setSelectedWeeklyWeek(currentWeek);
+    }
   };
 
   return (
@@ -267,7 +281,6 @@ export default function Home() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
-                  {/* Birinci Bildiriş Kanali */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/20">
                       <Label htmlFor="first-notif-channel" className="font-bold text-primary">Birinci Bildiriş Kanalı</Label>
@@ -320,7 +333,6 @@ export default function Home() {
 
                   <Separator />
 
-                  {/* Ikinci Bildiriş Kanali */}
                   <div className="space-y-4">
                     <div className={cn(
                       "flex items-center justify-between p-3 rounded-xl border transition-opacity",
@@ -452,7 +464,7 @@ export default function Home() {
             />
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-1.5 rounded-xl border overflow-x-auto">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
@@ -468,11 +480,19 @@ export default function Home() {
             </div>
 
             <TabsContent value="daily" className="min-h-[400px]">
-              <DailyView classes={filteredClasses} />
+              <DailyView classes={dailyClasses} />
             </TabsContent>
             
-            <TabsContent value="weekly" className="min-h-[400px]">
-              <WeeklyView classes={filteredClasses} />
+            <TabsContent value="weekly" className="min-h-[400px] space-y-6">
+              <div className="flex justify-center">
+                <Tabs value={selectedWeeklyWeek} onValueChange={(v) => setSelectedWeeklyWeek(v as WeekType)} className="w-fit">
+                  <TabsList className="grid grid-cols-2 w-[240px] h-11">
+                    <TabsTrigger value="ust" className="font-bold text-xs uppercase tracking-wider">Üst Həftə</TabsTrigger>
+                    <TabsTrigger value="alt" className="font-bold text-xs uppercase tracking-wider">Alt Həftə</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              <WeeklyView classes={weeklyClasses} />
             </TabsContent>
 
             <TabsContent value="calculator">
