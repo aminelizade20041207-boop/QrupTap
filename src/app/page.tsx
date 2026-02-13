@@ -262,19 +262,19 @@ export default function Home() {
               onClick={toggleDarkMode}
               className="rounded-full hover:bg-primary/10 transition-colors"
             >
-              {isDarkMode ? <Sun className="h-5 w-5 text-primary" /> : <Moon className="h-5 w-5 text-primary" />}
+              {isDarkMode ? <Sun className="h-5 w-5 text-primary shrink-0" /> : <Moon className="h-5 w-5 text-primary shrink-0" />}
             </Button>
 
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <Settings className="h-5 w-5 text-primary" />
+                  <Settings className="h-5 w-5 text-primary shrink-0" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-primary font-bold">
-                    <Settings2 className="h-5 w-5" /> Bildiriş Ayarları
+                    <Settings2 className="h-5 w-5 shrink-0" /> Bildiriş Ayarları
                   </DialogTitle>
                   <DialogDescription>
                     Bildiriş sayını və göndərilmə vaxtını təyin edin.
@@ -393,7 +393,7 @@ export default function Home() {
                   </div>
 
                   <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11 font-bold" onClick={setStandardNotifSettings}>
-                    <RotateCcw className="h-4 w-4" /> Standart Ayarlar
+                    <RotateCcw className="h-4 w-4 shrink-0" /> Standart Ayarlar
                   </Button>
                 </div>
               </DialogContent>
@@ -406,11 +406,11 @@ export default function Home() {
               <Avatar className={`h-11 w-11 border-2 transition-all ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white dark:border-gray-800 shadow-sm'}`}>
                 <AvatarImage src={profile.photo} />
                 <AvatarFallback className="bg-primary/10 text-primary">
-                  <User className="h-6 w-6" />
+                  <User className="h-6 w-6 shrink-0" />
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white dark:border-gray-800">
-                <User className="h-3 w-3" />
+                <User className="h-3 w-3 shrink-0" />
               </div>
             </button>
           </div>
@@ -425,7 +425,7 @@ export default function Home() {
               disabled={notifPermission === 'granted'}
               className="gap-2"
             >
-              {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Bell className="h-4 w-4" />}
+              {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> : <Bell className="h-4 w-4 shrink-0" />}
               {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
             </Button>
             <Button 
@@ -434,12 +434,12 @@ export default function Home() {
               onClick={triggerTestNotification}
               className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
             >
-              <Smartphone className="h-4 w-4" /> Test
+              <Smartphone className="h-4 w-4 shrink-0" /> Test
             </Button>
           </div>
           
           <div className="flex items-center gap-3 bg-background p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
-            <Info className="h-4 w-4 text-primary" />
+            <Info className="h-4 w-4 text-primary shrink-0" />
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>
               <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="font-bold text-[10px]">
@@ -453,7 +453,7 @@ export default function Home() {
           <div className="animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" /> Şəxsi Kabinet
+                <User className="h-5 w-5 text-primary shrink-0" /> Şəxsi Kabinet
               </h2>
               <Button variant="ghost" size="sm" onClick={() => setIsProfileOpen(false)}>Geri Qayıt</Button>
             </div>
@@ -468,13 +468,13 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-1.5 rounded-xl border overflow-x-auto">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Bell className="h-4 w-4" /> Günlük
+                  <Bell className="h-4 w-4 shrink-0" /> Günlük
                 </TabsTrigger>
                 <TabsTrigger value="weekly" className="flex items-center gap-2 text-xs sm:text-sm">
-                  <LayoutGrid className="h-4 w-4" /> Həftəlik
+                  <LayoutGrid className="h-4 w-4 shrink-0" /> Həftəlik
                 </TabsTrigger>
                 <TabsTrigger value="calculator" className="flex items-center gap-2 text-xs sm:text-sm">
-                  <Calculator className="h-4 w-4" /> Giriş Ballarım
+                  <Calculator className="h-4 w-4 shrink-0" /> Giriş Ballarım
                 </TabsTrigger>
               </TabsList>
             </div>

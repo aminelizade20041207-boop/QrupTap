@@ -110,7 +110,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     });
   };
 
-  // Note Handlers
   const handleSaveNote = () => {
     if (!newNote.trim()) return;
     if (noteToEdit) {
@@ -146,7 +145,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     toast({ title: "Qeyd silindi" });
   };
 
-  // Material Handlers
   const handleMaterialFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -232,15 +230,15 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     if (!rules) return null;
 
     if (count >= rules.fail) {
-      return { label: 'Kəsildin!', color: 'bg-destructive text-white', icon: <AlertTriangle className="h-3 w-3" /> };
+      return { label: 'Kəsildin!', color: 'bg-destructive text-white', icon: <AlertTriangle className="h-3 w-3 shrink-0" /> };
     }
     if (count >= rules.m2) {
-      return { label: '-2 Bal', color: 'bg-orange-500 text-white', icon: <Minus className="h-3 w-3" /> };
+      return { label: '-2 Bal', color: 'bg-orange-500 text-white', icon: <Minus className="h-3 w-3 shrink-0" /> };
     }
     if (count >= rules.m1) {
-      return { label: '-1 Bal', color: 'bg-yellow-500 text-white', icon: <Minus className="h-3 w-3" /> };
+      return { label: '-1 Bal', color: 'bg-yellow-500 text-white', icon: <Minus className="h-3 w-3 shrink-0" /> };
     }
-    return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3" /> };
+    return { label: 'Normal', color: 'bg-green-500 text-white', icon: <Check className="h-3 w-3 shrink-0" /> };
   };
 
   const handleStart = (clientX: number, clientY: number) => {
@@ -339,7 +337,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 onClick={handleRemovePhoto}
                 className="absolute top-0 right-0 bg-destructive text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 -translate-y-1/4"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3.5 w-3.5 shrink-0" />
               </button>
             )}
 
@@ -347,7 +345,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 bg-primary text-white p-2.5 rounded-full shadow-lg hover:scale-110 transition-all border-2 border-background translate-x-1/4 translate-y-1/4"
             >
-              <Camera className="h-5 w-5" />
+              <Camera className="h-5 w-5 shrink-0" />
             </button>
             <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} accept="image/*" className="hidden" />
           </div>
@@ -363,7 +361,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               className="gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
               onClick={() => setIsNotesManagerOpen(true)}
             >
-              <StickyNote className="h-4 w-4 text-primary" />
+              <StickyNote className="h-4 w-4 text-primary shrink-0" />
               Qeydlər ({profile.notesList?.length || 0})
             </Button>
             <Button 
@@ -371,7 +369,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
               className="gap-2 border-primary/20 hover:bg-primary/5 h-11 font-bold"
               onClick={() => setIsMaterialsManagerOpen(true)}
             >
-              <Library className="h-4 w-4 text-primary" />
+              <Library className="h-4 w-4 text-primary shrink-0" />
               Materiallar ({profile.materialsList?.length || 0})
             </Button>
           </div>
@@ -380,7 +378,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
 
       <div className="space-y-4">
         <h3 className="text-lg font-bold flex items-center gap-2 text-foreground px-1">
-          <GraduationCap className="h-5 w-5 text-primary" />
+          <GraduationCap className="h-5 w-5 text-primary shrink-0" />
           Giriş Ballarım:
         </h3>
         <div className="grid gap-4">
@@ -396,7 +394,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="bg-primary/5 p-2 rounded-lg">
-                        <BookOpen className="h-5 w-5 text-primary" />
+                        <BookOpen className="h-5 w-5 text-primary shrink-0" />
                       </div>
                       <span className="font-bold text-sm">{subject}</span>
                     </div>
@@ -419,7 +417,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                         onClick={() => onEditGrade(subject)}
                         className="text-muted-foreground hover:text-primary h-9 w-9"
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Edit2 className="h-4 w-4 shrink-0" />
                       </Button>
 
                       {ABSENCE_RULES[subject] && (
@@ -432,7 +430,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                             isExpanded ? "bg-primary text-white border-primary" : "text-primary hover:bg-primary/5"
                           )}
                         >
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
                         </Button>
                       )}
                     </div>
@@ -453,7 +451,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                             onClick={() => handleUpdateAbsence(subject, -1)}
                             disabled={absences <= 0}
                           >
-                            <Minus className="h-4 w-4" />
+                            <Minus className="h-4 w-4 shrink-0" />
                           </Button>
                           <span className="w-8 text-center font-bold text-lg">{absences}</span>
                           <Button 
@@ -463,7 +461,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                             onClick={() => handleUpdateAbsence(subject, 1)}
                             disabled={absences >= ABSENCE_RULES[subject].fail}
                           >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="h-4 w-4 shrink-0" />
                           </Button>
                         </div>
                       </div>
@@ -486,15 +484,14 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </div>
       </div>
 
-      {/* Materials Manager Dialog */}
       <Dialog open={isMaterialsManagerOpen} onOpenChange={setIsMaterialsManagerOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col h-[80vh] sm:h-auto sm:max-h-[80vh]">
           <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
-              <Library className="h-5 w-5 text-primary" /> Dərs Materialları
+              <Library className="h-5 w-5 text-primary shrink-0" /> Dərs Materialları
             </DialogTitle>
             <Button size="sm" onClick={() => { setMaterialToEdit(null); setMaterialForm({ subject: '', title: '', fileName: '', fileData: '', fileType: '' }); setIsMaterialAddOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
-              <Plus className="h-5 w-5" />
+              <Plus className="h-5 w-5 shrink-0" />
             </Button>
           </DialogHeader>
           <ScrollArea className="flex-1">
@@ -518,21 +515,21 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                           <div key={material.id} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border group">
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="bg-primary/10 p-2 rounded-lg shrink-0">
-                                <FileIcon className="h-3.5 w-3.5 text-primary" />
+                                <FileIcon className="h-3.5 w-3.5 text-primary shrink-0" />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-bold truncate">{material.title}</p>
                                 <button onClick={() => handleOpenMaterial(material)} className="text-[10px] text-muted-foreground flex items-center gap-1 hover:underline truncate">
-                                  {material.fileName} <ExternalLink className="h-2 w-2" />
+                                  {material.fileName} <ExternalLink className="h-2 w-2 shrink-0" />
                                 </button>
                               </div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
                               <button onClick={() => handleEditMaterial(material)} className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
-                                <Edit2 className="h-3.5 w-3.5" />
+                                <Edit2 className="h-3.5 w-3.5 shrink-0" />
                               </button>
                               <button onClick={() => handleDeleteMaterial(material.id)} className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors">
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3.5 w-3.5 shrink-0" />
                               </button>
                             </div>
                           </div>
@@ -547,7 +544,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </DialogContent>
       </Dialog>
 
-      {/* Material Add/Edit Dialog */}
       <Dialog open={isMaterialAddOpen} onOpenChange={setIsMaterialAddOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -583,7 +579,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                   className="w-full border-dashed gap-2 h-20"
                   onClick={() => materialFileInputRef.current?.click()}
                 >
-                  <UploadCloud className="h-6 w-6 text-primary" />
+                  <UploadCloud className="h-6 w-6 text-primary shrink-0" />
                   <div className="flex flex-col items-start">
                     <span className="text-sm font-bold">Faylı yaddaşdan seçin</span>
                     <span className="text-[10px] text-muted-foreground">PDF, Şəkil və ya Digər (Max 2MB)</span>
@@ -591,10 +587,10 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                 </Button>
                 {materialForm.fileName && (
                   <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-                    <FileText className="h-4 w-4 text-primary" />
+                    <FileText className="h-4 w-4 text-primary shrink-0" />
                     <span className="text-xs font-medium truncate flex-1">{materialForm.fileName}</span>
                     <button onClick={() => setMaterialForm(p => ({ ...p, fileName: '', fileData: '', fileType: '' }))} className="text-destructive">
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 shrink-0" />
                     </button>
                   </div>
                 )}
@@ -616,15 +612,14 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </DialogContent>
       </Dialog>
 
-      {/* Notes Manager Dialog */}
       <Dialog open={isNotesManagerOpen} onOpenChange={setIsNotesManagerOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col h-[80vh] sm:h-auto sm:max-h-[80vh]">
           <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
-              <StickyNote className="h-5 w-5 text-primary" /> Mənim Qeydlərim
+              <StickyNote className="h-5 w-5 text-primary shrink-0" /> Mənim Qeydlərim
             </DialogTitle>
             <Button size="sm" onClick={() => { setNoteToEdit(null); setNewNote(''); setIsNoteDialogOpen(true); }} className="rounded-full h-8 w-8 p-0 mr-6">
-              <Plus className="h-5 w-5" />
+              <Plus className="h-5 w-5 shrink-0" />
             </Button>
           </DialogHeader>
           <ScrollArea className="flex-1">
@@ -646,13 +641,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                           onClick={() => { setNoteToEdit(note); setNewNote(note.text); setIsNoteDialogOpen(true); }}
                           className="text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors"
                         >
-                          <Edit2 className="h-3.5 w-3.5" />
+                          <Edit2 className="h-3.5 w-3.5 shrink-0" />
                         </button>
                         <button 
                           onClick={() => handleDeleteNote(note.id)}
                           className="text-destructive hover:bg-destructive/10 p-1.5 rounded-lg transition-colors"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 shrink-0" />
                         </button>
                       </div>
                     </div>
@@ -664,7 +659,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </DialogContent>
       </Dialog>
 
-      {/* Note Input/Edit Dialog */}
       <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -687,7 +681,6 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
         </DialogContent>
       </Dialog>
 
-      {/* Photo Crop Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
           <DialogHeader className="p-4 border-b">
@@ -727,7 +720,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
           </div>
           <DialogFooter className="p-4 bg-muted/30 border-t flex gap-2">
             <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">Ləğv Et</Button>
-            <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2"><Check className="h-4 w-4" /> Tamamla</Button>
+            <Button onClick={handleSaveCroppedImage} className="flex-1 gap-2"><Check className="h-4 w-4 shrink-0" /> Tamamla</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
