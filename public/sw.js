@@ -1,89 +1,125 @@
 
-const CACHE_NAME = 'it24-cache-v1';
+/* eslint-disable no-restricted-globals */
+const CACHE_NAME = 'it24-v2';
 const ASSETS = [
   '/',
   '/manifest.webmanifest',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
-
-let appData = {
-  profile: null,
-  schedule: []
-};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
+    })
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/'))
+    );
+    return;
+  }
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request).then((res) => res || fetch(event.request))
   );
 });
 
+// Arxa fon bildiriş məntiqi
+let profile = null;
+let schedule = [];
+let sentNotifications = new Set();
+
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SYNC_DATA') {
-    appData = event.data.payload;
+    profile = event.data.payload.profile;
+    schedule = event.data.payload.schedule;
+    // Data yenilənəndə göndərilmişləri təmizlə ki, yeni ayarlarla gəlsin
+    sentNotifications.clear();
   }
 });
 
 function checkSchedule() {
-  if (!appData.profile || !appData.schedule || appData.schedule.length === 0) return;
+  if (!profile || !schedule || !profile.notificationSettings) return;
 
   const now = new Date();
-  const todayIdx = now.getDay();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const dayIdx = now.getDay(); 
+  
+  // Cari həftə növünü hesabla
+  const startDate = new Date('2026-02-16');
+  const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weekIndex = Math.floor(diffInDays / 7);
+  const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
-  const dailyClasses = appData.schedule
+  // Bu günün dərslərini tap və sırala
+  const todaysClasses = schedule
     .filter(c => 
-      Number(c.day) === todayIdx && 
-      (c.subgroup === 'hamisi' || c.subgroup === appData.profile.subgroup)
+      Number(c.day) === dayIdx &&
+      (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+      (c.week === 'hamisi' || c.week === currentWeek)
     )
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  dailyClasses.forEach((session, index) => {
-    const [h, m] = session.startTime.split(':').map(Number);
-    const sessionMinutes = h * 60 + m;
-    const diff = sessionMinutes - currentMinutes;
+  if (todaysClasses.length === 0) return;
 
+  todaysClasses.forEach((cls, index) => {
     const isFirstClass = index === 0;
-    const settings = appData.profile.notificationSettings;
-    if (!settings) return;
+    const [h, m] = cls.startTime.split(':').map(Number);
+    const classTime = new Date(now);
+    classTime.setHours(h, m, 0, 0);
 
-    const channel1 = settings.firstChannel;
-    const channel2 = settings.secondChannel;
+    const diffInMs = classTime.getTime() - now.getTime();
+    const diffInMin = Math.floor(diffInMs / (1000 * 60));
 
-    const checkAndNotify = (channel, channelId) => {
-      if (!channel || !channel.enabled) return;
-      const triggerMinutes = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
+    // Bildiriş kanallarını yoxla
+    const channels = [
+      { settings: profile.notificationSettings.firstChannel, id: 'c1' },
+      { settings: profile.notificationSettings.secondChannel, id: 'c2' }
+    ];
+
+    channels.forEach((channel) => {
+      if (!channel.settings || !channel.settings.enabled) return;
+
+      const targetMin = isFirstClass ? channel.settings.firstClassMinutes : channel.settings.otherClassesMinutes;
       
-      if (diff === triggerMinutes && triggerMinutes > 0) {
-        const type = session.name.split('(')[1]?.replace(')', '') || 'Dərs';
-        const name = session.name.split('(')[0].trim();
-        const body = `Sonrakı dərs: ${name} (${type}). Otaq: ${session.room || 'Məlum deyil'}`;
-        
-        const tag = `class-notif-${session.id}-${channelId}-${triggerMinutes}`;
-
-        self.registration.showNotification('Dərs Xatırlatması', {
-          body: body,
-          icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-          tag: tag,
-          renotify: true
-        });
+      // Əgər vaxt tam uyğundursa bildiriş göndər
+      if (diffInMin === targetMin && diffInMin >= 0) {
+        const uniqueId = `${cls.id}-${channel.id}-${targetMin}`;
+        if (!sentNotifications.has(uniqueId)) {
+          showNotification(cls);
+          sentNotifications.add(uniqueId);
+        }
       }
-    };
-
-    checkAndNotify(channel1, 'ch1');
-    checkAndNotify(channel2, 'ch2');
+    });
   });
 }
 
+function showNotification(cls) {
+  const parts = cls.name.split('(');
+  const name = parts[0].trim();
+  const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+  const room = cls.room || 'Naməlum';
+
+  self.registration.showNotification('İT24 Xatırlatma', {
+    body: `Sonrakı dərs: ${name} (${type}). Otaq: ${room}`,
+    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    badge: 'https://placehold.co/96x96/4A90E2/ffffff?text=IT24',
+    tag: `class-${cls.id}`,
+    renotify: true
+  });
+}
+
+// Hər 30 saniyədən bir arxa fonda yoxla
 setInterval(checkSchedule, 30000);
