@@ -1,116 +1,111 @@
 
-const CACHE_NAME = 'it24-v2';
+// Service Worker - Arxa fonda bildirişləri və keşləməni idarə edir
+const CACHE_NAME = 'it24-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
-let appData = {
-  profile: null,
-  schedule: [],
-  permission: 'default'
-};
+let userData = null;
+let sentNotifications = new Set();
 
-let lastNotifiedCache = {};
-
-// SW Qurasdirilma
+// Quraşdırılma zamanı keşləmə
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
+  self.skipWaiting();
 });
 
-// Aktivlesdirme
+// Köhnə keşləri təmizləmə
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    ))
+  );
+  return self.clients.claim();
 });
 
-// Sehifeden melumat alma (Cidvel ve Profil)
+// Tətbiqdən məlumatları almaq
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SYNC_DATA') {
-    appData = event.data.payload;
-    console.log('SW: Melumatlar sinxronize edildi');
+  if (event.data.type === 'SYNC_DATA') {
+    userData = event.data.payload;
+    console.log('SW: Məlumatlar sinxronizasiya olundu');
   }
 });
 
-// Arxa fon yoxlamasi - Her deqiqe basi
-function checkSchedule() {
-  if (!appData.profile || !appData.schedule || appData.permission !== 'granted') return;
+// Hər dəqiqə dərsləri yoxlayan interval
+setInterval(() => {
+  if (!userData || !userData.profile || !userData.schedule) return;
 
+  const { profile, schedule } = userData;
   const now = new Date();
   const currentDay = now.getDay();
-  const todayStr = now.toDateString();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHours * 60 + currentMinutes;
 
-  // Cari hefteni hesabla (16 Fevral 2026 esas goturulur)
+  // Cari həftəni hesabla (16 Fevral 2026-dan etibarən)
   const startDate = new Date('2026-02-16');
   const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const weekIndex = Math.floor(diffInDays / 7);
   const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
-  // Bugunun derslerini tap
-  const dailyClasses = appData.schedule
-    .filter(c => 
-      (c.subgroup === 'hamisi' || c.subgroup === appData.profile.subgroup) &&
-      (c.week === 'hamisi' || c.week === currentWeek) &&
-      Number(c.day) === currentDay
-    )
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  // İstifadəçinin dərslərini süzgəcdən keçir
+  const myClasses = schedule.filter(c => 
+    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+    (c.week === 'hamisi' || c.week === currentWeek) &&
+    Number(c.day) === currentDay
+  ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const settings = appData.profile.notificationSettings;
-  if (!settings) return;
+  if (myClasses.length === 0) return;
 
-  const processChannel = (channel, channelId) => {
-    if (!channel || !channel.enabled) return;
+  myClasses.forEach((cls, index) => {
+    const [h, m] = cls.startTime.split(':').map(Number);
+    const classTimeInMinutes = h * 60 + m;
+    const minutesLeft = classTimeInMinutes - currentTimeInMinutes;
 
-    dailyClasses.forEach((c, index) => {
-      const [startHours, startMinutes] = c.startTime.split(':').map(Number);
-      const classTime = new Date(now);
-      classTime.setHours(startHours, startMinutes, 0, 0);
+    const isFirstClass = index === 0;
+    const settings = profile.notificationSettings;
 
-      const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
-      
-      const isFirstClass = index === 0;
-      const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
-      
-      const notifId = `notif_${c.id}_${todayStr}_${channelId}_m${limit}`;
+    if (!settings) return;
 
-      // Tam o deqiqede ve ya 1 deqiqe erzinde gonder
-      if (diffMinutes > 0 && diffMinutes <= limit) {
-        if (!lastNotifiedCache[notifId]) {
-          const nameParts = c.name.split('(');
-          const className = nameParts[0].trim();
-          const classType = nameParts.length > 1 ? ` (${nameParts[1]}` : '';
-          
-          self.registration.showNotification('İT24 Xəbərdarlıq', {
-            body: `Sonrakı dərs: ${className}${classType}. Otaq: ${c.room || '?'}`,
-            icon: 'https://img.icons8.com/ios-filled/192/4A90E2/it.png',
-            badge: 'https://img.icons8.com/ios-filled/192/4A90E2/it.png',
-            vibrate: [200, 100, 200],
-            tag: 'it24-alert',
-            renotify: true,
-            requireInteraction: true
-          });
-          
-          lastNotifiedCache[notifId] = true;
-        }
-      }
+    // Birinci Kanal Yoxlaması
+    if (settings.firstChannel.enabled) {
+      const targetMin = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
+      checkAndNotify(cls, minutesLeft, targetMin, 'ch1');
+    }
+
+    // İkinci Kanal Yoxlaması
+    if (settings.secondChannel.enabled) {
+      const targetMin = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
+      checkAndNotify(cls, minutesLeft, targetMin, 'ch2');
+    }
+  });
+}, 30000); // 30 saniyədən bir yoxla
+
+function checkAndNotify(cls, minutesLeft, targetMin, channelId) {
+  // Əgər dəqiqə tamamdırsa və bu dərs/kanal üçün bildiriş göndərilməyibsə
+  const notifId = `${cls.id}-${channelId}-${targetMin}`;
+  
+  if (minutesLeft === targetMin && !sentNotifications.has(notifId)) {
+    const parts = cls.name.split('(');
+    const name = parts[0].trim();
+    const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+
+    self.registration.showNotification('İT24 Dərs Xatırlatması', {
+      body: `Sonrakı dərs: ${name} (${type}). Otaq: ${cls.room || 'Təyin edilməyib'}`,
+      icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+      badge: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+      tag: notifId,
+      renotify: true
     });
-  };
 
-  processChannel(settings.firstChannel, 'ch1');
-  processChannel(settings.secondChannel, 'ch2');
+    sentNotifications.add(notifId);
+    
+    // 24 saatdan sonra ID-ni təmizlə ki, gələn həftə eyni ID işləsin
+    setTimeout(() => sentNotifications.delete(notifId), 86400000);
+  }
 }
-
-// Service Worker-i oyaq saxlamaq ve yoxlamaq ucun interval
-setInterval(checkSchedule, 30000); // 30 saniyeden bir yoxla
-
-// Fetch hadisesi (Oflayn isleme ucun)
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});

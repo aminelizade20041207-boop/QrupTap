@@ -59,40 +59,10 @@ export default function RootLayout({
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                // Her defe yeni versiya yoxlamasi ucun timestamp
-                const swUrl = '/sw.js?t=' + Date.now();
-                
-                navigator.serviceWorker.register(swUrl).then(function(reg) {
-                  console.log('Service Worker qeydiyyatdan kecdi');
-                  
-                  // SW yenilenmesi tapildiqda derhal tetbiq et
-                  reg.onupdatefound = () => {
-                    const installingWorker = reg.installing;
-                    if (installingWorker) {
-                      installingWorker.onstatechange = () => {
-                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                          console.log('Yeni versiya tapildi, sehife yenilenir...');
-                          window.location.reload();
-                        }
-                      };
-                    }
-                  };
-                  
-                  // Her 1 deqiqeden bir yeni versiya yoxla
-                  setInterval(() => {
-                    reg.update();
-                  }, 60000);
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                  console.log('Service Worker qeydiyyatdan kecdi:', reg.scope);
                 }).catch(function(err) {
                   console.log('Service Worker xetasi:', err);
-                });
-
-                // Controller deyisende sehifeni yenile (aktiv SW ucun)
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                  if (!refreshing) {
-                    refreshing = true;
-                    window.location.reload();
-                  }
                 });
               });
             }

@@ -10,29 +10,28 @@ export const NotificationScheduler = () => {
     const syncDataWithSW = async () => {
       if (!('serviceWorker' in navigator)) return;
 
-      const registration = await navigator.serviceWorker.ready;
-      const savedProfile = localStorage.getItem('it24_profile');
-      
-      if (savedProfile && registration.active) {
-        const profile: UserProfile = JSON.parse(savedProfile);
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const savedProfile = localStorage.getItem('it24_profile');
         
-        // Service Worker-e melumatlari gonderirik ki, arxa fonda ozu hesablaya bilsin
-        registration.active.postMessage({
-          type: 'SYNC_DATA',
-          payload: {
-            profile,
-            schedule: FIXED_SCHEDULE,
-            // Bildiris icazesi statusunu da gonderirik
-            permission: Notification.permission
-          }
-        });
+        if (savedProfile && registration.active) {
+          const profile: UserProfile = JSON.parse(savedProfile);
+          
+          registration.active.postMessage({
+            type: 'SYNC_DATA',
+            payload: {
+              profile,
+              schedule: FIXED_SCHEDULE
+            }
+          });
+        }
+      } catch (err) {
+        console.error('SW Sinxronizasiya xətası:', err);
       }
     };
 
-    // Melumatlar her defe deyisende SW-ni yenile
     syncDataWithSW();
     
-    // Her 30 saniyeden bir (ve ya her hansı storage deyisende) yeniden yoxla
     const interval = setInterval(syncDataWithSW, 30000);
     window.addEventListener('storage', syncDataWithSW);
 
