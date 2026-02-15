@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,7 @@ export default function Home() {
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
   const [selectedWeeklyWeek, setSelectedWeeklyWeek] = useState<WeekType>('ust');
   const [isReady, setIsReady] = useState(false);
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unknown'>('unknown');
+  const [notifPermission, setNotifPermission] = useState<string>('unknown');
   const [activeTab, setActiveTab] = useState('daily');
   const [editingSubject, setEditingSubject] = useState<string | undefined>();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -163,24 +163,14 @@ export default function Home() {
       return;
     }
 
-    const iconUrl = 'https://img.icons8.com/ios-filled/192/4A90E2/it.png';
-
     try {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification('İT24 Bildiriş Testi', {
-          body: `Salam, ${profile.name}!`,
-          icon: iconUrl,
-          badge: iconUrl,
-          vibrate: [200, 100, 200],
+          body: `Salam, ${profile.name}! Bu bir test bildirişidir.`,
+          icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
           tag: 'test-notification',
           renotify: true
-        });
-        toast({ title: "Test Göndərildi", description: "Bildiriş panelini yoxlayın!" });
-      } else {
-        new Notification('İT24 Bildiriş Testi', { 
-          body: `Salam, ${profile.name}!`, 
-          icon: iconUrl 
         });
         toast({ title: "Test Göndərildi", description: "Bildiriş panelini yoxlayın!" });
       }
@@ -193,10 +183,6 @@ export default function Home() {
     if (!newSettings.firstChannel.enabled) {
       newSettings.secondChannel.enabled = false;
     }
-    
-    newSettings.firstChannel.otherClassesMinutes = Math.min(90, newSettings.firstChannel.otherClassesMinutes);
-    newSettings.secondChannel.otherClassesMinutes = Math.min(90, newSettings.secondChannel.otherClassesMinutes);
-
     updateProfile({ ...profile, notificationSettings: newSettings });
   };
 
