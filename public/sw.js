@@ -1,6 +1,13 @@
 
-// İT24 Service Worker - Oflayn və Arxa fon bildirişləri üçün
+const CACHE_NAME = 'it24-cache-v2';
+const OFFLINE_URL = '/';
+
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([OFFLINE_URL, '/manifest.webmanifest']);
+    })
+  );
   self.skipWaiting();
 });
 
@@ -8,73 +15,90 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-let userData = null;
+let syncData = {
+  profile: null,
+  schedule: []
+};
 
-// Tətbiqdən gələn məlumatları qəbul edir
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SYNC_DATA') {
-    userData = event.data.payload;
+    syncData = event.data.payload;
   }
 });
 
-// Arxa fonda vaxtı izləyən dövr
-setInterval(() => {
-  if (!userData || !userData.profile || !userData.profile.notificationSettings) return;
+function checkSchedule() {
+  if (!syncData.profile || !syncData.schedule.length) return;
 
-  const { profile, schedule } = userData;
   const now = new Date();
-  const dayIdx = now.getDay();
+  const currentDay = now.getDay();
+  const currentHour = now.getHours();
+  const currentMin = now.getMinutes();
+  const currentTimeInMin = currentHour * 60 + currentMin;
 
-  // Cari günün dərslərini tap və sırala
-  const todaysClasses = schedule
+  // Cari hefteni teyin et (16 fevral 2026-dan hesablanir)
+  const startDate = new Date('2026-02-16');
+  const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weekIndex = Math.floor(diffInDays / 7);
+  const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
+
+  // Bu gunun derslerini tap ve sirala
+  const todayClasses = syncData.schedule
     .filter(c => 
-      Number(c.day) === dayIdx && 
-      (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup)
+      Number(c.day) === currentDay && 
+      (c.subgroup === 'hamisi' || c.subgroup === syncData.profile.subgroup) &&
+      (c.week === 'hamisi' || c.week === currentWeek)
     )
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  if (todaysClasses.length === 0) return;
+  if (todayClasses.length === 0) return;
 
-  todaysClasses.forEach((c, idx) => {
-    const isFirstClass = idx === 0;
-    const settings = profile.notificationSettings;
+  todayClasses.forEach((cls, index) => {
+    const [h, m] = cls.startTime.split(':').map(Number);
+    const classTimeInMin = h * 60 + m;
     
-    // Kanal 1 yoxlanışı
-    if (settings.firstChannel.enabled) {
-      checkAndNotify(c, isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes, 'ch1');
+    // Ilk ders yoxsa diger ders?
+    const isFirstClass = index === 0;
+    const settings = syncData.profile.notificationSettings;
+    if (!settings) return;
+
+    const channel1 = settings.firstChannel;
+    const channel2 = settings.secondChannel;
+
+    // Kanal 1 yoxlamasi
+    if (channel1.enabled) {
+      const waitMin = isFirstClass ? channel1.firstClassMinutes : channel1.otherClassesMinutes;
+      if (currentTimeInMin === (classTimeInMin - waitMin)) {
+        sendNotification(cls, `notif-1-${cls.id}-${waitMin}`);
+      }
     }
-    
-    // Kanal 2 yoxlanışı
-    if (settings.secondChannel.enabled) {
-      checkAndNotify(c, isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes, 'ch2');
+
+    // Kanal 2 yoxlamasi
+    if (channel2.enabled) {
+      const waitMin = isFirstClass ? channel2.firstClassMinutes : channel2.otherClassesMinutes;
+      if (currentTimeInMin === (classTimeInMin - waitMin)) {
+        sendNotification(cls, `notif-2-${cls.id}-${waitMin}`);
+      }
     }
   });
+}
 
-  function checkAndNotify(classSession, minutesBefore, channelId) {
-    if (minutesBefore <= 0) return;
+function sendNotification(cls, tag) {
+  const parts = cls.name.split('(');
+  const name = parts[0].trim();
+  const type = parts.length > 1 ? `(${parts[1]}` : '';
+  
+  const title = `İT24 Dərs Xatırlatması`;
+  const body = `Sonrakı dərs: ${name} ${type}. Otaq: ${cls.room || 'Məlum deyil'}`;
 
-    const [h, m] = classSession.startTime.split(':').map(Number);
-    const classTime = new Date();
-    classTime.setHours(h, m, 0, 0);
-    
-    const diffMin = Math.round((classTime.getTime() - now.getTime()) / 60000);
-    
-    // Əgər istifadəçinin qoyduğu dəqiqə tamam olubsa
-    if (diffMin === minutesBefore) {
-      const tag = `${classSession.id}-${channelId}-${minutesBefore}`;
-      
-      const parts = classSession.name.split('(');
-      const name = parts[0].trim();
-      const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+  self.registration.showNotification(title, {
+    body: body,
+    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    badge: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    tag: tag,
+    renotify: true,
+    requireInteraction: true
+  });
+}
 
-      self.registration.showNotification('İT24 Xatırlatma', {
-        body: `Sonrakı dərs: ${name} (${type}). Otaq: ${classSession.room || '?' }`,
-        icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-        badge: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-        tag: tag,
-        renotify: true,
-        vibrate: [200, 100, 200]
-      });
-    }
-  }
-}, 30000); // Hər 30 saniyədən bir yoxla
+// Her 45 saniyeden bir yoxla
+setInterval(checkSchedule, 45000);
