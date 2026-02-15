@@ -60,9 +60,9 @@ export default function RootLayout({
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                  console.log('Service Worker qeydiyyatdan kecdi:', reg.scope);
+                  console.log('SW Registered');
                 }).catch(function(err) {
-                  console.log('Service Worker xetasi:', err);
+                  console.log('SW Error:', err);
                 });
               });
             }
