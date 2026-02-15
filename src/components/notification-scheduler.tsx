@@ -1,124 +1,46 @@
 
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
-import { UserProfile, NotificationChannel } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
+import { UserProfile } from '@/lib/types';
 
 export const NotificationScheduler = () => {
-  const { toast } = useToast();
-  const lastNotifiedRef = useRef<{ [key: string]: string }>({});
-
   useEffect(() => {
-    const savedNotifs = localStorage.getItem('it24_notified_cache');
-    if (savedNotifs) {
-      try {
-        lastNotifiedRef.current = JSON.parse(savedNotifs);
-      } catch (e) {
-        lastNotifiedRef.current = {};
-      }
-    }
+    const syncDataWithSW = async () => {
+      if (!('serviceWorker' in navigator)) return;
 
-    const checkInterval = setInterval(() => {
+      const registration = await navigator.serviceWorker.ready;
       const savedProfile = localStorage.getItem('it24_profile');
-      if (!savedProfile) return;
       
-      const profile: UserProfile = JSON.parse(savedProfile);
-      const settings = profile.notificationSettings;
-      if (!settings) return;
-
-      const now = new Date();
-      const currentDay = now.getDay();
-      const todayStr = now.toDateString();
-      
-      // Cache-i hər gün sıfırla
-      if (lastNotifiedRef.current.date !== todayStr) {
-        lastNotifiedRef.current = { date: todayStr };
-        localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
-      }
-
-      // Cari həftəni hesabla (16 Fevral 2026-dan etibarən)
-      const startDate = new Date('2026-02-16');
-      const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      const weekIndex = Math.floor(diffInDays / 7);
-      const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
-
-      // Bugünün dərslərini tap və vaxta görə sırala
-      const dailyClasses = FIXED_SCHEDULE
-        .filter(c => 
-          (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
-          (c.week === 'hamisi' || c.week === currentWeek) &&
-          Number(c.day) === currentDay
-        )
-        .sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-      const processChannel = (channel: NotificationChannel, channelId: string) => {
-        if (!channel.enabled) return;
-
-        dailyClasses.forEach((c, index) => {
-          const [startHours, startMinutes] = c.startTime.split(':').map(Number);
-          const classTime = new Date(now);
-          classTime.setHours(startHours, startMinutes, 0, 0);
-
-          const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
-          
-          // Günün ilk dərsini və digərlərini ayır
-          const isFirstClass = index === 0;
-          const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
-          
-          // ID-yə 'limit'i (dəqiqəni) əlavə edirik ki, istifadəçi vaxtı dəyişəndə bildiriş birdə gəlsin
-          const notifId = `class_${c.id}_${todayStr}_${channelId}_min${limit}`;
-
-          // Əgər fərq təyin edilmiş dəqiqəyə bərabər və ya ondan azdırsa (və dərs başlamayıbsa)
-          if (diffMinutes > 0 && diffMinutes <= limit) {
-            if (!lastNotifiedRef.current[notifId]) {
-              const nameParts = c.name.split('(');
-              const classNameOnly = nameParts[0].trim();
-              const classType = nameParts.length > 1 ? ` (${nameParts[1]}` : '';
-              
-              const body = `Sonrakı dərs: ${classNameOnly}${classType}. Otaq: ${c.room || '?'}`;
-              showNotification('İT24 Xəbərdarlıq', body);
-              
-              lastNotifiedRef.current[notifId] = 'sent';
-              localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
-            }
+      if (savedProfile && registration.active) {
+        const profile: UserProfile = JSON.parse(savedProfile);
+        
+        // Service Worker-e melumatlari gonderirik ki, arxa fonda ozu hesablaya bilsin
+        registration.active.postMessage({
+          type: 'SYNC_DATA',
+          payload: {
+            profile,
+            schedule: FIXED_SCHEDULE,
+            // Bildiris icazesi statusunu da gonderirik
+            permission: Notification.permission
           }
         });
-      };
-
-      // Hər iki kanalı yoxla
-      processChannel(settings.firstChannel, 'ch1');
-      processChannel(settings.secondChannel, 'ch2');
-
-    }, 15000); // Hər 15 saniyədən bir yoxla
-
-    return () => clearInterval(checkInterval);
-  }, [toast]);
-
-  const showNotification = async (title: string, body: string) => {
-    const iconUrl = 'https://img.icons8.com/ios-filled/192/4A90E2/it.png';
-    
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification(title, {
-          body,
-          icon: iconUrl,
-          badge: iconUrl,
-          vibrate: [200, 100, 200, 100, 200],
-          tag: 'it24-schedule-alert',
-          renotify: true,
-          requireInteraction: true,
-          silent: false
-        });
-      } catch (e) {
-        new Notification(title, { body, icon: iconUrl });
       }
-    } else {
-      toast({ title, description: body });
-    }
-  };
+    };
+
+    // Melumatlar her defe deyisende SW-ni yenile
+    syncDataWithSW();
+    
+    // Her 30 saniyeden bir (ve ya her hansı storage deyisende) yeniden yoxla
+    const interval = setInterval(syncDataWithSW, 30000);
+    window.addEventListener('storage', syncDataWithSW);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', syncDataWithSW);
+    };
+  }, []);
 
   return null;
 };
