@@ -62,11 +62,13 @@ export const NotificationScheduler = () => {
           classTime.setHours(startHours, startMinutes, 0, 0);
 
           const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
-          const notifId = `class_${c.id}_${todayStr}_${channelId}`;
-
+          
           // Günün ilk dərsini və digərlərini ayır
           const isFirstClass = index === 0;
           const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
+          
+          // ID-yə 'limit'i (dəqiqəni) əlavə edirik ki, istifadəçi vaxtı dəyişəndə bildiriş birdə gəlsin
+          const notifId = `class_${c.id}_${todayStr}_${channelId}_min${limit}`;
 
           // Əgər fərq təyin edilmiş dəqiqəyə bərabər və ya ondan azdırsa (və dərs başlamayıbsa)
           if (diffMinutes > 0 && diffMinutes <= limit) {
