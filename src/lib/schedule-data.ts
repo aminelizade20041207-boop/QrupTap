@@ -4,23 +4,23 @@ import { ClassSession } from "./types";
 export const FIXED_SCHEDULE: ClassSession[] = [
   // --- TEST DƏRSLƏRİ (Yalnız Bazar günü üçün) ---
   {
-    id: `test-11-00-0`,
+    id: `test-23-00-0`,
     name: 'Test Dərsi (Mühazirə)',
     teacher: 'Test Müəllim',
     day: 0,
-    startTime: '11:00',
-    endTime: '12:20',
+    startTime: '23:00',
+    endTime: '00:20',
     subgroup: 'hamisi',
     week: 'hamisi',
     room: '101'
   },
   {
-    id: `test-11-45-0`,
+    id: `test-23-15-0`,
     name: 'Test Dərsi (Laboratoriya)',
     teacher: 'Test Müəllim',
     day: 0,
-    startTime: '11:45',
-    endTime: '13:05',
+    startTime: '23:15',
+    endTime: '00:35',
     subgroup: 'hamisi',
     week: 'hamisi',
     room: '102'
