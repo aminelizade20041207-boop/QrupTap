@@ -2,6 +2,32 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
+  // --- TEST DƏRSLƏRİ (Hər gün üçün) ---
+  ...[1, 2, 3, 4, 5].flatMap(day => [
+    {
+      id: `test-11-00-${day}`,
+      name: 'Test Dərsi (Mühazirə)',
+      teacher: 'Test Müəllim',
+      day: day as any,
+      startTime: '11:00',
+      endTime: '12:20',
+      subgroup: 'hamisi',
+      week: 'hamisi',
+      room: '101'
+    },
+    {
+      id: `test-11-45-${day}`,
+      name: 'Test Dərsi (Laboratoriya)',
+      teacher: 'Test Müəllim',
+      day: day as any,
+      startTime: '11:45',
+      endTime: '13:05',
+      subgroup: 'hamisi',
+      week: 'hamisi',
+      room: '102'
+    }
+  ]),
+
   // --- AŞAĞI ALTQRUP ---
   {
     id: 'asagi-1-1',

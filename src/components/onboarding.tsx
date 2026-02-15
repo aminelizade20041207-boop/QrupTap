@@ -38,7 +38,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
               <Label htmlFor="name">Adınız və Soyadınız</Label>
               <Input 
                 id="name" 
-                placeholder="Məsələn: Əli Məmmədov" 
+                placeholder="Məsələn: Samir Abdullayev" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
                 required

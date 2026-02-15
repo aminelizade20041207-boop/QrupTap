@@ -64,11 +64,10 @@ export const NotificationScheduler = () => {
           const isFirstClass = index === 0;
           const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
 
-          // Əgər dərsə qalan vaxt təyin olunmuş limit daxilindədirsə (məsələn 60 dəqiqə və ya 15 dəqiqə)
           if (diffMinutes > 0 && diffMinutes <= limit) {
             if (!lastNotifiedRef.current[notifId]) {
-              const prefix = isFirstClass ? 'Günün İlk Dərsi' : 'Növbəti Dərs';
-              showNotification(`${prefix}: ${c.name}`, `Dərs ${Math.round(diffMinutes)} dəqiqəyə başlayır. Otaq: ${c.room || '?'}`);
+              const body = `Sonrakı dərs: ${c.name}. Otaq: ${c.room || '?'}`;
+              showNotification('İT24 Xəbərdarlıq', body);
               lastNotifiedRef.current[notifId] = 'sent';
               localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
             }
@@ -76,7 +75,6 @@ export const NotificationScheduler = () => {
         });
       };
 
-      // Hər iki kanalı yoxla
       processChannel(settings.firstChannel, 'ch1');
       processChannel(settings.secondChannel, 'ch2');
 
