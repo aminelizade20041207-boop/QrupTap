@@ -32,16 +32,19 @@ export const NotificationScheduler = () => {
       const currentDay = now.getDay();
       const todayStr = now.toDateString();
       
+      // Cache-i hər gün sıfırla
       if (lastNotifiedRef.current.date !== todayStr) {
         lastNotifiedRef.current = { date: todayStr };
         localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
       }
 
+      // Cari həftəni hesabla (16 Fevral 2026-dan etibarən)
       const startDate = new Date('2026-02-16');
       const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const weekIndex = Math.floor(diffInDays / 7);
       const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
+      // Bugünün dərslərini tap və vaxta görə sırala
       const dailyClasses = FIXED_SCHEDULE
         .filter(c => 
           (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
@@ -61,13 +64,20 @@ export const NotificationScheduler = () => {
           const diffMinutes = (classTime.getTime() - now.getTime()) / (1000 * 60);
           const notifId = `class_${c.id}_${todayStr}_${channelId}`;
 
+          // Günün ilk dərsini və digərlərini ayır
           const isFirstClass = index === 0;
           const limit = isFirstClass ? channel.firstClassMinutes : channel.otherClassesMinutes;
 
+          // Əgər fərq təyin edilmiş dəqiqəyə bərabər və ya ondan azdırsa (və dərs başlamayıbsa)
           if (diffMinutes > 0 && diffMinutes <= limit) {
             if (!lastNotifiedRef.current[notifId]) {
-              const body = `Sonrakı dərs: ${c.name}. Otaq: ${c.room || '?'}`;
+              const nameParts = c.name.split('(');
+              const classNameOnly = nameParts[0].trim();
+              const classType = nameParts.length > 1 ? ` (${nameParts[1]}` : '';
+              
+              const body = `Sonrakı dərs: ${classNameOnly}${classType}. Otaq: ${c.room || '?'}`;
               showNotification('İT24 Xəbərdarlıq', body);
+              
               lastNotifiedRef.current[notifId] = 'sent';
               localStorage.setItem('it24_notified_cache', JSON.stringify(lastNotifiedRef.current));
             }
@@ -75,10 +85,11 @@ export const NotificationScheduler = () => {
         });
       };
 
+      // Hər iki kanalı yoxla
       processChannel(settings.firstChannel, 'ch1');
       processChannel(settings.secondChannel, 'ch2');
 
-    }, 15000);
+    }, 15000); // Hər 15 saniyədən bir yoxla
 
     return () => clearInterval(checkInterval);
   }, [toast]);
