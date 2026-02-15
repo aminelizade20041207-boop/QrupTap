@@ -65,7 +65,7 @@ export default function Home() {
       setNotifPermission(Notification.permission);
     }
 
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
     setIsDarkMode(isDark);
 
     const startDate = new Date('2026-02-16');
