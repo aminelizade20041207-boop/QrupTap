@@ -106,11 +106,6 @@ export default function Home() {
     (c.week === 'hamisi' || c.week === currentWeek)
   );
 
-  const weeklyClasses = FIXED_SCHEDULE.filter(c => 
-    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
-    (c.week === 'hamisi' || c.week === selectedWeeklyWeek)
-  );
-
   const updateProfile = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile);
     localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
@@ -300,7 +295,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <span>Digər Dərslərə</span>
-                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.otherClassesMinutes)}</span>
                             <span>Qalmış</span>
                           </Label>
                           <Input 
@@ -309,7 +304,7 @@ export default function Home() {
                             placeholder="Dəqiqə əvvəl (Maks 90)"
                             min="0"
                             max="90"
-                            value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
+                            value={profile.notificationSettings.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
                         </div>
@@ -478,7 +473,7 @@ export default function Home() {
                   </TabsList>
                 </Tabs>
               </div>
-              <WeeklyView classes={weeklyClasses} />
+              <WeeklyView classes={weeklyClasses.filter(c => c.week === 'hamisi' || c.week === selectedWeeklyWeek)} />
             </TabsContent>
 
             <TabsContent value="calculator">
