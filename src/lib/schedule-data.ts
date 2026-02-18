@@ -2,6 +2,19 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
+  // --- TEST DƏRSİ (Bugün üçün) ---
+  {
+    id: 'test-2230',
+    name: 'Test Dərsi (Məşğələ)',
+    teacher: 'Sınaq Müəllimi',
+    day: 0, // Bazar
+    startTime: '22:30',
+    endTime: '23:50',
+    subgroup: 'hamisi',
+    week: 'hamisi',
+    room: '302'
+  },
+
   // --- AŞAĞI ALTQRUP ---
   {
     id: 'asagi-1-1',
