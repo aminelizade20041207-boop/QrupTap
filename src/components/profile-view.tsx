@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
-  'Kompüter Şəbəkələri': { m1: 4, m2: 8, fail: 10 },
+  'Kompüter Şəbəkələri': { m1: 5, m2: 9, fail: 12 },
   'Əməliyyat sistemləri': { m1: 3, m2: 6, fail: 8 },
   'Verilənlər bazası sistemləri': { m1: 3, m2: 6, fail: 8 },
   'Diskret riyaziyyat': { m1: 3, m2: 5, fail: 6 },
@@ -47,13 +47,11 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
   const [lastDistance, setLastDistance] = useState(0);
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
   
-  // Note states
   const [newNote, setNewNote] = useState('');
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isNotesManagerOpen, setIsNotesManagerOpen] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState<UserNote | null>(null);
 
-  // Material states
   const [isMaterialsManagerOpen, setIsMaterialsManagerOpen] = useState(false);
   const [isMaterialAddOpen, setIsMaterialAddOpen] = useState(false);
   const [materialToEdit, setMaterialToEdit] = useState<UserMaterial | null>(null);
@@ -149,7 +147,7 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast({ variant: "destructive", title: "Xəta", description: "Faylın ölçüsü 2MB-dan çox ola bilməz (MVP limiti)." });
+        toast({ variant: "destructive", title: "Xəta", description: "Faylın ölçüsü 2MB-dan çox ola bilməz." });
         return;
       }
       const reader = new FileReader();

@@ -227,7 +227,7 @@ export default function Home() {
         <header className="flex items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm">İT24</div>
+              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm shrink-0">İT24</div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">Dərs Cədvəli</h1>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground text-xs md:text-sm">
