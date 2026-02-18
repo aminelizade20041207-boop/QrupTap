@@ -2,14 +2,14 @@
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [
-  // --- TEST DƏRSİ (Bugün üçün) ---
+  // --- TEST DƏRSİ (Bugün üçün - Bazar) ---
   {
-    id: 'test-2230',
+    id: 'test-2350',
     name: 'Test Dərsi (Məşğələ)',
     teacher: 'Sınaq Müəllimi',
     day: 0, // Bazar
-    startTime: '22:30',
-    endTime: '23:50',
+    startTime: '23:50',
+    endTime: '00:30',
     subgroup: 'hamisi',
     week: 'hamisi',
     room: '302'
