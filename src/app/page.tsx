@@ -14,11 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
@@ -52,9 +51,6 @@ export default function Home() {
     if (savedProfile) {
       try {
         const parsed = JSON.parse(savedProfile);
-        if (!parsed.notificationSettings || !parsed.notificationSettings.firstChannel) {
-          parsed.notificationSettings = DEFAULT_NOTIF_SETTINGS;
-        }
         setProfile(parsed);
       } catch (e) {
         localStorage.removeItem('it24_profile');
@@ -189,25 +185,12 @@ export default function Home() {
   };
 
   const updateNotifSettings = (newSettings: NotificationSettings) => {
-    if (!newSettings.firstChannel.enabled) {
-      newSettings.secondChannel.enabled = false;
-    }
     updateProfile({ ...profile, notificationSettings: newSettings });
   };
 
   const setStandardNotifSettings = () => {
     updateNotifSettings(DEFAULT_NOTIF_SETTINGS);
     toast({ title: "Standart Ayarlar", description: "Bildiriş ayarları sıfırlandı." });
-  };
-
-  const formatTimeMinutes = (min: number) => {
-    if (min <= 0) return '';
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    if (h > 0) {
-      return `(${h} saat${m > 0 ? ` ${m} dəqiqə` : ''})`;
-    }
-    return `(${m} dəqiqə)`;
   };
 
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
@@ -269,15 +252,11 @@ export default function Home() {
                     {profile.notificationSettings?.firstChannel.enabled && (
                       <div className="space-y-3 px-1">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <span>İlk Dərsə</span> <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}</span> <span>Qalmış</span>
-                          </Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərsə (dəq)</Label>
                           <Input type="number" min="0" value={profile.notificationSettings.firstChannel.firstClassMinutes || ''} onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <span>Digər Dərslərə</span> <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span> <span>Qalmış</span>
-                          </Label>
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslərə (dəq)</Label>
                           <Input type="number" min="0" value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''} onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)} />
                         </div>
                       </div>
@@ -337,7 +316,13 @@ export default function Home() {
             </TabsContent>
             
             <TabsContent value="weekly">
-              <WeeklyView classes={weeklyClasses.filter(c => c.week === 'hamisi' || c.week === selectedWeeklyWeek)} />
+              <div className="space-y-4">
+                <div className="flex justify-center gap-2">
+                   <Button variant={selectedWeeklyWeek === 'ust' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedWeeklyWeek('ust')}>Üst Həftə</Button>
+                   <Button variant={selectedWeeklyWeek === 'alt' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedWeeklyWeek('alt')}>Alt Həftə</Button>
+                </div>
+                <WeeklyView classes={weeklyClasses.filter(c => c.week === 'hamisi' || c.week === selectedWeeklyWeek)} />
+              </div>
             </TabsContent>
 
             <TabsContent value="calculator">
