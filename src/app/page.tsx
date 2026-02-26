@@ -113,6 +113,17 @@ export default function Home() {
   const updateProfile = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile);
     localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
+    
+    // Sinxronizasiya Service Worker ilə
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SYNC_DATA',
+        payload: {
+          profile: updatedProfile,
+          schedule: FIXED_SCHEDULE
+        }
+      });
+    }
   };
 
   const handleSaveGrade = (subject: string, details: GradeDetails) => {
@@ -299,7 +310,7 @@ export default function Home() {
                         <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                             <span>Digər Dərslərə</span>
-                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.otherClassesMinutes)}</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span>
                             <span>Qalmış</span>
                           </Label>
                           <Input 
@@ -308,7 +319,7 @@ export default function Home() {
                             placeholder="Dəqiqə əvvəl (Maks 90)"
                             min="0"
                             max="90"
-                            value={profile.notificationSettings.otherClassesMinutes || ''}
+                            value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
                             onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
                           />
                         </div>
