@@ -1,31 +1,42 @@
 
-const CACHE_NAME = 'it24-cache-v3';
-let userData = {
-  profile: null,
-  schedule: []
-};
+const CACHE_NAME = 'it24-cache-v2';
+const urlsToCache = [
+  '/',
+  '/manifest.webmanifest',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+];
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(self.clients.claim());
 });
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => response || fetch(event.request))
+  );
+});
+
+let userProfile = null;
+let classSchedule = [];
+let notifiedIds = new Set();
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SYNC_DATA') {
-    userData = event.data.payload;
+    userProfile = event.data.payload.profile;
+    classSchedule = event.data.payload.schedule;
+    console.log('SW Sinxronizasiya Tamamlandı');
   }
 });
 
-// Arxa fon yoxlama intervalı (hər 30 saniyədən bir)
-setInterval(() => {
-  checkSchedule();
-}, 30000);
-
 function checkSchedule() {
-  if (!userData.profile || !userData.schedule.length) return;
+  if (!userProfile || !classSchedule || classSchedule.length === 0) return;
 
   const now = new Date();
   const todayIdx = now.getDay();
@@ -33,68 +44,81 @@ function checkSchedule() {
   const currentMinutes = now.getMinutes();
   const totalMinutesNow = currentHours * 60 + currentMinutes;
 
+  // Həftə növünü hesabla
   const startDate = new Date('2026-02-16');
   const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const weekIndex = Math.floor(diffInDays / 7);
-  const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
+  const currentWeekType = weekIndex % 2 === 0 ? 'ust' : 'alt';
 
-  // Günün dərslərini tap və sırala
-  const todaysClasses = userData.schedule
-    .filter(c => 
-      Number(c.day) === todayIdx && 
-      (c.subgroup === 'hamisi' || c.subgroup === userData.profile.subgroup) &&
-      (c.week === 'hamisi' || c.week === currentWeek)
-    )
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  // Bugünkü dərsləri tap və sırala
+  const todaysClasses = classSchedule.filter(c => 
+    Number(c.day) === todayIdx &&
+    (c.subgroup === 'hamisi' || c.subgroup === userProfile.subgroup) &&
+    (c.week === 'hamisi' || c.week === currentWeekType)
+  ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   if (todaysClasses.length === 0) return;
 
-  const settings = userData.profile.notificationSettings;
-  if (!settings) return;
+  todaysClasses.forEach((c, index) => {
+    const [startH, startM] = c.startTime.split(':').map(Number);
+    const totalStartMinutes = startH * 60 + startM;
+    const diff = totalStartMinutes - totalMinutesNow;
 
-  todaysClasses.forEach((cls, index) => {
     const isFirstClass = index === 0;
-    const [h, m] = cls.startTime.split(':').map(Number);
-    const classTotalMinutes = h * 60 + m;
+    const settings = userProfile.notificationSettings;
+    
+    if (!settings) return;
 
     // Kanal 1
     if (settings.firstChannel.enabled) {
-      const waitMinutes = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
-      checkAndNotify(cls, classTotalMinutes, totalMinutesNow, waitMinutes, 'ch1');
+      const trigger = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
+      if (diff === trigger && trigger > 0) {
+        sendNotification(c, trigger, 'ch1');
+      }
     }
 
     // Kanal 2
     if (settings.secondChannel.enabled) {
-      const waitMinutes = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
-      checkAndNotify(cls, classTotalMinutes, totalMinutesNow, waitMinutes, 'ch2');
+      const trigger = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
+      if (diff === trigger && trigger > 0) {
+        sendNotification(c, trigger, 'ch2');
+      }
     }
   });
 }
 
-const sentNotifications = new Set();
+function sendNotification(classSession, minutes, channelTag) {
+  const notificationId = `${classSession.id}-${channelTag}-${minutes}-${new Date().toDateString()}`;
+  if (notifiedIds.has(notificationId)) return;
 
-function checkAndNotify(cls, classMinutes, nowMinutes, waitMinutes, channelId) {
-  if (waitMinutes <= 0) return;
+  notifiedIds.add(notificationId);
   
-  const targetTime = classMinutes - waitMinutes;
-  // Tam olaraq həmin dəqiqədə göndər
-  if (nowMinutes === targetTime) {
-    const notifId = `${cls.id}-${channelId}-${targetTime}`;
-    if (!sentNotifications.has(notifId)) {
-      const parts = cls.name.split('(');
-      const name = parts[0].trim();
-      const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
-      
-      self.registration.showNotification('İT24 Dərs Xatırlatması', {
-        body: `Sonrakı dərs: ${name} (${type}). Otaq: ${cls.room || 'Məlum deyil'}`,
-        icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-        tag: notifId,
-        renotify: true
-      });
-      sentNotifications.add(notifId);
-      
-      // 24 saatdan sonra köhnə xatırlatmaları təmizlə
-      setTimeout(() => sentNotifications.delete(notifId), 86400000);
-    }
-  }
+  const parts = classSession.name.split('(');
+  const name = parts[0].trim();
+  const type = parts.length > 1 ? parts[1].replace(')', '').trim() : 'Dərs';
+
+  self.registration.showNotification('İT24 Dərs Xatırlatması', {
+    body: `Sonrakı dərs: ${name} (${type}). Otaq: ${classSession.room || 'Məlum deyil'}`,
+    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    badge: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    tag: classSession.id,
+    renotify: true,
+    requireInteraction: true,
+    vibrate: [200, 100, 200]
+  });
 }
+
+// Hər 30 saniyədən bir yoxla
+setInterval(checkSchedule, 30000);
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === '/' && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
+  );
+});

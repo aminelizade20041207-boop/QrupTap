@@ -106,6 +106,10 @@ export default function Home() {
     (c.week === 'hamisi' || c.week === currentWeek)
   );
 
+  const weeklyClasses = FIXED_SCHEDULE.filter(c => 
+    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup)
+  );
+
   const updateProfile = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile);
     localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
