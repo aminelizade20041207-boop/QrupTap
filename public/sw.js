@@ -1,68 +1,90 @@
 
-const CACHE_NAME = 'it24-v2';
+const CACHE_NAME = 'it24-cache-v3';
+let appData = {
+  profile: null,
+  schedule: []
+};
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(clients.claim());
 });
-
-let cachedData = {
-  profile: null,
-  schedule: []
-};
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SYNC_DATA') {
-    cachedData = event.data.payload;
+    appData = event.data.payload;
   }
 });
 
-function checkSchedule() {
-  if (!cachedData.profile || !cachedData.schedule || cachedData.schedule.length === 0) return;
-
-  const now = new Date();
-  const day = now.getDay();
-  const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-  
-  // Həftə növünü hesabla
+function getWeekType() {
   const startDate = new Date('2026-02-16');
+  const now = new Date();
   const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const weekIndex = Math.floor(diffInDays / 7);
-  const currentWeek = weekIndex % 2 === 0 ? 'ust' : 'alt';
+  return weekIndex % 2 === 0 ? 'ust' : 'alt';
+}
 
-  const settings = cachedData.profile.notificationSettings;
-  if (!settings || !settings.firstChannel.enabled) return;
+function checkAndNotify() {
+  if (!appData.profile || !appData.schedule || !appData.profile.notificationSettings) return;
 
-  const myClasses = cachedData.schedule.filter(c => 
-    (c.subgroup === 'hamisi' || c.subgroup === cachedData.profile.subgroup) &&
+  const now = new Date();
+  const currentDayIdx = now.getDay();
+  const currentWeek = getWeekType();
+  const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  const todaysClasses = appData.schedule.filter(c => 
+    Number(c.day) === currentDayIdx &&
     (c.week === 'hamisi' || c.week === currentWeek) &&
-    Number(c.day) === day
+    (c.subgroup === 'hamisi' || c.subgroup === appData.profile.subgroup)
   ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  myClasses.forEach((c, index) => {
-    const [h, m] = c.startTime.split(':').map(Number);
-    const classTime = new Date(now);
-    classTime.setHours(h, m, 0, 0);
+  if (todaysClasses.length === 0) return;
 
-    const diffMinutes = Math.floor((classTime.getTime() - now.getTime()) / 60000);
-    const targetMinutes = index === 0 ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
+  const settings = appData.profile.notificationSettings;
+  
+  todaysClasses.forEach((cls, index) => {
+    const isFirstClass = index === 0;
+    const [startH, startM] = cls.startTime.split(':').map(Number);
+    const startDate = new Date(now);
+    startDate.setHours(startH, startM, 0, 0);
 
-    if (diffMinutes === targetMinutes && diffMinutes > 0) {
-      const parts = c.name.split('(');
-      const name = parts[0].trim();
-      const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
+    const diffMinutes = Math.floor((startDate.getTime() - now.getTime()) / (1000 * 60));
 
-      self.registration.showNotification('Dərs Xatırlatması', {
-        body: `Sonrakı dərs: ${name}${type ? ` (${type})` : ''}.${c.room ? ` Otaq: ${c.room}` : ''}`,
-        icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
-        tag: `class-${c.id}-${now.toDateString()}`,
-        renotify: true
-      });
+    // Kanal 1
+    if (settings.firstChannel.enabled) {
+      const triggerMin = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
+      if (diffMinutes === triggerMin) {
+        sendNotification(cls, diffMinutes);
+      }
+    }
+
+    // Kanal 2
+    if (settings.secondChannel.enabled) {
+      const triggerMin = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
+      if (diffMinutes === triggerMin) {
+        sendNotification(cls, diffMinutes);
+      }
     }
   });
 }
 
-setInterval(checkSchedule, 60000);
+function sendNotification(cls, minutes) {
+  const parts = cls.name.split('(');
+  const name = parts[0].trim();
+  const type = parts.length > 1 ? ` (${parts[1].replace(')', '')})` : '';
+  
+  self.registration.showNotification(`Dərs Başlayır: ${minutes} dəqiqə qaldı`, {
+    body: `Sonrakı dərs: ${name}${type}.${cls.room ? ` Otaq: ${cls.room}` : ''}`,
+    icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+    badge: 'https://placehold.co/96x96/4A90E2/ffffff?text=IT24',
+    tag: `class-${cls.id}-${minutes}`,
+    renotify: true,
+    vibrate: [200, 100, 200]
+  });
+}
+
+// Check every 30 seconds
+setInterval(checkAndNotify, 30000);

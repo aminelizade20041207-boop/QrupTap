@@ -85,6 +85,7 @@ export default function Home() {
     }} />;
   }
 
+  // Define filtered classes within component scope to avoid ReferenceErrors
   const dailyClasses = FIXED_SCHEDULE.filter(c => 
     (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
     (c.week === 'hamisi' || c.week === currentWeek)
@@ -270,7 +271,10 @@ export default function Home() {
             </Dialog>
 
             <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="relative group transition-transform active:scale-95 ml-1">
-              <Avatar className={`h-11 w-11 border-2 ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white dark:border-gray-800 shadow-sm'}`}>
+              <Avatar className={cn(
+                "h-11 w-11 border-2 transition-all",
+                isProfileOpen ? "border-primary ring-2 ring-primary/20" : "border-white dark:border-gray-800 shadow-sm"
+              )}>
                 <AvatarImage src={profile.photo} />
                 <AvatarFallback className="bg-primary/10 text-primary"><User className="h-6 w-6 shrink-0" /></AvatarFallback>
               </Avatar>

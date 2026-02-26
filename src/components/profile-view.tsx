@@ -5,12 +5,10 @@ import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Edit2, BookOpen, GraduationCap, Check, Trash2, Minus, Plus, AlertTriangle, ChevronDown, ChevronUp, StickyNote, Library, FileIcon } from 'lucide-react';
-import { UserProfile, UserNote, UserMaterial } from '@/lib/types';
+import { User, Edit2, GraduationCap, Check, Minus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { UserProfile } from '@/lib/types';
 import { FIXED_SCHEDULE } from '@/lib/schedule-data';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 const ABSENCE_RULES: Record<string, { m1: number, m2: number, fail: number }> = {
   'Kompüter Şəbəkələri': { m1: 5, m2: 9, fail: 12 },
@@ -27,8 +25,6 @@ interface ProfileViewProps {
 }
 
 export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps) => {
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [expandedAbsences, setExpandedAbsences] = useState<Record<string, boolean>>({});
 
   const subjects = Array.from(new Set(FIXED_SCHEDULE.map(s => s.name.split('(')[0].trim())));
