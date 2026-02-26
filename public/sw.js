@@ -1,9 +1,6 @@
-
 const CACHE_NAME = 'it24-cache-v3';
-let appData = {
-  profile: null,
-  schedule: []
-};
+let appProfile = null;
+let appSchedule = [];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -15,76 +12,72 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SYNC_DATA') {
-    appData = event.data.payload;
+    appProfile = event.data.payload.profile;
+    appSchedule = event.data.payload.schedule;
   }
 });
 
-function getWeekType() {
-  const startDate = new Date('2026-02-16');
-  const now = new Date();
-  const diffInDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const weekIndex = Math.floor(diffInDays / 7);
-  return weekIndex % 2 === 0 ? 'ust' : 'alt';
-}
-
-function checkAndNotify() {
-  if (!appData.profile || !appData.schedule || !appData.profile.notificationSettings) return;
+function checkSchedule() {
+  if (!appProfile || !appSchedule.length) return;
 
   const now = new Date();
-  const currentDayIdx = now.getDay();
-  const currentWeek = getWeekType();
-  const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  const dayIdx = now.getDay();
+  const currentTimeStr = now.toTimeString().substring(0, 5); // HH:mm
+  const [nowH, nowM] = currentTimeStr.split(':').map(Number);
+  const nowTotalMinutes = nowH * 60 + nowM;
 
-  const todaysClasses = appData.schedule.filter(c => 
-    Number(c.day) === currentDayIdx &&
-    (c.week === 'hamisi' || c.week === currentWeek) &&
-    (c.subgroup === 'hamisi' || c.subgroup === appData.profile.subgroup)
-  ).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const todaysClasses = appSchedule.filter(c => 
+    Number(c.day) === dayIdx && 
+    (c.subgroup === 'hamisi' || c.subgroup === appProfile.subgroup)
+  );
 
-  if (todaysClasses.length === 0) return;
+  todaysClasses.forEach(c => {
+    const [startH, startM] = c.startTime.split(':').map(Number);
+    const startTotalMinutes = startH * 60 + startM;
+    
+    const diff = startTotalMinutes - nowTotalMinutes;
+    const settings = appProfile.notificationSettings;
 
-  const settings = appData.profile.notificationSettings;
-  
-  todaysClasses.forEach((cls, index) => {
-    const isFirstClass = index === 0;
-    const [startH, startM] = cls.startTime.split(':').map(Number);
-    const startDate = new Date(now);
-    startDate.setHours(startH, startM, 0, 0);
+    if (!settings) return;
 
-    const diffMinutes = Math.floor((startDate.getTime() - now.getTime()) / (1000 * 60));
+    const isFirstClass = todaysClasses.sort((a,b) => a.startTime.localeCompare(b.startTime))[0].id === c.id;
 
-    // Kanal 1
-    if (settings.firstChannel.enabled) {
-      const triggerMin = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
-      if (diffMinutes === triggerMin) {
-        sendNotification(cls, diffMinutes);
+    // First Channel
+    if (settings.firstChannel?.enabled) {
+      const triggerMinutes = isFirstClass ? settings.firstChannel.firstClassMinutes : settings.firstChannel.otherClassesMinutes;
+      if (diff === triggerMinutes) {
+        showClassNotification(c, diff);
       }
     }
 
-    // Kanal 2
-    if (settings.secondChannel.enabled) {
-      const triggerMin = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
-      if (diffMinutes === triggerMin) {
-        sendNotification(cls, diffMinutes);
+    // Second Channel
+    if (settings.secondChannel?.enabled) {
+      const triggerMinutes = isFirstClass ? settings.secondChannel.firstClassMinutes : settings.secondChannel.otherClassesMinutes;
+      if (diff === triggerMinutes) {
+        showClassNotification(c, diff);
       }
     }
   });
 }
 
-function sendNotification(cls, minutes) {
-  const parts = cls.name.split('(');
+function showClassNotification(classData, minutesLeft) {
+  const parts = classData.name.split('(');
   const name = parts[0].trim();
-  const type = parts.length > 1 ? ` (${parts[1].replace(')', '')})` : '';
+  const type = parts.length > 1 ? parts[1].replace(')', '').trim() : '';
   
-  self.registration.showNotification(`Dərs Başlayır: ${minutes} dəqiqə qaldı`, {
-    body: `Sonrakı dərs: ${name}${type}.${cls.room ? ` Otaq: ${cls.room}` : ''}`,
+  const title = `Dərsə Az Qalıb!`;
+  const body = `Sonrakı dərs: ${name} ${type ? `(${type})` : ''}. Otaq: ${classData.room || 'Məlum deyil'}. ${minutesLeft} dəqiqə qalıb.`;
+
+  self.registration.showNotification(title, {
+    body: body,
     icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
     badge: 'https://placehold.co/96x96/4A90E2/ffffff?text=IT24',
-    tag: `class-${cls.id}-${minutes}`,
+    vibrate: [200, 100, 200],
+    tag: `class-notif-${classData.id}-${minutesLeft}`,
     renotify: true,
-    vibrate: [200, 100, 200]
+    requireInteraction: true
   });
 }
 
-// Check every 30 seconds
-setInterval(checkAndNotify, 30000);
+// Every 30 seconds check schedule
+setInterval(checkSchedule, 30000);

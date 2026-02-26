@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -89,13 +88,30 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
                   </div>
                 </div>
                 {isExpanded && (
-                  <div className="pt-4 border-t flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleUpdateAbsence(subject, -1)}>-</Button>
-                      <span className="font-bold">{absences}</span>
-                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleUpdateAbsence(subject, 1)}>+</Button>
+                  <div className="pt-4 border-t animate-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Qayıblar:</span>
+                        <div className="flex items-center gap-3 bg-muted/50 p-1 rounded-lg border">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 text-destructive" onClick={() => handleUpdateAbsence(subject, -1)}>-</Button>
+                          <span className="font-black text-lg min-w-[20px] text-center">{absences}</span>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-green-500/10 text-green-500" onClick={() => handleUpdateAbsence(subject, 1)}>+</Button>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Status:</span>
+                        {status ? (
+                          <Badge className={`${status.color} font-bold px-3 py-1 shadow-sm`}>
+                            <div className="flex items-center gap-1.5">
+                              {status.icon}
+                              {status.label}
+                            </div>
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">Məlumatsız</Badge>
+                        )}
+                      </div>
                     </div>
-                    {status && <Badge className={status.color}>{status.label}</Badge>}
                   </div>
                 )}
               </CardContent>

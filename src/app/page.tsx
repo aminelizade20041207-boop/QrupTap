@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -14,10 +13,11 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
@@ -51,6 +51,9 @@ export default function Home() {
     if (savedProfile) {
       try {
         const parsed = JSON.parse(savedProfile);
+        if (!parsed.notificationSettings || !parsed.notificationSettings.firstChannel) {
+          parsed.notificationSettings = DEFAULT_NOTIF_SETTINGS;
+        }
         setProfile(parsed);
       } catch (e) {
         localStorage.removeItem('it24_profile');
@@ -75,26 +78,6 @@ export default function Home() {
     setIsReady(true);
   }, []);
 
-  if (!isReady) return <div className="min-h-screen bg-background" />;
-
-  if (!profile) {
-    return <Onboarding onComplete={(p) => {
-      const newProfile: UserProfile = { ...p, savedGrades: {}, savedDetails: {}, notificationSettings: DEFAULT_NOTIF_SETTINGS };
-      setProfile(newProfile);
-      localStorage.setItem('it24_profile', JSON.stringify(newProfile));
-    }} />;
-  }
-
-  // Define filtered classes within component scope to avoid ReferenceErrors
-  const dailyClasses = FIXED_SCHEDULE.filter(c => 
-    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
-    (c.week === 'hamisi' || c.week === currentWeek)
-  );
-
-  const weeklyClasses = FIXED_SCHEDULE.filter(c => 
-    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup)
-  );
-
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -107,10 +90,31 @@ export default function Home() {
     }
   };
 
+  if (!isReady) return <div className="min-h-screen bg-background" />;
+
+  if (!profile) {
+    return <Onboarding onComplete={(p) => {
+      const newProfile: UserProfile = { ...p, savedGrades: {}, savedDetails: {}, notificationSettings: DEFAULT_NOTIF_SETTINGS };
+      setProfile(newProfile);
+      localStorage.setItem('it24_profile', JSON.stringify(newProfile));
+    }} />;
+  }
+
+  const dailyClasses = FIXED_SCHEDULE.filter(c => 
+    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+    (c.week === 'hamisi' || c.week === currentWeek)
+  );
+
+  const weeklyClasses = FIXED_SCHEDULE.filter(c => 
+    (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&
+    (c.week === 'hamisi' || c.week === selectedWeeklyWeek)
+  );
+
   const updateProfile = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile);
     localStorage.setItem('it24_profile', JSON.stringify(updatedProfile));
     
+    // Sync with SW
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         type: 'SYNC_DATA',
@@ -186,6 +190,9 @@ export default function Home() {
   };
 
   const updateNotifSettings = (newSettings: NotificationSettings) => {
+    if (!newSettings.firstChannel.enabled) {
+      newSettings.secondChannel.enabled = false;
+    }
     updateProfile({ ...profile, notificationSettings: newSettings });
   };
 
@@ -194,15 +201,34 @@ export default function Home() {
     toast({ title: "Standart Ayarlar", description: "Bildiriş ayarları sıfırlandı." });
   };
 
+  const formatTimeMinutes = (min: number) => {
+    if (min <= 0) return '';
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    if (h > 0) {
+      return `(${h} saat${m > 0 ? ` ${m} dəqiqə` : ''})`;
+    }
+    return `(${m} dəqiqə)`;
+  };
+
   const handleMinutesChange = (channel: 'firstChannel' | 'secondChannel', field: 'firstClassMinutes' | 'otherClassesMinutes', value: string) => {
     if (!profile.notificationSettings) return;
+    const isOtherClass = field === 'otherClassesMinutes';
     const parsedValue = parseInt(value) || 0;
     const nonNegativeValue = Math.max(0, parsedValue);
+    const numValue = value === '' ? 0 : (isOtherClass ? Math.min(90, nonNegativeValue) : nonNegativeValue);
     
     updateNotifSettings({
       ...profile.notificationSettings,
-      [channel]: { ...profile.notificationSettings[channel], [field]: nonNegativeValue }
+      [channel]: { ...profile.notificationSettings[channel], [field]: numValue }
     });
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'weekly') {
+      setSelectedWeeklyWeek(currentWeek);
+    }
   };
 
   return (
@@ -211,17 +237,27 @@ export default function Home() {
         <header className="flex items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm shrink-0">İT24</div>
+              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm">İT24</div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">Dərs Cədvəli</h1>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground text-xs md:text-sm">
               <span>Salam, <b>{profile.name}</b></span>
-              <button onClick={resetProfile} className="text-primary hover:underline ml-2 font-medium">Sıfırla</button>
+              <button 
+                onClick={resetProfile} 
+                className="text-primary hover:underline ml-2 font-medium"
+              >
+                Sıfırla
+              </button>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="rounded-full hover:bg-primary/10 transition-colors">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleDarkMode}
+              className="rounded-full hover:bg-primary/10 transition-colors"
+            >
               {isDarkMode ? <Sun className="h-5 w-5 text-primary shrink-0" /> : <Moon className="h-5 w-5 text-primary shrink-0" />}
             </Button>
 
@@ -236,6 +272,9 @@ export default function Home() {
                   <DialogTitle className="flex items-center gap-2 text-primary font-bold">
                     <Settings2 className="h-5 w-5 shrink-0" /> Bildiriş Ayarları
                   </DialogTitle>
+                  <DialogDescription>
+                    Bildiriş sayını və göndərilmə vaxtını təyin edin.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                   <div className="space-y-4">
@@ -250,19 +289,105 @@ export default function Home() {
                         })}
                       />
                     </div>
+                    
                     {profile.notificationSettings?.firstChannel.enabled && (
-                      <div className="space-y-3 px-1">
+                      <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">İlk Dərsə (dəq)</Label>
-                          <Input type="number" min="0" value={profile.notificationSettings.firstChannel.firstClassMinutes || ''} onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)} />
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Günün İlk Dərsinə</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}</span>
+                            <span>Qalmış</span>
+                          </Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            placeholder="Dəqiqə əvvəl"
+                            min="0"
+                            value={profile.notificationSettings.firstChannel.firstClassMinutes || ''}
+                            onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Digər Dərslərə (dəq)</Label>
-                          <Input type="number" min="0" value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''} onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)} />
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Digər Dərslərə</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.otherClassesMinutes)}</span>
+                            <span>Qalmış</span>
+                          </Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            placeholder="Dəqiqə əvvəl (Maks 90)"
+                            min="0"
+                            max="90"
+                            value={profile.notificationSettings.firstChannel.otherClassesMinutes || ''}
+                            onChange={(e) => handleMinutesChange('firstChannel', 'otherClassesMinutes', e.target.value)}
+                          />
                         </div>
                       </div>
                     )}
                   </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <div className={cn(
+                      "flex items-center justify-between p-3 rounded-xl border transition-opacity",
+                      !profile.notificationSettings?.firstChannel.enabled ? "opacity-50 bg-muted" : "bg-muted/50"
+                    )}>
+                      <div className="space-y-0.5">
+                        <Label htmlFor="second-notif-channel" className="font-bold text-muted-foreground">İkinci Bildiriş Kanalı</Label>
+                        {!profile.notificationSettings?.firstChannel.enabled && (
+                          <p className="text-[9px] text-destructive">Əvvəlcə birinci kanalı aktiv edin</p>
+                        )}
+                      </div>
+                      <Switch 
+                        id="second-notif-channel" 
+                        disabled={!profile.notificationSettings?.firstChannel.enabled}
+                        checked={profile.notificationSettings?.secondChannel.enabled}
+                        onCheckedChange={(checked) => updateNotifSettings({ 
+                          ...profile.notificationSettings!, 
+                          secondChannel: { ...profile.notificationSettings!.secondChannel, enabled: checked }
+                        })}
+                      />
+                    </div>
+
+                    {profile.notificationSettings?.secondChannel.enabled && (
+                      <div className="space-y-3 px-1 animate-in slide-in-from-top-2">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Günün İlk Dərsinə</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.firstClassMinutes)}</span>
+                            <span>Qalmış</span>
+                          </Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            placeholder="Dəqiqə əvvəl"
+                            min="0"
+                            value={profile.notificationSettings.secondChannel.firstClassMinutes || ''}
+                            onChange={(e) => handleMinutesChange('secondChannel', 'firstClassMinutes', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                            <span>Digər Dərslərə</span>
+                            <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.secondChannel.otherClassesMinutes)}</span>
+                            <span>Qalmış</span>
+                          </Label>
+                          <Input 
+                            type="number" 
+                            className="h-9"
+                            placeholder="Dəqiqə əvvəl (Maks 90)"
+                            min="0"
+                            max="90"
+                            value={profile.notificationSettings.secondChannel.otherClassesMinutes || ''}
+                            onChange={(e) => handleMinutesChange('secondChannel', 'otherClassesMinutes', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11 font-bold" onClick={setStandardNotifSettings}>
                     <RotateCcw className="h-4 w-4 shrink-0" /> Standart Ayarlar
                   </Button>
@@ -270,73 +395,115 @@ export default function Home() {
               </DialogContent>
             </Dialog>
 
-            <button onClick={() => setIsProfileOpen(!isProfileOpen)} className="relative group transition-transform active:scale-95 ml-1">
-              <Avatar className={cn(
-                "h-11 w-11 border-2 transition-all",
-                isProfileOpen ? "border-primary ring-2 ring-primary/20" : "border-white dark:border-gray-800 shadow-sm"
-              )}>
+            <button 
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="relative group transition-transform active:scale-95 ml-1"
+            >
+              <Avatar className={`h-11 w-11 border-2 transition-all ${isProfileOpen ? 'border-primary ring-2 ring-primary/20' : 'border-white dark:border-gray-800 shadow-sm'}`}>
                 <AvatarImage src={profile.photo} />
-                <AvatarFallback className="bg-primary/10 text-primary"><User className="h-6 w-6 shrink-0" /></AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  <User className="h-6 w-6 shrink-0" />
+                </AvatarFallback>
               </Avatar>
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white dark:border-gray-800">
+                <User className="h-3 w-3 shrink-0" />
+              </div>
             </button>
           </div>
         </header>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-          <Button variant={notifPermission === 'granted' ? "ghost" : "default"} size="sm" onClick={requestPermission} disabled={notifPermission === 'granted'} className="gap-2">
-            {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> : <Bell className="h-4 w-4 shrink-0" />}
-            {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={triggerTestNotification} className="gap-2 border-primary/20 text-primary hover:bg-primary/5">
-            <Smartphone className="h-4 w-4 shrink-0" /> Test
-          </Button>
-          <div className="flex items-center gap-3 bg-background p-2 px-3 rounded-xl border border-primary/20 shadow-sm">
+        <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+          <div className="flex gap-2 sm:absolute sm:left-0">
+            <Button 
+              variant={notifPermission === 'granted' ? "ghost" : "default"} 
+              size="sm" 
+              onClick={requestPermission}
+              disabled={notifPermission === 'granted'}
+              className="gap-2"
+            >
+              {notifPermission === 'granted' ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> : <Bell className="h-4 w-4 shrink-0" />}
+              {notifPermission === 'granted' ? 'Aktivdir' : 'Aktiv Et'}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={triggerTestNotification}
+              className="gap-2 border-primary/20 text-primary hover:bg-primary/5"
+            >
+              <Smartphone className="h-4 w-4 shrink-0" /> Test
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-3 bg-background p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
             <Info className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Həftə:</span>
-            <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="font-bold text-[10px]">
-              {currentWeek === 'ust' ? 'ÜST' : 'ALT'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Cari Həftə:</span>
+              <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'} className="font-bold text-[10px]">
+                {currentWeek === 'ust' ? 'ÜST' : 'ALT'}
+              </Badge>
+            </div>
           </div>
         </div>
 
         {isProfileOpen ? (
           <div className="animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2"><User className="h-5 w-5 text-primary shrink-0" /> Şəxsi Kabinet</h2>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <User className="h-5 w-5 text-primary shrink-0" /> Şəxsi Kabinet
+              </h2>
               <Button variant="ghost" size="sm" onClick={() => setIsProfileOpen(false)}>Geri Qayıt</Button>
             </div>
-            <ProfileView profile={profile} onUpdate={updateProfile} onEditGrade={handleEditGrade} />
+            <ProfileView 
+              profile={profile} 
+              onUpdate={updateProfile}
+              onEditGrade={handleEditGrade}
+            />
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="daily">Günlük</TabsTrigger>
-              <TabsTrigger value="weekly">Həftəlik</TabsTrigger>
-              <TabsTrigger value="calculator">Giriş Balı</TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-1.5 rounded-xl border overflow-x-auto">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="daily" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Bell className="h-4 w-4 shrink-0" /> Günlük
+                </TabsTrigger>
+                <TabsTrigger value="weekly" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <LayoutGrid className="h-4 w-4 shrink-0" /> Həftəlik
+                </TabsTrigger>
+                <TabsTrigger value="calculator" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Calculator className="h-4 w-4 shrink-0" /> Giriş Ballarım
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="daily">
+            <TabsContent value="daily" className="min-h-[400px]">
               <DailyView classes={dailyClasses} />
             </TabsContent>
             
-            <TabsContent value="weekly">
-              <div className="space-y-4">
-                <div className="flex justify-center gap-2">
-                   <Button variant={selectedWeeklyWeek === 'ust' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedWeeklyWeek('ust')}>Üst Həftə</Button>
-                   <Button variant={selectedWeeklyWeek === 'alt' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedWeeklyWeek('alt')}>Alt Həftə</Button>
-                </div>
-                <WeeklyView classes={weeklyClasses.filter(c => c.week === 'hamisi' || c.week === selectedWeeklyWeek)} />
+            <TabsContent value="weekly" className="min-h-[400px] space-y-6">
+              <div className="flex justify-center">
+                <Tabs value={selectedWeeklyWeek} onValueChange={(v) => setSelectedWeeklyWeek(v as WeekType)} className="w-fit">
+                  <TabsList className="grid grid-cols-2 w-[240px] h-11">
+                    <TabsTrigger value="ust" className="font-bold text-xs uppercase tracking-wider">Üst Həftə</TabsTrigger>
+                    <TabsTrigger value="alt" className="font-bold text-xs uppercase tracking-wider">Alt Həftə</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
+              <WeeklyView classes={weeklyClasses} />
             </TabsContent>
 
             <TabsContent value="calculator">
-              <GradeCalculator onSave={handleSaveGrade} initialSubject={editingSubject} existingDetails={editingSubject ? profile.savedDetails?.[editingSubject] : undefined} />
+              <GradeCalculator 
+                onSave={handleSaveGrade} 
+                initialSubject={editingSubject}
+                existingDetails={editingSubject ? profile.savedDetails?.[editingSubject] : undefined}
+              />
             </TabsContent>
           </Tabs>
         )}
 
         <footer className="pt-8 border-t text-center text-sm text-muted-foreground">
           <p>© 2026 İT24 - Əlizadə Akşin</p>
+          <p className="text-[10px] mt-1 opacity-50">16 fevral 2026-cı il tarixindən etibarən hesablanır</p>
         </footer>
       </div>
     </div>
