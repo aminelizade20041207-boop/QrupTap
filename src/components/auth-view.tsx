@@ -130,7 +130,10 @@ export function AuthView() {
             <Button variant="outline" className="w-full gap-2" onClick={resendVerification}>
               <RotateCcw className="h-4 w-4" /> Linki Yenidən Göndər
             </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setMode('login')}>
+            <Button variant="ghost" className="w-full" onClick={() => {
+              auth.signOut();
+              setMode('login');
+            }}>
               Geri Qayıt
             </Button>
           </CardFooter>
