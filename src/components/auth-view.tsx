@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 import { LogIn, UserPlus, Mail, Lock, Chrome, Loader2 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register' | 'reset';
@@ -41,10 +42,15 @@ export function AuthView() {
         setMode('login');
       }
     } catch (error: any) {
+      let errorMessage = "Bir xəta baş verdi.";
+      if (error.code === 'auth/invalid-credential') errorMessage = "E-mail və ya şifrə səhvdir.";
+      if (error.code === 'auth/email-already-in-use') errorMessage = "Bu e-mail artıq istifadə olunur.";
+      if (error.code === 'auth/weak-password') errorMessage = "Şifrə ən azı 6 simvol olmalıdır.";
+      
       toast({ 
         variant: "destructive", 
         title: "Xəta", 
-        description: error.message === 'Firebase: Error (auth/invalid-credential).' ? "E-mail və ya şifrə səhvdir." : "Bir xəta baş verdi." 
+        description: errorMessage
       });
     } finally {
       setLoading(false);
@@ -123,7 +129,7 @@ export function AuthView() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full h-11" disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : mode === 'login' ? <LogIn className="h-4 w-4 mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : mode === 'login' ? <LogIn className="h-4 w-4 mr-2" /> : mode === 'register' ? <UserPlus className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
               {mode === 'login' ? 'Daxil ol' : mode === 'register' ? 'Qeydiyyatdan keç' : 'Link göndər'}
             </Button>
             
