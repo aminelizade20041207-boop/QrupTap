@@ -21,18 +21,23 @@
       "type": "object",
       "properties": {
         "name": { "type": "string" },
-        "subgroup": { "type": "string", "enum": ["yuxari", "asagi"] }
+        "subgroup": { "type": "string", "enum": ["yuxari", "asagi"] },
+        "photo": { "type": "string" }
       },
       "required": ["name", "subgroup"]
     }
   },
   "auth": {
-    "providers": ["anonymous"]
+    "providers": ["google", "password"]
   },
   "firestore": {
     "/classes/{classId}": {
       "schema": "#/backend/entities/Class",
       "description": "Mərkəzi dərs cədvəli"
+    },
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "İstifadəçi profil məlumatları"
     }
   }
 }
