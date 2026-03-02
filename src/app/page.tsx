@@ -97,7 +97,9 @@ export default function Home() {
   const handleDeleteAccount = async () => {
     if (!user) return;
     try {
-      await deleteDoc(doc(db, 'users', user.uid));
+      const uid = user.uid;
+      // First sign out/delete UI state to avoid permission errors after auth deletion
+      await deleteDoc(doc(db, 'users', uid));
       await deleteUser(user);
       toast({ title: "Hesab Silindi", description: "Bütün məlumatlarınız təmizləndi." });
     } catch (error: any) {
@@ -113,15 +115,16 @@ export default function Home() {
     }
   };
 
-  if (isUserLoading || !isReady) return <div className="min-h-screen bg-background" />;
+  if (isUserLoading || !isReady) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin bg-primary w-8 h-8 rounded-lg" /></div>;
 
-  // Gateway: If not logged in or anonymous or unverified password user, show AuthView
-  if (!user || user.isAnonymous || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
+  // Gateway: If not logged in, show AuthView (Login/Register)
+  if (!user) {
     return <AuthView />;
   }
 
   if (profileLoading) return <div className="min-h-screen bg-background" />;
 
+  // If logged in but no profile exists, show Onboarding
   if (!profile) {
     return <Onboarding onComplete={(p) => {
       if (user) {
