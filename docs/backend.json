@@ -1,43 +1,100 @@
-
 {
   "entities": {
     "Class": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Class",
-      "description": "Dərs cədvəli məlumatları",
       "type": "object",
+      "description": "Represents a scheduled academic or activity class, including its details and recurring schedule.",
       "properties": {
-        "name": { "type": "string", "description": "Dərsin adı" },
-        "day": { "type": "number", "description": "Həftənin günü (0-6)" },
-        "startTime": { "type": "string", "description": "Başlama vaxtı" },
-        "endTime": { "type": "string", "description": "Bitmə vaxtı" },
-        "room": { "type": "string", "description": "Otaq nömrəsi" },
-        "subgroup": { "type": "string", "enum": ["yuxari", "asagi", "hamisi"], "description": "Altqrup növü" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Class entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name or title of the class (e.g., 'Calculus I', 'Introduction to Philosophy')."
+        },
+        "roomNumber": {
+          "type": "string",
+          "description": "The physical location or room where the class is held."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The scheduled start time of the class on its meeting days (e.g., '09:00:00').",
+          "format": "time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The scheduled end time of the class on its meeting days (e.g., '09:50:00').",
+          "format": "time"
+        },
+        "daysOfWeek": {
+          "type": "array",
+          "description": "A list of days of the week on which this class regularly meets (e.g., ['MONDAY', 'WEDNESDAY', 'FRIDAY']).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string",
+          "description": "An optional category or subject type for the class (e.g., 'Mathematics', 'Science', 'Elective'), which can be used for UI icons or filtering."
+        }
       },
-      "required": ["name", "day", "startTime", "endTime", "room", "subgroup"]
-    },
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "İstifadəçi seçimləri",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "subgroup": { "type": "string", "enum": ["yuxari", "asagi"] },
-        "photo": { "type": "string" }
-      },
-      "required": ["name", "subgroup"]
+      "required": [
+        "id",
+        "name",
+        "roomNumber",
+        "startTime",
+        "endTime",
+        "daysOfWeek"
+      ]
     }
   },
   "auth": {
-    "providers": ["google", "password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/classes/{classId}": {
-      "schema": "#/backend/entities/Class",
-      "description": "Mərkəzi dərs cədvəli"
-    },
-    "/users/{userId}": {
-      "schema": "#/backend/entities/UserProfile",
-      "description": "İstifadəçi profil məlumatları"
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/user"
+          },
+          "description": "Represents a user's profile and serves as an anchor for all user-specific data and subcollections. While a specific user schema is not provided, this path is essential for user-centric data organization and authentication.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/classes/{classId}",
+        "definition": {
+          "entityName": "Class",
+          "schema": {
+            "$ref": "#/backend/entities/Class"
+          },
+          "description": "Stores individual class details for a specific user. Access is restricted to the owning user. This structure inherently ensures Authorization Independence because the `userId` is part of the path, making rules simple (`allow read, write: if request.auth.uid == userId;`). It also enables QAPs for list operations by allowing a user to list only their own classes without needing to filter.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user who owns this class."
+            },
+            {
+              "name": "classId",
+              "description": "The unique ID for a specific class owned by the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure is designed to be secure, scalable, and debuggable, strictly adhering to the core design principles and strategy mandates. For the `ClassTrack` application, which focuses on personal class schedules, all class data is private and belongs to an individual user.  This ownership is enforced through a hierarchical path structure.\n\n**Authorization Independence:** This structure achieves Authorization Independence by placing each user's classes under a dedicated subcollection: `/users/{userId}/classes/{classId}`. The `userId` is directly embedded in the path template, making it immediately available for security rule evaluation (`request.auth.uid == userId`). This eliminates the need for expensive and complex `get()` calls to parent documents to determine ownership or permissions, which is critical for atomic operations and rule debuggability. All authorization checks are self-contained within the `request` object and the document's own path.\n\n**QAPs (Rules are not Filters):** This structure inherently supports Query-As-Permissions (QAPs). When a user requests their classes, they will query `/users/{request.auth.uid}/classes`. The security rules can directly enforce that a user can only `list` or `get` documents where the `{userId}` wildcard matches their `request.auth.uid`. This means client-side queries do not need to include `ownerId` filters, and the rules are not burdened with filtering data after it's been accessed. Instead, the data access itself is permissioned at the path level, ensuring that only authorized data is ever returned. This segregation prevents any user from accidentally or maliciously listing classes belonging to another user.\n\n**Structural Segregation & Access Modeling:** All documents within a specific `/users/{userId}/classes` subcollection share the exact same security posture: they are privately owned and editable only by `userId`. This homogeneous security posture simplifies rules dramatically. The chosen access model is 'Private Data' using 'Path-Based ownership' and 'Hierarchical Paths for User-Owned Data', which is the most secure and straightforward approach for this application's requirements. There are no shared or collaborative classes, thus avoiding the complexity of membership maps or global roles for `Class` entities. User profiles are established in a top-level `/users/{userId}` collection to serve as an anchor for their private data."
   }
 }

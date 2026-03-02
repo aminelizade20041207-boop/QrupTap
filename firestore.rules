@@ -1,0 +1,101 @@
+/**
+ * Firestore Security Rules for ClassTrack
+ *
+ * CORE PHILOSOPHY:
+ * This ruleset enforces a strict User-Ownership model. The security architecture relies on 
+ * hierarchical paths where all user data is nested under a specific user ID. Authorization 
+ * is "path-based," meaning access is granted by comparing the authenticated user's UID 
+ * against the {userId} wildcard in the document path.
+ *
+ * DATA STRUCTURE:
+ * - /users/{userId}: The root document for a user's profile.
+ * - /users/{userId}/classes/{classId}: Private academic or activity classes belonging to the user.
+ *
+ * KEY SECURITY DECISIONS:
+ * 1. Path-Based Authorization: We use the document path as the primary source of truth for 
+ *    ownership. This ensures "Authorization Independence," making rules fast and independent 
+ *    of other document lookups.
+ * 2. Strict Privacy: There is no public data. A user cannot see, list, or modify another 
+ *    user's profile or classes.
+ * 3. Relational Integrity: On creation, we enforce that internal IDs in the data match 
+ *    the Firestore document IDs to ensure consistency between the path and the content.
+ * 4. Prototyping Flexibility: While access is strictly controlled by UID, the internal 
+ *    schema (fields like startTime, daysOfWeek) is not validated to allow for rapid UI iteration.
+ *
+ * ACCESS CONTROL PATTERNS:
+ * - Ownership: Applied to all paths. Access is restricted to `request.auth.uid == userId`.
+ * - Self-Creation: Users are permitted to create their own root profile document if 
+ *   their UID matches the document ID.
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+
+    /**
+     * @description Checks if the request is made by an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     * @param userId The ID to compare against the auth UID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Ensures the user is the owner and that the document already exists.
+     * Used for update and delete operations to prevent acting on non-existent data.
+     */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the User profile document.
+     * @path /users/{userId}
+     * @allow (get) If the user is the owner.
+     * @deny (list) Even if owner, listing the users collection is often restricted for privacy.
+     * @principle Ownership (Self-Creation).
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId); // Minimal access: user can find themselves.
+      
+      // On create, ensure the user is setting their own ID correctly.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      
+      // On update, ensure the document exists and the internal ID remains immutable.
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for individual classes owned by a user.
+       * @path /users/{userId}/classes/{classId}
+       * @allow (create) If authenticated user's UID matches the {userId} path segment.
+       * @deny (update) If the user attempts to modify a class belonging to someone else.
+       * @principle Hierarchical Path-Based Ownership.
+       */
+      match /classes/{classId} {
+        allow get, list: if isOwner(userId);
+        
+        // Relational Integrity: The internal 'id' must match the 'classId' in the path.
+        allow create: if isOwner(userId) && request.resource.data.id == classId;
+        
+        // Protect relational integrity by preventing the internal ID from being changed.
+        allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+        
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+  }
+}
