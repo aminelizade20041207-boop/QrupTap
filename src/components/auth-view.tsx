@@ -70,13 +70,16 @@ export function AuthView() {
         setCurrentUser(user);
         if (!user.emailVerified && user.providerData[0]?.providerId === 'password') {
           setMode('verify');
+        } else if (user.emailVerified || user.providerData[0]?.providerId === 'google.com') {
+          // Home səhifəsinə onAuthStateChanged vasitəsilə keçəcək
         }
       } else {
         setCurrentUser(null);
+        if (mode === 'verify') setMode('login');
       }
     });
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, mode]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +209,7 @@ export function AuthView() {
                   <Input 
                     id="email" 
                     type="email" 
-                    className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 text-gray-900 font-medium" 
+                    className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 text-foreground font-medium" 
                     placeholder="email@example.com" 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)} 
@@ -228,7 +231,7 @@ export function AuthView() {
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
-                        className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 pr-12 text-gray-900 font-medium" 
+                        className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 pr-12 text-foreground font-medium" 
                         placeholder="••••••••" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 

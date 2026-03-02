@@ -88,10 +88,10 @@ export default function Home() {
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
     setIsSettingsOpen(false);
     setIsProfileOpen(false);
+    await signOut(auth);
   };
 
   const handleDeleteAccount = async () => {
@@ -102,13 +102,14 @@ export default function Home() {
       
       if (!currentUser) return;
 
-      // Close all dialogs first to prevent UI lock
+      // 1. UI pəncərələrini dərhal bağla ki donma olmasın
       setIsSettingsOpen(false);
       setIsProfileOpen(false);
 
-      // Delete from Firestore
+      // 2. Bazanı təmizlə
       await deleteDoc(doc(db, 'users', uid));
-      // Delete from Auth
+      
+      // 3. İstifadəçini sil
       await deleteUser(currentUser);
       
       toast({ title: "Hesab Silindi", description: "Bütün məlumatlarınız təmizləndi." });
@@ -117,7 +118,7 @@ export default function Home() {
         toast({ 
           variant: "destructive", 
           title: "Yenidən giriş lazımdır", 
-          description: "Hesabı silmək üçün zəhmət olmasa çıxış edib yenidən daxil olun." 
+          description: "Hesabı silmək üçün çıxış edib yenidən daxil olun." 
         });
       } else {
         toast({ variant: "destructive", title: "Xəta", description: "Hesab silinə bilmədi." });
@@ -127,12 +128,15 @@ export default function Home() {
 
   if (isUserLoading || !isReady) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin bg-primary w-8 h-8 rounded-lg" /></div>;
 
-  if (!user) {
+  // İstifadəçi daxil olmayıbsa VƏ YA e-mailini hələ təsdiqləməyibsə Giriş ekranını göstər
+  const isEmailAuth = user?.providerData[0]?.providerId === 'password';
+  if (!user || (isEmailAuth && !user.emailVerified)) {
     return <AuthView />;
   }
 
   if (profileLoading) return <div className="min-h-screen bg-background" />;
 
+  // Əgər e-mail təsdiqlənibsə amma hələ profil yaradılmayıbsa Onboarding-ə keç
   if (!profile) {
     return <Onboarding onComplete={(p) => {
       if (user) {

@@ -32,8 +32,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (name.trim() && group && subgroup) {
       onComplete({ name, group, subgroup });
     }
@@ -50,12 +49,12 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
           </CardDescription>
         </CardHeader>
         <div className="space-y-6">
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 min-h-[220px]">
             {step === 1 && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-right-4">
-                <Label htmlFor="name">Adınız və Soyadınız</Label>
+              <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                <Label htmlFor="onboarding-name">Adınız və Soyadınız</Label>
                 <Input 
-                  id="name" 
+                  id="onboarding-name" 
                   placeholder="Məsələn: Samir Abdullayev" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
@@ -66,7 +65,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
             )}
 
             {step === 2 && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <Label>Akademik Qrup</Label>
                 <RadioGroup 
                   value={group || ''} 
@@ -86,7 +85,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
             )}
 
             {step === 3 && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                 <Label>Altqrup Seçin</Label>
                 <RadioGroup 
                   value={subgroup} 
@@ -94,20 +93,20 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   className="grid grid-cols-2 gap-4"
                 >
                   <div className="relative">
-                    <RadioGroupItem value="yuxari" id="yuxari" className="peer sr-only" />
+                    <RadioGroupItem value="yuxari" id="sub-yuxari" className="peer sr-only" />
                     <Label
-                      htmlFor="yuxari"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-center"
+                      htmlFor="sub-yuxari"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer text-center h-full transition-all"
                     >
                       <span className="text-sm font-semibold uppercase">Yuxarı</span>
                       <span className="text-[10px] text-muted-foreground uppercase mt-1">Altqrup</span>
                     </Label>
                   </div>
                   <div className="relative">
-                    <RadioGroupItem value="asagi" id="asagi" className="peer sr-only" />
+                    <RadioGroupItem value="asagi" id="sub-asagi" className="peer sr-only" />
                     <Label
-                      htmlFor="asagi"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-center"
+                      htmlFor="sub-asagi"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer text-center h-full transition-all"
                     >
                       <span className="text-sm font-semibold uppercase">Aşağı</span>
                       <span className="text-[10px] text-muted-foreground uppercase mt-1">Altqrup</span>
