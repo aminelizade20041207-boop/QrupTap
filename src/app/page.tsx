@@ -94,7 +94,8 @@ export default function Home() {
 
   if (userLoading || !isReady) return <div className="min-h-screen bg-background" />;
 
-  if (!user) {
+  // E-mail ilə qeydiyyatdan keçənlər üçün təsdiqləmə yoxlanışı
+  if (!user || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
     return <AuthView />;
   }
 
