@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Info, Smartphone, CheckCircle2, Moon, Sun, Settings, Settings2, RotateCcw, LogOut } from 'lucide-react';
+import { LayoutGrid, Bell, Calculator, User, Smartphone, CheckCircle2, Moon, Sun, Settings, Settings2, RotateCcw, LogOut } from 'lucide-react';
 import { UserProfile, WeekType, GradeDetails, NotificationSettings } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
@@ -19,7 +19,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { AuthView } from '@/components/auth-view';
@@ -106,6 +105,7 @@ export default function Home() {
       if (user) {
         setDoc(doc(db, 'users', user.uid), {
           ...p,
+          id: user.uid, // Rule create xətası üçün vacibdir
           notificationSettings: DEFAULT_NOTIF_SETTINGS,
           savedGrades: {},
           savedDetails: {},
@@ -127,7 +127,10 @@ export default function Home() {
 
   const updateProfile = (updatedProfile: UserProfile) => {
     if (user) {
-      setDoc(doc(db, 'users', user.uid), updatedProfile, { merge: true });
+      setDoc(doc(db, 'users', user.uid), {
+        ...updatedProfile,
+        id: user.uid // Update integrity üçün vacibdir
+      }, { merge: true });
     }
   };
 

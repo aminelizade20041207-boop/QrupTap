@@ -62,6 +62,7 @@ export interface NotificationSettings {
 }
 
 export interface UserProfile {
+  id: string; // Bazadakı UID ilə eyni olmalıdır
   name: string;
   subgroup: 'yuxari' | 'asagi';
   photo?: string;
