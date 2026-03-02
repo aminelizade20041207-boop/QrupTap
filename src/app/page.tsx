@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Bell, Calculator, User, Smartphone, CheckCircle2, Moon, Sun, Settings, Settings2, RotateCcw, LogOut } from 'lucide-react';
+import { LayoutGrid, Bell, Calculator, User, Smartphone, CheckCircle2, Moon, Sun, Settings, Settings2, RotateCcw, LogOut, Trash2 } from 'lucide-react';
 import { UserProfile, WeekType, GradeDetails, NotificationSettings } from '@/lib/types';
 import { DailyView, WeeklyView } from '@/components/schedule-views';
 import { Onboarding } from '@/components/onboarding';
@@ -15,14 +15,15 @@ import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useUser, useFirestore, useDoc, useAuth } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { AuthView } from '@/components/auth-view';
-import { signOut } from 'firebase/auth';
+import { signOut, deleteUser } from 'firebase/auth';
 
 const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
   firstChannel: {
@@ -90,6 +91,27 @@ export default function Home() {
   const handleLogout = () => {
     signOut(auth);
     setIsSettingsOpen(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    try {
+      // 1. Firestore data silinsin
+      await deleteDoc(doc(db, 'users', user.uid));
+      // 2. Auth hesabı silinsin
+      await deleteUser(user);
+      toast({ title: "Hesab Silindi", description: "Bütün məlumatlarınız təmizləndi." });
+    } catch (error: any) {
+      if (error.code === 'auth/requires-recent-login') {
+        toast({ 
+          variant: "destructive", 
+          title: "Yenidən giriş lazımdır", 
+          description: "Hesabı silmək üçün zəhmət olmasa çıxış edib yenidən daxil olun." 
+        });
+      } else {
+        toast({ variant: "destructive", title: "Xəta", description: "Hesab silinə bilmədi." });
+      }
+    }
   };
 
   if (isUserLoading || !isReady) return <div className="min-h-screen bg-background" />;
@@ -294,9 +316,31 @@ export default function Home() {
                     <Button variant="outline" className="w-full gap-2 font-bold" onClick={setStandardNotifSettings}>
                       <RotateCcw className="h-4 w-4" /> Standart Ayarlar
                     </Button>
-                    <Button variant="destructive" className="w-full gap-2 font-bold" onClick={handleLogout}>
+                    <Button variant="secondary" className="w-full gap-2 font-bold" onClick={handleLogout}>
                       <LogOut className="h-4 w-4" /> Hesabdan Çıx
                     </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full gap-2 font-bold">
+                          <Trash2 className="h-4 w-4" /> Hesabı Sil
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Hesabınızı silməkdən əminsiniz?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Bu əməliyyat geri qaytarıla bilməz. Bütün ballarınız, qayıblarınız və profil məlumatlarınız sistemdən tamamilə silinəcək.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Sil
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </DialogContent>
