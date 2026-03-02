@@ -6,6 +6,30 @@
       "description": "A student organizing their day with a digital schedule",
       "imageUrl": "https://picsum.photos/seed/classtrack1/1200/800",
       "imageHint": "student schedule"
+    },
+    {
+      "id": "study-library",
+      "description": "A modern university library with books and study spaces",
+      "imageUrl": "https://picsum.photos/seed/library_study/800/800",
+      "imageHint": "university library"
+    },
+    {
+      "id": "study-laptop",
+      "description": "A student working on a laptop with notebooks",
+      "imageUrl": "https://picsum.photos/seed/laptop_work/800/800",
+      "imageHint": "student laptop"
+    },
+    {
+      "id": "study-books",
+      "description": "A stack of academic books and stationery",
+      "imageUrl": "https://picsum.photos/seed/academic_books/800/800",
+      "imageHint": "academic books"
+    },
+    {
+      "id": "study-classroom",
+      "description": "A modern classroom environment",
+      "imageUrl": "https://picsum.photos/seed/modern_classroom/800/800",
+      "imageHint": "university classroom"
     }
   ]
 }

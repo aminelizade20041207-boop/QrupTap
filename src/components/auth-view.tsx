@@ -23,6 +23,33 @@ import { Mail, Lock, Loader2, Eye, EyeOff, ChevronLeft } from 'lucide-react';
 
 type AuthMode = 'login' | 'register' | 'reset' | 'verify';
 
+const SLIDES = [
+  {
+    image: "https://picsum.photos/seed/library_study/800/800",
+    title: "Mərkəzi Kitabxana",
+    description: "Bütün dərsləriniz və materiallarınız bir yerdə.",
+    hint: "university library"
+  },
+  {
+    image: "https://picsum.photos/seed/laptop_work/800/800",
+    title: "Akademik Plan",
+    description: "Dərs vaxtlarınızı səmərəli şəkildə idarə edin.",
+    hint: "student laptop"
+  },
+  {
+    image: "https://picsum.photos/seed/academic_books/800/800",
+    title: "İmtahan Hazırlığı",
+    description: "Giriş ballarınızı asanlıqla hesablayın və izləyin.",
+    hint: "academic books"
+  },
+  {
+    image: "https://picsum.photos/seed/modern_classroom/800/800",
+    title: "Təhsil Portalı",
+    description: "Akademik qrupunuz üçün mərkəzləşmiş cədvəl sistemi.",
+    hint: "university classroom"
+  }
+];
+
 export function AuthView() {
   const auth = useAuth();
   const { toast } = useToast();
@@ -34,10 +61,9 @@ export function AuthView() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // 5 saniyədən bir dəyişən sLayd indikatoru
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 4);
+      setActiveSlide((prev) => (prev + 1) % SLIDES.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -93,7 +119,6 @@ export function AuthView() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // Email verify problemlərini azaltmaq üçün custom parametr
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
     } catch (error: any) {
@@ -133,24 +158,29 @@ export function AuthView() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f7f6]">
       <div className="w-full max-w-[1000px] grid grid-cols-1 md:grid-cols-2 bg-white rounded-[40px] shadow-2xl overflow-hidden min-h-[650px]">
         
-        {/* Sol Panel - İllüstrasiya və Avto-Slayd */}
-        <div className="hidden md:flex flex-col items-center justify-center p-12 bg-[#e8f5e9] relative">
-          <div className="relative w-full aspect-square max-w-[320px] mb-8 transition-all duration-700 transform scale-105">
-            <div className="absolute inset-0 bg-[#c8e6c9] rounded-full opacity-20 animate-pulse" />
-            <img 
-              src="https://picsum.photos/seed/classtrack_study/600/600" 
-              alt="Study Illustration" 
-              className="w-full h-full object-contain relative z-10 rounded-full shadow-inner"
-              data-ai-hint="student study"
-            />
+        {/* Sol Panel - Slayd-şou */}
+        <div className="hidden md:flex flex-col items-center justify-center p-12 bg-[#e8f5e9] relative transition-all duration-700">
+          <div className="relative w-full aspect-square max-w-[320px] mb-8 overflow-hidden rounded-full shadow-inner border-4 border-white/50">
+            {SLIDES.map((slide, idx) => (
+              <img 
+                key={idx}
+                src={slide.image} 
+                alt={slide.title} 
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${activeSlide === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                data-ai-hint={slide.hint}
+              />
+            ))}
           </div>
-          <div className="text-center space-y-2 relative z-10">
-            <h2 className="text-2xl font-bold text-[#1b5e20]">Akademik Portal</h2>
-            <p className="text-[#4caf50] font-medium text-sm">Dərslərini və ballarını mərkəzi idarə et</p>
+          <div className="text-center space-y-3 relative z-10 min-h-[100px]">
+            {SLIDES.map((slide, idx) => (
+              <div key={idx} className={`transition-all duration-700 absolute inset-0 ${activeSlide === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                <h2 className="text-2xl font-bold text-[#1b5e20]">{slide.title}</h2>
+                <p className="text-[#4caf50] font-medium text-sm px-4">{slide.description}</p>
+              </div>
+            ))}
             
-            {/* 5 saniyəlik avto-indikatorlar */}
-            <div className="flex gap-2 justify-center mt-8">
-              {[0, 1, 2, 3].map((idx) => (
+            <div className="flex gap-2 justify-center mt-24">
+              {SLIDES.map((_, idx) => (
                 <div 
                   key={idx} 
                   className={`h-2 rounded-full transition-all duration-500 ${
@@ -242,7 +272,7 @@ export function AuthView() {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="w-full h-12 rounded-2xl border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold gap-3 transition-colors" 
+                      className="w-full h-12 rounded-2xl border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold gap-3 transition-colors flex items-center justify-center" 
                       onClick={handleGoogleSignIn} 
                       disabled={loading}
                     >
