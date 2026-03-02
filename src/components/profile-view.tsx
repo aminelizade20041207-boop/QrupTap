@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -58,8 +59,13 @@ export const ProfileView = ({ profile, onUpdate, onEditGrade }: ProfileViewProps
             <AvatarFallback><User className="h-16 w-16" /></AvatarFallback>
           </Avatar>
           <CardTitle>{profile.name}</CardTitle>
-          <CardDescription className="font-bold text-primary uppercase tracking-widest text-xs">
-            {profile.subgroup === 'yuxari' ? 'Yuxarı' : 'Aşağı'} Altqrup
+          <CardDescription className="flex flex-col gap-1 items-center mt-2">
+            <Badge variant="default" className="font-bold uppercase tracking-widest text-[10px]">
+              {profile.group} Qrupu
+            </Badge>
+            <span className="text-xs font-medium text-muted-foreground uppercase">
+              {profile.subgroup === 'yuxari' ? 'Yuxarı' : 'Aşağı'} Altqrup
+            </span>
           </CardDescription>
         </CardHeader>
       </Card>

@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -89,11 +89,11 @@ export default function Home() {
 
   const handleLogout = () => {
     signOut(auth);
+    setIsSettingsOpen(false);
   };
 
   if (isUserLoading || !isReady) return <div className="min-h-screen bg-background" />;
 
-  // E-mail verified check
   if (!user || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
     return <AuthView />;
   }
@@ -105,7 +105,7 @@ export default function Home() {
       if (user) {
         setDoc(doc(db, 'users', user.uid), {
           ...p,
-          id: user.uid, // Rule create xətası üçün vacibdir
+          id: user.uid,
           notificationSettings: DEFAULT_NOTIF_SETTINGS,
           savedGrades: {},
           savedDetails: {},
@@ -129,7 +129,7 @@ export default function Home() {
     if (user) {
       setDoc(doc(db, 'users', user.uid), {
         ...updatedProfile,
-        id: user.uid // Update integrity üçün vacibdir
+        id: user.uid
       }, { merge: true });
     }
   };
@@ -176,9 +176,9 @@ export default function Home() {
     try {
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.showNotification('İT24 Bildiriş Testi', {
+        await registration.showNotification('QrupTap Bildiriş Testi', {
           body: `Salam, ${profile.name}! Bu bir test bildirişidir.`,
-          icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=IT24',
+          icon: 'https://placehold.co/192x192/4A90E2/ffffff?text=QT',
           tag: 'test-notification',
           renotify: true
         });
@@ -232,14 +232,11 @@ export default function Home() {
         <header className="flex items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm">İT24</div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">Dərs Cədvəli</h1>
+              <div className="bg-primary p-2 rounded-lg text-white font-bold text-xl shadow-sm">QT</div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-headline">QrupTap</h1>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground text-xs md:text-sm">
-              <span>Salam, <b>{profile.name}</b></span>
-              <button onClick={handleLogout} className="text-destructive hover:underline ml-2 font-medium flex items-center gap-1">
-                <LogOut className="h-3 w-3" /> Çıxış
-              </button>
+              <span>Salam, <b>{profile.name}</b> <Badge variant="outline" className="ml-1 text-[10px]">{profile.group}</Badge></span>
             </div>
           </div>
           
@@ -257,13 +254,13 @@ export default function Home() {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2 text-primary font-bold">
-                    <Settings2 className="h-5 w-5" /> Bildiriş Ayarları
+                    <Settings2 className="h-5 w-5" /> Tənzimləmələr
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/20">
-                      <Label htmlFor="first-notif-channel" className="font-bold text-primary">Birinci Bildiriş Kanalı</Label>
+                      <Label htmlFor="first-notif-channel" className="font-bold text-primary">Bildirişlər</Label>
                       <Switch 
                         id="first-notif-channel" 
                         checked={profile.notificationSettings?.firstChannel.enabled}
@@ -277,7 +274,7 @@ export default function Home() {
                       <div className="space-y-3 px-1">
                         <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                            <span>Günün İlk Dərsinə</span>
+                            <span>İlk Dərsə</span>
                             <span className="text-primary">{formatTimeMinutes(profile.notificationSettings.firstChannel.firstClassMinutes)}</span>
                           </Label>
                           <Input type="number" value={profile.notificationSettings.firstChannel.firstClassMinutes || ''} onChange={(e) => handleMinutesChange('firstChannel', 'firstClassMinutes', e.target.value)} />
@@ -293,9 +290,14 @@ export default function Home() {
                     )}
                   </div>
                   <Separator />
-                  <Button variant="outline" className="w-full gap-2 font-bold" onClick={setStandardNotifSettings}>
-                    <RotateCcw className="h-4 w-4" /> Standart Ayarlar
-                  </Button>
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full gap-2 font-bold" onClick={setStandardNotifSettings}>
+                      <RotateCcw className="h-4 w-4" /> Standart Ayarlar
+                    </Button>
+                    <Button variant="destructive" className="w-full gap-2 font-bold" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4" /> Hesabdan Çıx
+                    </Button>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>

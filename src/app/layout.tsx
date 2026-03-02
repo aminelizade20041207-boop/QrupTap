@@ -7,13 +7,13 @@ import { NotificationScheduler } from '@/components/notification-scheduler';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'İT24 - Dərs Cədvəli',
-  description: 'İT24 qrupu üçün mərkəzi dərs cədvəli və xatırlatmalar.',
+  title: 'QrupTap - Dərs Cədvəli',
+  description: 'Akademik qruplar üçün mərkəzi dərs cədvəli və xatırlatmalar.',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'İT24',
+    title: 'QrupTap',
   }
 };
 

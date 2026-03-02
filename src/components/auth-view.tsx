@@ -147,12 +147,12 @@ export function AuthView() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
       <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
         <CardHeader className="text-center space-y-1">
-          <div className="bg-primary w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">İT24</div>
+          <div className="bg-primary w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">QT</div>
           <CardTitle className="text-2xl font-bold">
             {mode === 'login' ? 'Giriş' : mode === 'register' ? 'Qeydiyyat' : 'Şifrəni Sıfırla'}
           </CardTitle>
           <CardDescription>
-            {mode === 'login' ? 'Məlumatlarınızı daxil edin.' : mode === 'register' ? 'Yeni hesab yaradın.' : 'E-mail ünvanınızı daxil edin.'}
+            {mode === 'login' ? 'QrupTap-a xoş gəlmisiniz!' : mode === 'register' ? 'Yeni hesab yaradın.' : 'E-mail ünvanınızı daxil edin.'}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleAuth}>

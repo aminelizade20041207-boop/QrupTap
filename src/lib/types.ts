@@ -2,6 +2,7 @@
 export type ClassDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export type SubgroupType = 'yuxari' | 'asagi' | 'hamisi';
 export type WeekType = 'ust' | 'alt' | 'hamisi';
+export type GroupType = 'IT24.1' | 'IT24.2';
 
 export interface ClassSession {
   id: string;
@@ -13,6 +14,7 @@ export interface ClassSession {
   room?: string;
   subgroup: SubgroupType;
   week: WeekType;
+  group?: GroupType;
 }
 
 export const DAYS_OF_WEEK = [
@@ -62,8 +64,9 @@ export interface NotificationSettings {
 }
 
 export interface UserProfile {
-  id: string; // Bazadakı UID ilə eyni olmalıdır
+  id: string; 
   name: string;
+  group: GroupType;
   subgroup: 'yuxari' | 'asagi';
   photo?: string;
   savedGrades?: Record<string, number>;
