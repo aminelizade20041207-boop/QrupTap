@@ -26,25 +26,21 @@ type AuthMode = 'login' | 'register' | 'reset' | 'verify';
 const SLIDES = [
   {
     image: "https://picsum.photos/seed/library_study/800/800",
-    title: "Mərkəzi Kitabxana",
     description: "Bütün dərsləriniz və materiallarınız bir yerdə.",
     hint: "university library"
   },
   {
     image: "https://picsum.photos/seed/laptop_work/800/800",
-    title: "Akademik Plan",
     description: "Dərs vaxtlarınızı səmərəli şəkildə idarə edin.",
     hint: "student laptop"
   },
   {
     image: "https://picsum.photos/seed/academic_books/800/800",
-    title: "İmtahan Hazırlığı",
     description: "Giriş ballarınızı asanlıqla hesablayın və izləyin.",
     hint: "academic books"
   },
   {
     image: "https://picsum.photos/seed/modern_classroom/800/800",
-    title: "Təhsil Portalı",
     description: "Akademik qrupunuz üçün mərkəzləşmiş cədvəl sistemi.",
     hint: "university classroom"
   }
@@ -165,30 +161,29 @@ export function AuthView() {
               <img 
                 key={idx}
                 src={slide.image} 
-                alt={slide.title} 
+                alt="QrupTap" 
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${activeSlide === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
                 data-ai-hint={slide.hint}
               />
             ))}
           </div>
-          <div className="text-center space-y-3 relative z-10 min-h-[100px]">
+          <div className="text-center relative z-10 min-h-[60px] w-full px-6">
             {SLIDES.map((slide, idx) => (
-              <div key={idx} className={`transition-all duration-700 absolute inset-0 ${activeSlide === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-                <h2 className="text-2xl font-bold text-[#1b5e20]">{slide.title}</h2>
-                <p className="text-[#4caf50] font-medium text-sm px-4">{slide.description}</p>
+              <div key={idx} className={`transition-all duration-700 absolute inset-0 flex items-center justify-center ${activeSlide === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                <p className="text-[#4caf50] font-bold text-base leading-relaxed">{slide.description}</p>
               </div>
             ))}
-            
-            <div className="flex gap-2 justify-center mt-24">
-              {SLIDES.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  className={`h-2 rounded-full transition-all duration-500 ${
-                    activeSlide === idx ? 'w-8 bg-[#4caf50]' : 'w-2 bg-[#81c784] opacity-40'
-                  }`}
-                />
-              ))}
-            </div>
+          </div>
+          
+          <div className="flex gap-2 justify-center mt-20">
+            {SLIDES.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  activeSlide === idx ? 'w-8 bg-[#4caf50]' : 'w-2 bg-[#81c784] opacity-40'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
@@ -227,7 +222,7 @@ export function AuthView() {
                       <Label htmlFor="password" className="text-xs font-bold text-gray-500 uppercase tracking-tight">Şifrə</Label>
                       {mode === 'login' && (
                         <button type="button" onClick={() => setMode('reset')} className="text-[10px] text-[#4caf50] font-bold hover:underline">
-                          Unutmusunuz?
+                          Şifrənizi unutmusunuz?
                         </button>
                       )}
                     </div>
