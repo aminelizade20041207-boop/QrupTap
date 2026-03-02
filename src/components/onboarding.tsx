@@ -49,7 +49,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
             {step === 1 ? 'Adınızı daxil edin' : step === 2 ? 'Qrupunuzu seçin' : 'Altqrupunuzu təyin edin'}
           </CardDescription>
         </CardHeader>
-        <form onSubmit={step === 3 ? handleSubmit : (e) => e.preventDefault()}>
+        <div className="space-y-6">
           <CardContent className="space-y-6">
             {step === 1 && (
               <div className="space-y-2 animate-in fade-in slide-in-from-right-4">
@@ -133,10 +133,12 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 İrəli <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <Button type="submit" className="flex-1">Tətbiqə Başla</Button>
+              <Button type="button" className="flex-1" onClick={handleSubmit}>
+                Tətbiqə Başla
+              </Button>
             )}
           </CardFooter>
-        </form>
+        </div>
       </Card>
     </div>
   );

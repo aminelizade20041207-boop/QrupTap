@@ -206,7 +206,7 @@ export function AuthView() {
                   <Input 
                     id="email" 
                     type="email" 
-                    className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 text-gray-900" 
+                    className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 text-gray-900 font-medium" 
                     placeholder="email@example.com" 
                     value={email} 
                     onChange={(e) => setEmail(e.target.value)} 
@@ -228,7 +228,7 @@ export function AuthView() {
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
-                        className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 pr-12 text-gray-900" 
+                        className="h-12 rounded-2xl bg-gray-50 border-none focus-visible:ring-2 focus-visible:ring-[#4caf50] px-4 pr-12 text-gray-900 font-medium" 
                         placeholder="••••••••" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 

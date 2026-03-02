@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -98,9 +98,19 @@ export default function Home() {
     if (!user) return;
     try {
       const uid = user.uid;
-      // First sign out/delete UI state to avoid permission errors after auth deletion
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser) return;
+
+      // Close all dialogs first to prevent UI lock
+      setIsSettingsOpen(false);
+      setIsProfileOpen(false);
+
+      // Delete from Firestore
       await deleteDoc(doc(db, 'users', uid));
-      await deleteUser(user);
+      // Delete from Auth
+      await deleteUser(currentUser);
+      
       toast({ title: "Hesab Silindi", description: "Bütün məlumatlarınız təmizləndi." });
     } catch (error: any) {
       if (error.code === 'auth/requires-recent-login') {
@@ -117,14 +127,12 @@ export default function Home() {
 
   if (isUserLoading || !isReady) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin bg-primary w-8 h-8 rounded-lg" /></div>;
 
-  // Gateway: If not logged in, show AuthView (Login/Register)
   if (!user) {
     return <AuthView />;
   }
 
   if (profileLoading) return <div className="min-h-screen bg-background" />;
 
-  // If logged in but no profile exists, show Onboarding
   if (!profile) {
     return <Onboarding onComplete={(p) => {
       if (user) {
