@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UserProfile, GroupType } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface OnboardingProps {
@@ -22,8 +21,11 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [subgroup, setSubgroup] = useState<'yuxari' | 'asagi'>('yuxari');
 
   const handleNext = () => {
-    if (step === 1 && name.trim()) setStep(2);
-    else if (step === 2 && group) setStep(3);
+    if (step === 1 && name.trim()) {
+      setStep(2);
+    } else if (step === 2 && group) {
+      setStep(3);
+    }
   };
 
   const handleBack = () => {
@@ -32,7 +34,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && group) {
+    if (name.trim() && group && subgroup) {
       onComplete({ name, group, subgroup });
     }
   };
@@ -58,6 +60,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
                   autoFocus
+                  className="h-12 text-foreground bg-background"
                 />
               </div>
             )}
@@ -90,24 +93,24 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   onValueChange={(v) => setSubgroup(v as 'yuxari' | 'asagi')}
                   className="grid grid-cols-2 gap-4"
                 >
-                  <div>
+                  <div className="relative">
                     <RadioGroupItem value="yuxari" id="yuxari" className="peer sr-only" />
                     <Label
                       htmlFor="yuxari"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-center"
                     >
                       <span className="text-sm font-semibold uppercase">Yuxarı</span>
-                      <span className="text-xs text-muted-foreground">Altqrup</span>
+                      <span className="text-[10px] text-muted-foreground uppercase mt-1">Altqrup</span>
                     </Label>
                   </div>
-                  <div>
+                  <div className="relative">
                     <RadioGroupItem value="asagi" id="asagi" className="peer sr-only" />
                     <Label
                       htmlFor="asagi"
-                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer text-center"
                     >
                       <span className="text-sm font-semibold uppercase">Aşağı</span>
-                      <span className="text-xs text-muted-foreground">Altqrup</span>
+                      <span className="text-[10px] text-muted-foreground uppercase mt-1">Altqrup</span>
                     </Label>
                   </div>
                 </RadioGroup>
@@ -121,7 +124,12 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
               </Button>
             )}
             {step < 3 ? (
-              <Button type="button" className="flex-1" onClick={handleNext} disabled={(step === 1 && !name.trim()) || (step === 2 && !group)}>
+              <Button 
+                type="button" 
+                className="flex-1" 
+                onClick={handleNext} 
+                disabled={(step === 1 && !name.trim()) || (step === 2 && !group)}
+              >
                 İrəli <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (

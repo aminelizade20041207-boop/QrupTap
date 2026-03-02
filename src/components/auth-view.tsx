@@ -154,7 +154,6 @@ export function AuthView() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f7f6]">
       <div className="w-full max-w-[1000px] grid grid-cols-1 md:grid-cols-2 bg-white rounded-[40px] shadow-2xl overflow-hidden min-h-[650px]">
         
-        {/* Sol Panel - Slayd-şou */}
         <div className="hidden md:flex flex-col items-center justify-center p-12 bg-[#e8f5e9] relative transition-all duration-700">
           <div className="relative w-full aspect-square max-w-[320px] mb-8 overflow-hidden rounded-full shadow-inner border-4 border-white/50">
             {SLIDES.map((slide, idx) => (
@@ -187,7 +186,6 @@ export function AuthView() {
           </div>
         </div>
 
-        {/* Sağ Panel - Forma */}
         <div className="p-8 md:p-16 flex flex-col justify-center bg-white">
           <div className="space-y-8 max-w-[360px] mx-auto w-full">
             

@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GradeCalculator } from '@/components/grade-calculator';
 import { ProfileView } from '@/components/profile-view';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -91,14 +91,13 @@ export default function Home() {
   const handleLogout = () => {
     signOut(auth);
     setIsSettingsOpen(false);
+    setIsProfileOpen(false);
   };
 
   const handleDeleteAccount = async () => {
     if (!user) return;
     try {
-      // 1. Firestore data silinsin
       await deleteDoc(doc(db, 'users', user.uid));
-      // 2. Auth hesabı silinsin
       await deleteUser(user);
       toast({ title: "Hesab Silindi", description: "Bütün məlumatlarınız təmizləndi." });
     } catch (error: any) {
@@ -116,7 +115,8 @@ export default function Home() {
 
   if (isUserLoading || !isReady) return <div className="min-h-screen bg-background" />;
 
-  if (!user || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
+  // Gateway: If not logged in or anonymous or unverified password user, show AuthView
+  if (!user || user.isAnonymous || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
     return <AuthView />;
   }
 
