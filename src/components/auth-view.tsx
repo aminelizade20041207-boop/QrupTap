@@ -52,7 +52,8 @@ export function AuthView() {
     try {
       if (mode === 'login') {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        if (!userCredential.user.emailVerified) {
+        if (!userCredential.user.emailVerified && userCredential.user.providerData[0]?.providerId === 'password') {
+          await sendEmailVerification(userCredential.user);
           setMode('verify');
         }
       } else if (mode === 'register') {
@@ -88,7 +89,7 @@ export function AuthView() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Xəta", description: "Google ilə giriş uğursuz oldu. Provayderin aktiv olduğundan əmin olun." });
+      toast({ variant: "destructive", title: "Xəta", description: "Google ilə giriş uğursuz oldu." });
     } finally {
       setLoading(false);
     }
@@ -100,7 +101,7 @@ export function AuthView() {
         await sendEmailVerification(currentUser);
         toast({ title: "Yenidən Göndərildi", description: "Təsdiqləmə linki e-mailinizə təkrar göndərildi." });
       } catch (err) {
-        toast({ variant: "destructive", title: "Xəta", description: "Çox sayda cəhd. Bir az sonra yenidən yoxlayın." });
+        toast({ variant: "destructive", title: "Xəta", description: "Bir az sonra yenidən yoxlayın." });
       }
     }
   };
@@ -115,17 +116,17 @@ export function AuthView() {
             </div>
             <CardTitle className="text-2xl font-bold">E-maili Təsdiqləyin</CardTitle>
             <CardDescription>
-              Biz <b>{currentUser?.email}</b> ünvanına təsdiqləmə linki göndərdik. Tətbiqə daxil olmaq üçün həmin linkə klik etməlisiniz.
+              Biz <b>{currentUser?.email}</b> ünvanına təsdiqləmə linki göndərdik.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-yellow-500/10 p-4 rounded-lg text-sm text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
-              Linkə klik etdikdən sonra səhifəni yeniləyin və ya çıxış edib yenidən daxil olun.
+              Linkə klik etdikdən sonra bu səhifəni yeniləyin.
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
             <Button className="w-full h-11" onClick={() => window.location.reload()}>
-              Linkə Klik Etmişəm, Giriş Et
+              Linkə Klik Etmişəm
             </Button>
             <Button variant="outline" className="w-full gap-2" onClick={resendVerification}>
               <RotateCcw className="h-4 w-4" /> Linki Yenidən Göndər
@@ -134,7 +135,7 @@ export function AuthView() {
               auth.signOut();
               setMode('login');
             }}>
-              Geri Qayıt
+              Çıxış Et
             </Button>
           </CardFooter>
         </Card>
@@ -151,8 +152,7 @@ export function AuthView() {
             {mode === 'login' ? 'Giriş' : mode === 'register' ? 'Qeydiyyat' : 'Şifrəni Sıfırla'}
           </CardTitle>
           <CardDescription>
-            {mode === 'login' ? 'Dərs cədvəlinə daxil olmaq üçün məlumatlarınızı daxil edin.' : 
-             mode === 'register' ? 'Yeni hesab yaradın.' : 'E-mail ünvanınızı daxil edin.'}
+            {mode === 'login' ? 'Məlumatlarınızı daxil edin.' : mode === 'register' ? 'Yeni hesab yaradın.' : 'E-mail ünvanınızı daxil edin.'}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleAuth}>
@@ -161,15 +161,7 @@ export function AuthView() {
               <Label htmlFor="email">E-mail</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  id="email" 
-                  type="email" 
-                  className="pl-10" 
-                  placeholder="nümunə@mail.com" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
-                />
+                <Input id="email" type="email" className="pl-10" placeholder="nümunə@mail.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
             </div>
             {mode !== 'reset' && (
@@ -177,25 +169,12 @@ export function AuthView() {
                 <Label htmlFor="password">Şifrə</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    className="pl-10" 
-                    placeholder="••••••••" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    required 
-                  />
+                  <Input id="password" type="password" className="pl-10" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
               </div>
             )}
-            
             {mode === 'login' && (
-              <button 
-                type="button" 
-                onClick={() => setMode('reset')} 
-                className="text-xs text-primary hover:underline"
-              >
+              <button type="button" onClick={() => setMode('reset')} className="text-xs text-primary hover:underline">
                 Şifrəni unutmusunuz?
               </button>
             )}
@@ -205,21 +184,18 @@ export function AuthView() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : mode === 'login' ? <LogIn className="h-4 w-4 mr-2" /> : mode === 'register' ? <UserPlus className="h-4 w-4 mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
               {mode === 'login' ? 'Daxil ol' : mode === 'register' ? 'Qeydiyyatdan keç' : 'Link göndər'}
             </Button>
-            
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center"><Separator /></div>
               <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Və ya</span></div>
             </div>
-
             <Button type="button" variant="outline" className="w-full h-11" onClick={handleGoogleSignIn} disabled={loading}>
-              <Chrome className="h-4 w-4 mr-2" /> Google ilə davam et
+              <Chrome className="h-4 w-4 mr-2" /> Google ilə daxil ol
             </Button>
-
             <div className="text-center text-sm">
               {mode === 'login' ? (
-                <p>Hesabınız yoxdur? <button type="button" onClick={() => setMode('register')} className="text-primary font-bold hover:underline">Qeydiyyatdan keçin</button></p>
+                <p>Hesabınız yoxdur? <button type="button" onClick={() => setMode('register')} className="text-primary font-bold hover:underline">Qeydiyyat</button></p>
               ) : (
-                <p>Artıq hesabınız var? <button type="button" onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Giriş edin</button></p>
+                <p>Artıq hesabınız var? <button type="button" onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Giriş</button></p>
               )}
             </div>
           </CardFooter>

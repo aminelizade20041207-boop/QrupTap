@@ -39,13 +39,13 @@ const DEFAULT_NOTIF_SETTINGS: NotificationSettings = {
 };
 
 export default function Home() {
-  const { user, loading: userLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();
   const { toast } = useToast();
   
   const userRef = useMemo(() => user ? doc(db, 'users', user.uid) : null, [db, user]);
-  const { data: profile, loading: profileLoading } = useDoc<UserProfile>(userRef);
+  const { data: profile, isLoading: profileLoading } = useDoc<UserProfile>(userRef);
 
   const [currentWeek, setCurrentWeek] = useState<WeekType>('ust');
   const [selectedWeeklyWeek, setSelectedWeeklyWeek] = useState<WeekType>('ust');
@@ -92,8 +92,9 @@ export default function Home() {
     signOut(auth);
   };
 
-  if (userLoading || !isReady) return <div className="min-h-screen bg-background" />;
+  if (isUserLoading || !isReady) return <div className="min-h-screen bg-background" />;
 
+  // E-mail verified check
   if (!user || (!user.emailVerified && user.providerData[0]?.providerId === 'password')) {
     return <AuthView />;
   }
@@ -318,7 +319,6 @@ export default function Home() {
             </Button>
           </div>
           <div className="flex items-center gap-3 bg-background p-2 px-3 rounded-xl border border-primary/20 shadow-sm mx-auto">
-            <Info className="h-4 w-4 text-primary" />
             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
               <span>Cari Həftə:</span>
               <Badge variant={currentWeek === 'ust' ? 'default' : 'secondary'}>
