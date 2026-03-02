@@ -1,5 +1,3 @@
-"use client";
-
 import { initializeApp, getApps } from "firebase/app";
 
 const firebaseConfig = {
@@ -11,7 +9,10 @@ const firebaseConfig = {
   appId: "1:535350127210:web:e6f2f58cb45597f4767813"
 };
 
-export const app =
-  getApps().length === 0
+export function getFirebaseApp() {
+  if (typeof window === "undefined") return null;
+
+  return getApps().length === 0
     ? initializeApp(firebaseConfig)
     : getApps()[0];
+}
