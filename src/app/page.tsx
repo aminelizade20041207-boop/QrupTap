@@ -99,7 +99,9 @@ export default function Home() {
     return <AuthView />;
   }
 
-  if (!profileLoading && !profile) {
+  if (profileLoading) return <div className="min-h-screen bg-background" />;
+
+  if (!profile) {
     return <Onboarding onComplete={(p) => {
       if (user) {
         setDoc(doc(db, 'users', user.uid), {
@@ -112,8 +114,6 @@ export default function Home() {
       }
     }} />;
   }
-
-  if (profileLoading || !profile) return <div className="min-h-screen bg-background" />;
 
   const dailyClasses = FIXED_SCHEDULE.filter(c => 
     (c.subgroup === 'hamisi' || c.subgroup === profile.subgroup) &&

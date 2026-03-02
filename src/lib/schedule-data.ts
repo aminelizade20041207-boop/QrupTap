@@ -1,3 +1,4 @@
+
 import { ClassSession } from "./types";
 
 export const FIXED_SCHEDULE: ClassSession[] = [

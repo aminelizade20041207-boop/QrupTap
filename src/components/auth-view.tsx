@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { LogIn, UserPlus, Mail, Lock, Chrome, Loader2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { LogIn, UserPlus, Mail, Lock, Chrome, Loader2, RotateCcw } from 'lucide-react';
 
 type AuthMode = 'login' | 'register' | 'reset' | 'verify';
 
@@ -115,17 +115,17 @@ export function AuthView() {
             </div>
             <CardTitle className="text-2xl font-bold">E-maili Təsdiqləyin</CardTitle>
             <CardDescription>
-              Biz <b>{currentUser?.email}</b> ünvanına link göndərdik. Tətbiqə daxil olmaq üçün linkə klik edin.
+              Biz <b>{currentUser?.email}</b> ünvanına təsdiqləmə linki göndərdik. Tətbiqə daxil olmaq üçün həmin linkə klik etməlisiniz.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-yellow-500/10 p-4 rounded-lg text-sm text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
-              Linkə klik etdikdən sonra səhifəni yeniləyin və ya yenidən daxil olun.
+              Linkə klik etdikdən sonra səhifəni yeniləyin və ya çıxış edib yenidən daxil olun.
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
-            <Button className="w-full" onClick={() => window.location.reload()}>
-              Təsdiqlədim, Giriş Et
+            <Button className="w-full h-11" onClick={() => window.location.reload()}>
+              Linkə Klik Etmişəm, Giriş Et
             </Button>
             <Button variant="outline" className="w-full gap-2" onClick={resendVerification}>
               <RotateCcw className="h-4 w-4" /> Linki Yenidən Göndər
